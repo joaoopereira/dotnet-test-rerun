@@ -5,23 +5,9 @@ namespace dotnet.test.rerun
 {
     public class dotnet
     {
-        /// <summary>
-        /// Gets the logger.
-        /// </summary>
-        /// <value>
-        /// The logger.
-        /// </value>
         private readonly Logger Log;
-
-        /// <summary>
-        /// The process start information
-        /// </summary>
         private readonly ProcessStartInfo ProcessStartInfo;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommandLineRunner"/> class.
-        /// </summary>
-        /// <param name="workingDirectory">The working directory.</param>
         public dotnet(Logger logger, IDirectoryInfo? workingDirectory = null)
         {
             ProcessStartInfo = new()
@@ -35,10 +21,6 @@ namespace dotnet.test.rerun
             Log = logger;
         }
 
-        /// <summary>
-        /// Runs dotnet tool with provided arguments
-        /// </summary>
-        /// <param name="arguments">The arguments.</param>
         public void Run(string arguments)
         {
             Log.Debug($"Forking {arguments}");
