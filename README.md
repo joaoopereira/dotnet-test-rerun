@@ -1,11 +1,11 @@
 # dotnet-test-rerun
-dotnet test command with the extra option to automatic rerun failed tests
+wrapper of dotnet test command with the extra option to automatic rerun failed tests
 
 # installation
-`dotnet tool install dotnet-test-rerun`
+`dotnet tool install --global dotnet-test-rerun`
 
 # usage
-`dotnet test-rerun [somepathtodll] [OPTIONS]`
+`dotnet tool test-rerun [somepathtodll] [OPTIONS]`
 
 ## supported arguments
 | argument | description                       |
