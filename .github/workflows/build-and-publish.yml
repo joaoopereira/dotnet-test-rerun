@@ -1,4 +1,4 @@
-name: 🚀 Build and Publish
+name: Build and Publish
 
 on:
   push:
@@ -30,3 +30,13 @@ jobs:
           PROJECT_FILE_PATH: src/dotnet-test-rerun.csproj
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
           TAG_COMMIT: false
+
+  tagged-release:
+    name: github tagged release
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✅ github tagged release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
