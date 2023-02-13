@@ -32,25 +32,30 @@ namespace dotnet.test.rerun
         public void Run()
         {
             dotnet.Run(config.Path, config.Filter, config.Settings, config.Logger, config.ResultsDirectory);
-
-            IDirectoryInfo resultsDirectory = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-            IFileInfo dll = fileSystem.FileInfo.New(config.Path);
-
-            var attempt = 1;
-            while (attempt < config.RerunMaxAttempts)
+            if (dotnet.ErrorCode == ErrorCode.FailedTests)
             {
-                var trxFile = resultsDirectory.EnumerateFiles("*.trx").OrderBy(f => f.Name).LastOrDefault();
-                var testsToRun = GetFailedTestsFilter(trxFile);
-                if (!string.IsNullOrEmpty(testsToRun))
+                IDirectoryInfo resultsDirectory = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+
+                var attempt = 1;
+                while (attempt < config.RerunMaxAttempts)
                 {
-                    Log.Information($"Found Failed tests. Rerun filter: {testsToRun}");
-                    dotnet.Run(dll.FullName, config.Filter, config.Settings, config.Logger, config.ResultsDirectory);
-                    attempt++;
-                }
-                else
-                {
-                    Log.Information($"Rerun attempt {attempt} not needed. All testes Passed.");
-                    attempt = config.RerunMaxAttempts;
+                    var trxFile = resultsDirectory.EnumerateFiles("*.trx").OrderBy(f => f.Name).LastOrDefault();
+                    if (trxFile != null)
+                    {
+                        var testsToRerun = GetFailedTestsFilter(trxFile);
+                        if (!string.IsNullOrEmpty(testsToRerun))
+                        {
+                            Log.Information($"Rerun attempt {attempt}/{config.RerunMaxAttempts}");
+                            Log.Warning($"Found Failed tests. Rerun filter: {testsToRerun}");
+                            dotnet.Run(config.Path, config.Filter, config.Settings, config.Logger, config.ResultsDirectory);
+                            attempt++;
+                        }
+                        else
+                        {
+                            Log.Information($"Rerun attempt {attempt} not needed. All testes Passed.");
+                            attempt = config.RerunMaxAttempts;
+                        }
+                    }
                 }
             }
         }
@@ -60,24 +65,21 @@ namespace dotnet.test.rerun
             var testFilter = string.Empty;
             var outcome = "Failed";
 
-            if (trxFile != null)
+            var trx = TrxDeserializer.Deserialize(trxFile.FullName);
+
+            var tests = trx.Results.UnitTestResults.Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+            if (tests != null && !tests.Any())
             {
-                var trx = TrxDeserializer.Deserialize(trxFile.FullName);
-
-                var tests = trx.Results.UnitTestResults.Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase)).ToList();
-
-                if (tests != null && !tests.Any())
+                Log.Warning($"No tests found with the Outcome {outcome}");
+            }
+            else
+            {
+                for (var i = 0; i < tests.Count; i++)
                 {
-                    Log.Warning($"No tests found with the Outcome {outcome}");
+                    testFilter += $"FullyQualifiedName~{tests[i].TestName}" + (tests.Count() - 1 != i ? " | " : string.Empty);
                 }
-                else
-                {
-                    for (var i = 0; i < tests.Count(); i++)
-                    {
-                        testFilter += $"FullyQualifiedName~{tests[0].TestName}" + (tests.Count() - 1 != i ? " | " : string.Empty);
-                    }
-                    Log.Verbose(testFilter);
-                }
+                Log.Debug(testFilter);
             }
             return testFilter;
         }
@@ -107,31 +109,31 @@ namespace dotnet.test.rerun
 
         #region Options
 
-        private Option<string> FilterOption = new(new[] { "--filter" })
+        private readonly Option<string> FilterOption = new(new[] { "--filter" })
         {
             Description = "Run tests that match the given expression.",
             IsRequired = true
         };
 
-        private Option<string> SettingsOption = new(new[] { "--settings", "-s" })
+        private readonly Option<string> SettingsOption = new(new[] { "--settings", "-s" })
         {
             Description = "The run settings file to use when running tests.",
             IsRequired = true
         };
 
-        private Option<string> loggerOption = new(new[] { "--logger", "-l" }, getDefaultValue: () => "trx")
+        private readonly Option<string> LoggerOption = new(new[] { "--logger", "-l" }, getDefaultValue: () => "trx")
         {
             Description = "Specifies a logger for test results.",
             IsRequired = false
         };
 
-        private Option<string> ResultsDirectoryOption = new(new[] { "--results-directory", "-r" }, getDefaultValue: () => ".")
+        private readonly Option<string> ResultsDirectoryOption = new(new[] { "--results-directory", "-r" }, getDefaultValue: () => ".")
         {
             Description = "The directory where the test results will be placed.\nThe specified directory will be created if it does not exist.",
             IsRequired = false
         };
 
-        private Option<int> RerunMaxAttemptsOption = new(new[] { "--rerunMaxAttempts" }, getDefaultValue: () => 3)
+        private readonly Option<int> RerunMaxAttemptsOption = new(new[] { "--rerunMaxAttempts" }, getDefaultValue: () => 3)
         {
             Description = "Maximum # of attempts. Default: 3.",
             IsRequired = false
@@ -144,7 +146,7 @@ namespace dotnet.test.rerun
             cmd.Add(PathArgument);
             cmd.Add(FilterOption);
             cmd.Add(SettingsOption);
-            cmd.Add(loggerOption);
+            cmd.Add(LoggerOption);
             cmd.Add(ResultsDirectoryOption);
             cmd.Add(RerunMaxAttemptsOption);
         }
@@ -154,7 +156,7 @@ namespace dotnet.test.rerun
             Path = context.ParseResult.GetValueForArgument(PathArgument);
             Filter = context.ParseResult.GetValueForOption(FilterOption);
             Settings = context.ParseResult.GetValueForOption(SettingsOption);
-            Logger = context.ParseResult.GetValueForOption(loggerOption);
+            Logger = context.ParseResult.GetValueForOption(LoggerOption);
             ResultsDirectory = context.ParseResult.GetValueForOption(ResultsDirectoryOption);
             RerunMaxAttempts = context.ParseResult.GetValueForOption(RerunMaxAttemptsOption);
         }
