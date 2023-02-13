@@ -1,41 +1,34 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
 using System.IO.Abstractions;
+using dotnet.test.rerun;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace dotnet.test.rerun;
+// Setup Dependency Injection
+var serviceProvider = new ServiceCollection()
+    .AddSingleton<Logger>()
+    .AddSingleton<RerunCommand>()
+    .AddSingleton<RerunCommandConfiguration>()
+    .AddSingleton<dotnet.test.rerun.dotnet>()
+    .AddSingleton<IFileSystem>(new FileSystem())
+    .BuildServiceProvider();
 
-internal class Program
+var Log = serviceProvider.GetRequiredService<Logger>();
+var cmd = serviceProvider.GetService<RerunCommand>();
+
+try
 {
-    private static async Task<int> Main(string[] args)
-    {
-        // Setup Dependency Injection
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton<Logger>()
-            .AddSingleton<RerunCommand>()
-            .AddSingleton<RerunCommandConfiguration>()
-            .AddSingleton<dotnet>()
-            .AddSingleton<IFileSystem>(new FileSystem())
-            .BuildServiceProvider();
-
-        var Log = serviceProvider.GetRequiredService<Logger>();
-
-        try
-        {
-            var runnerCommand = serviceProvider.GetRequiredService<RerunCommand>();
-
-            // Run
-            return await runnerCommand.InvokeAsync(args);
-        }
-        catch (RerunException e)
-        {
-            Log.Error(e.Message);
-            Log.Debug(e.StackTrace);
-        }
-        catch (Exception e)
-        {
-            Log.Exception(e);
-        }
-
-        return -1;
-    }
+    return await new CommandLineBuilder(cmd).Build().InvokeAsync(args);
 }
+catch (RerunException e)
+{
+    Log.Error(e.Message);
+    Log.Debug(e.StackTrace ?? string.Empty);
+}
+catch (Exception e)
+{
+    Log.Exception(e);
+}
+
+return -1;
