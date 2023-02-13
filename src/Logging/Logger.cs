@@ -1,8 +1,11 @@
-﻿using Spectre.Console;
+﻿using System.CommandLine.Parsing;
+using System.CommandLine;
+using Spectre.Console;
+using Spectre.Console.Rendering;
 
-namespace dotnet.test.rerun
+namespace dotnet.test.rerun.Logging
 {
-    public class Logger
+    public class Logger : ILogger
     {
         private readonly IAnsiConsole AnsiConsole;
 
@@ -14,7 +17,8 @@ namespace dotnet.test.rerun
         /// <summary>
         /// The default log level
         /// </summary>
-        public LogLevel Level = LogLevel.Verbose;
+        LogLevel Level  = LogLevel.Verbose;
+        LogLevel ILogger.Level { get => Level; set => _ = Level; }
 
         /// <summary>
         /// Log the message with Debug verbosity
@@ -76,6 +80,32 @@ namespace dotnet.test.rerun
         }
 
         /// <summary>
+        /// Logs the progress of an operation, single line with a spinner
+        /// </summary>
+        /// <param name="msg">initial message to print</param>
+        public void Status(string msg, Action<StatusContext> action = null)
+        {
+            AnsiConsole.Status().Start(msg, ctx =>
+            {
+                ctx.Spinner(Spinner.Known.Dots);
+                if (action != null)
+                {
+                    action(new StatusContext(ctx));
+                }
+            });
+        }
+
+        /// <summary>
+        /// renders a renderable Spectre object (currently we use it for trees)
+        /// This abstracts from the logging library (up to a point)
+        /// </summary>
+        /// <param name="renderable"></param>
+        public void Render(IRenderable renderable)
+        {
+            AnsiConsole.Write(renderable);
+        }
+
+        /// <summary>
         /// Abstracts from the logging library
         /// </summary>
         /// <param name="msg">The MSG.</param>
@@ -89,33 +119,67 @@ namespace dotnet.test.rerun
         /// <param name="msg">message to be escaped</param>
         /// <returns>escaped message</returns>
         private string EscapeMarkup(string msg) => msg?.Replace("[", "[[").Replace("]", "]]");
+
+        /// <summary>
+        /// LogLevel Parser
+        /// </summary>
+        public static ParseArgument<LogLevel> ParseLogLevel = argResult =>
+        {
+            var loglevel = LogLevel.Verbose;
+            string loglevelStr = "verbose";
+            if (argResult.Tokens.Any())
+            {
+                loglevelStr = argResult.Tokens[0].Value;
+            }
+
+            if (Enum.TryParse(typeof(LogLevel), loglevelStr, ignoreCase: true, out var loglevelObj))
+            {
+                loglevel = (LogLevel)loglevelObj!;
+            }
+            return loglevel;
+        };
     }
 
     public enum LogLevel
     {
-        /// <summary>
-        /// The debug
-        /// </summary>
         Debug,
-
-        /// <summary>
-        /// The verbose
-        /// </summary>
         Verbose,
-
-        /// <summary>
-        /// The information
-        /// </summary>
         Information,
-
-        /// <summary>
-        /// The warning
-        /// </summary>
         Warning,
+        Error
+    }
+
+    /// <summary>
+    /// Wrapper for the SpectreConsole StatusContext object so we do not pollute all classes with Spectre imports
+    /// </summary>
+    public class StatusContext
+    {
+        private Spectre.Console.StatusContext context;
 
         /// <summary>
-        /// The error
+        /// Initializes a new instance of the <see cref="StatusContext"/> class.
         /// </summary>
-        Error
+        /// <param name="context">The context.</param>
+        public StatusContext(Spectre.Console.StatusContext context)
+        {
+            this.context = context;
+        }
+
+        /// <summary>
+        /// Statuses the specified status.
+        /// </summary>
+        /// <param name="status">The status.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">context</exception>
+        public StatusContext Status(string status)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
+            context.Status = status;
+            return this;
+        }
     }
 }
