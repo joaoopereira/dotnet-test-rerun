@@ -46,7 +46,7 @@ namespace dotnet.test.rerun
         /// <param name="arguments">The arguments.</param>
         private void Run(string arguments) => Log.Status("running dotnet test", ctx =>
         { 
-            Log.Debug($"Forking {arguments}");
+            Log.Debug($"forking {arguments}");
             ProcessStartInfo.Arguments = arguments;
 
             using var ps = Process.Start(ProcessStartInfo);
@@ -77,7 +77,7 @@ namespace dotnet.test.rerun
                 {
                     ErrorCode = ErrorCode.FailedTests;
                 }
-                else if (ExitCode != 1)
+                else
                 {
                     ErrorCode = ErrorCode.Error;
                     Log.Verbose(Error);

@@ -18,7 +18,10 @@ namespace dotnet.test.rerun.Logging
         /// The default log level
         /// </summary>
         LogLevel Level  = LogLevel.Verbose;
-        LogLevel ILogger.Level { get => Level; set => _ = Level; }
+        public void SetLogLevel(LogLevel logLevel)
+        {
+            Level = logLevel;
+        }
 
         /// <summary>
         /// Log the message with Debug verbosity

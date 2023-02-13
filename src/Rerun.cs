@@ -27,7 +27,7 @@ namespace dotnet.test.rerun
             this.SetHandler((context) =>
             {
                 this.config.GetValues(context);
-                Log.Level = config.LogLevel;
+                logger.SetLogLevel(this.config.LogLevel);
                 Run();
             });
         }
@@ -143,7 +143,7 @@ namespace dotnet.test.rerun
             IsRequired = false
         };
 
-        private readonly Option<LogLevel> LogLevelOption = new(new[] { "--loglevel" }, parseArgument: Logger.ParseLogLevel)
+        private readonly Option<LogLevel> LogLevelOption = new(new[] { "--loglevel" }, parseArgument: Logger.ParseLogLevel, isDefault: true)
         {
             Description = "ParseLogLevel",
             IsRequired = false,
