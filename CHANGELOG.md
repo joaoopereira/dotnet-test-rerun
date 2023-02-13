@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.0.7"></a>
+## [1.0.7](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.7) (2023-2-13)
+
+### Bug Fixes
+
+* **dotnet:** add default working directory ([4783ab2](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/4783ab2e7c20e57a497c6ac72c0f7419b35d2d9e))
+
 <a name="1.0.6"></a>
 ## [1.0.6](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.6) (2023-2-13)
 
