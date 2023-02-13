@@ -7,10 +7,7 @@ namespace dotnet.test.rerun.Logging
 {
     public interface ILogger
     {
-        /// <summary>
-        /// The default log level
-        /// </summary>
-        public LogLevel Level { get; set; }
+        public void SetLogLevel(LogLevel logLevel);
 
         /// <summary>
         /// Log the message with Debug verbosity
