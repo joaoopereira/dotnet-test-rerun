@@ -1,4 +1,4 @@
-name: 🚀 Build and Publish a dotnet tool on nuget.org
+name: 🚀 Build and Publish
 
 on:
   push:
@@ -11,29 +11,22 @@ on:
 
 jobs:
   build-and-publish:
+    name: build, pack & publish
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: src
 
     steps:
-      - name: ⬇️ Get latest code
+      - name: ⬇️ get latest code
         uses: actions/checkout@v2.3.4
 
-      - name: ℹ️ Setup .NET Core
+      - name: ℹ️ setup .NET Core
         uses: actions/setup-dotnet@v1
 
-      - name: 🔃 Restore
-        run: dotnet restore
-
-      - name: 🔧 Build
-        run: dotnet build --configuration Release --no-restore
-
-      - name: 📁 Pack
-        run: dotnet pack
-
-      - name: 🚚 publish
+      - name: 🚚 build, pack & publish
         uses: alirezanet/publish-nuget@v3.0.4
         with:
           PROJECT_FILE_PATH: src/dotnet-test-rerun.csproj
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          TAG_COMMIT: false
