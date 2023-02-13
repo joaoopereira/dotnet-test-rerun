@@ -3,18 +3,19 @@ using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
 using System.IO.Abstractions;
 using dotnet.test.rerun;
+using dotnet.test.rerun.Logging;
 using Microsoft.Extensions.DependencyInjection;
 
 // Setup Dependency Injection
 var serviceProvider = new ServiceCollection()
-    .AddSingleton<Logger>()
+    .AddSingleton<ILogger, Logger>()
     .AddSingleton<RerunCommand>()
     .AddSingleton<RerunCommandConfiguration>()
     .AddSingleton<dotnet.test.rerun.dotnet>()
     .AddSingleton<IFileSystem>(new FileSystem())
     .BuildServiceProvider();
 
-var Log = serviceProvider.GetRequiredService<Logger>();
+var Log = serviceProvider.GetRequiredService<ILogger>();
 var cmd = serviceProvider.GetService<RerunCommand>();
 
 try

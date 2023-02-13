@@ -1,18 +1,20 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO.Abstractions;
+using System.Runtime.CompilerServices;
+using dotnet.test.rerun.Logging;
 using TrxFileParser;
 
 namespace dotnet.test.rerun
 {
     public class RerunCommand : RootCommand
     {
-        private readonly Logger Log;
+        private readonly ILogger Log;
         private readonly RerunCommandConfiguration config;
         private readonly dotnet dotnet;
         private readonly IFileSystem fileSystem;
 
-        public RerunCommand(Logger logger, RerunCommandConfiguration config, dotnet dotnet, IFileSystem fileSystem)
+        public RerunCommand(ILogger logger, RerunCommandConfiguration config, dotnet dotnet, IFileSystem fileSystem)
         {
             this.Log = logger;
             this.config = config;
@@ -25,13 +27,14 @@ namespace dotnet.test.rerun
             this.SetHandler((context) =>
             {
                 this.config.GetValues(context);
+                Log.Level = config.LogLevel;
                 Run();
             });
         }
 
         public void Run()
         {
-            dotnet.Run(config.Path, config.Filter, config.Settings, config.Logger, config.ResultsDirectory);
+            dotnet.Run(config.Path, config.Filter, config.Settings, config.TrxLogger, config.ResultsDirectory);
             if (dotnet.ErrorCode == ErrorCode.FailedTests)
             {
                 IDirectoryInfo resultsDirectory = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
@@ -47,7 +50,7 @@ namespace dotnet.test.rerun
                         {
                             Log.Information($"Rerun attempt {attempt}/{config.RerunMaxAttempts}");
                             Log.Warning($"Found Failed tests. Rerun filter: {testsToRerun}");
-                            dotnet.Run(config.Path, config.Filter, config.Settings, config.Logger, config.ResultsDirectory);
+                            dotnet.Run(config.Path, config.Filter, config.Settings, config.TrxLogger, config.ResultsDirectory);
                             attempt++;
                         }
                         else
@@ -92,9 +95,10 @@ namespace dotnet.test.rerun
         public string Path { get; private set; }
         public string Filter { get; private set; }
         public string Settings { get; private set; }
-        public string Logger { get; private set; }
+        public string TrxLogger { get; private set; }
         public string ResultsDirectory { get; private set; }
         public int RerunMaxAttempts { get; private set; }
+        public LogLevel LogLevel { get; private set; }
 
         #endregion Properties
 
@@ -139,6 +143,12 @@ namespace dotnet.test.rerun
             IsRequired = false
         };
 
+        private readonly Option<LogLevel> LogLevelOption = new(new[] { "--loglevel" }, parseArgument: Logger.ParseLogLevel)
+        {
+            Description = "ParseLogLevel",
+            IsRequired = false,
+        };
+
         #endregion Options
 
         public void Set(Command cmd)
@@ -149,6 +159,7 @@ namespace dotnet.test.rerun
             cmd.Add(LoggerOption);
             cmd.Add(ResultsDirectoryOption);
             cmd.Add(RerunMaxAttemptsOption);
+            cmd.Add(LogLevelOption);
         }
 
         public void GetValues(InvocationContext context)
@@ -156,9 +167,10 @@ namespace dotnet.test.rerun
             Path = context.ParseResult.GetValueForArgument(PathArgument);
             Filter = context.ParseResult.GetValueForOption(FilterOption);
             Settings = context.ParseResult.GetValueForOption(SettingsOption);
-            Logger = context.ParseResult.GetValueForOption(LoggerOption);
+            TrxLogger = context.ParseResult.GetValueForOption(LoggerOption);
             ResultsDirectory = context.ParseResult.GetValueForOption(ResultsDirectoryOption);
             RerunMaxAttempts = context.ParseResult.GetValueForOption(RerunMaxAttemptsOption);
+            LogLevel = context.ParseResult.GetValueForOption(LogLevelOption);
         }
     }
 }

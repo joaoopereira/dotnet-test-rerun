@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO.Abstractions;
+using dotnet.test.rerun.Logging;
 
 namespace dotnet.test.rerun
 {
@@ -9,11 +10,11 @@ namespace dotnet.test.rerun
         private string Output;
         private string Error;
         private int ExitCode;
-        private readonly Logger Log;
+        private readonly ILogger Log;
         private readonly ProcessStartInfo ProcessStartInfo;
         private string[] WellKnownErrors = new[] { "No test source files were specified." };
 
-        public dotnet(Logger logger, IDirectoryInfo? workingDirectory = null)
+        public dotnet(ILogger logger, IDirectoryInfo? workingDirectory = null)
         {
             ProcessStartInfo = new()
             {
@@ -43,8 +44,8 @@ namespace dotnet.test.rerun
         /// Runs dotnet test with the specified arguments.
         /// </summary>
         /// <param name="arguments">The arguments.</param>
-        private void Run(string arguments)
-        {
+        private void Run(string arguments) => Log.Status("running dotnet test", ctx =>
+        { 
             Log.Debug($"Forking {arguments}");
             ProcessStartInfo.Arguments = arguments;
 
@@ -57,7 +58,7 @@ namespace dotnet.test.rerun
             ExitCode = ps.ExitCode;
 
             HandleProcessEnd();
-        }
+        });
 
         /// <summary>
         /// Handles the process end.

@@ -1,5 +1,5 @@
 # dotnet-test-rerun
-wrapper of dotnet test command that automatic rerun failed tests
+wrapper of `dotnet test` command that automatic rerun failed tests
 
 # installation
 `dotnet tool install --global dotnet-test-rerun`
