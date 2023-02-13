@@ -35,7 +35,7 @@ namespace dotnet.test.rerun
         /// <param name="settings">The settings.</param>
         /// <param name="logger">The logger.</param>
         /// <param name="resultsDirectory">The results directory.</param>
-        public void Run(string dll, string filter, string settings, string logger, string resultsDirectory)
+        public void Test(string dll, string filter, string settings, string logger, string resultsDirectory)
         {
             Run($"test {dll} --filter \"{filter}\" --settings \"{settings}\" --logger {logger} --results-directory {resultsDirectory}");
         }
@@ -44,8 +44,9 @@ namespace dotnet.test.rerun
         /// Runs dotnet test with the specified arguments.
         /// </summary>
         /// <param name="arguments">The arguments.</param>
-        private void Run(string arguments) => Log.Status("running dotnet test", ctx =>
-        { 
+        private void Run(string arguments) => Log.Status("running dotnet", ctx =>
+        {
+            Log.Debug($"working directory: {ProcessStartInfo.WorkingDirectory}");
             Log.Debug($"forking {arguments}");
             ProcessStartInfo.Arguments = arguments;
 
@@ -82,7 +83,7 @@ namespace dotnet.test.rerun
                     ErrorCode = ErrorCode.Error;
                     Log.Verbose(Error);
                     Log.Verbose($"Exit code {ExitCode}.");
-                    throw new RerunException($"command:\n\n\t\tdotnet {ProcessStartInfo.Arguments}");
+                    throw new RerunException($"command:\ndotnet {ProcessStartInfo.Arguments}");
                 }
             }
         }
