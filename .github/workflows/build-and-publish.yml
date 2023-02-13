@@ -2,15 +2,15 @@ name: 🚀 Build and Publish a dotnet tool on nuget.org
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'src/dotnet-test-rerun.csproj'
-  
+      - "src/dotnet-test-rerun.csproj"
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-    
+
 jobs:
-   build-and-publish:
+  build-and-publish:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -19,16 +19,16 @@ jobs:
     steps:
       - name: ⬇️ Get latest code
         uses: actions/checkout@v2.3.4
-        
-      - name:  ℹ️ Setup .NET Core
+
+      - name: ℹ️ Setup .NET Core
         uses: actions/setup-dotnet@v1
-        
+
       - name: 🔃 Restore
         run: dotnet restore
-        
+
       - name: 🔧 Build
         run: dotnet build --configuration Release --no-restore
-        
+
       - name: 📁 Pack
         run: dotnet pack
 

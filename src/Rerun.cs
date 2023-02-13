@@ -24,7 +24,7 @@ namespace dotnet.test.rerun
 
             this.SetHandler((context) =>
             {
-                config.GetValues(context);
+                this.config.GetValues(context);
                 Run();
             });
         }
