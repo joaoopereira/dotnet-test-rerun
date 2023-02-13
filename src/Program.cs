@@ -12,7 +12,7 @@ var serviceProvider = new ServiceCollection()
     .AddSingleton<RerunCommand>()
     .AddSingleton<RerunCommandConfiguration>()
     .AddSingleton<dotnet.test.rerun.dotnet>()
-    .AddSingleton<IFileSystem>(new FileSystem())
+    .AddSingleton<IFileSystem, FileSystem>()
     .BuildServiceProvider();
 
 var Log = serviceProvider.GetRequiredService<ILogger>();
@@ -20,7 +20,10 @@ var cmd = serviceProvider.GetService<RerunCommand>();
 
 try
 {
-    return await new CommandLineBuilder(cmd).Build().InvokeAsync(args);
+    return await new CommandLineBuilder(cmd)
+        .UseDefaults()
+        .Build()
+        .InvokeAsync(args);
 }
 catch (RerunException e)
 {
