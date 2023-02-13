@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.0.5"></a>
+## [1.0.5](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.5) (2023-2-13)
+
+### Bug Fixes
+
+* **logging:** loglevel not setted and exitcode handling ([22d4031](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/22d403173f29e98d40ec19438c4075cdad30f7e5))
+
 <a name="1.0.4"></a>
 ## [1.0.4](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.4) (2023-2-13)
 
