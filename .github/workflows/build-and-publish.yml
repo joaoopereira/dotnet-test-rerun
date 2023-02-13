@@ -19,13 +19,13 @@ jobs:
 
     steps:
       - name: ⬇️ get latest code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@latest
 
       - name: ℹ️ setup .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@latest
 
       - name: 🚚 build, pack & publish
-        uses: alirezanet/publish-nuget@v3.0.4
+        uses: alirezanet/publish-nuget@latest
         with:
           PROJECT_FILE_PATH: src/dotnet-test-rerun.csproj
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
@@ -34,10 +34,11 @@ jobs:
   tagged-release:
     name: github tagged release
     runs-on: ubuntu-latest
+    needs: [build-and-publish]
     steps:
       - name: ✅ github tagged release
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
-          automatic_release_tag: true
+          automatic_release_tag: latest
