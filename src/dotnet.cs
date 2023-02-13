@@ -14,12 +14,12 @@ namespace dotnet.test.rerun
         private readonly ProcessStartInfo ProcessStartInfo;
         private string[] WellKnownErrors = new[] { "No test source files were specified." };
 
-        public dotnet(ILogger logger, IDirectoryInfo? workingDirectory = null)
+        public dotnet(ILogger logger)
         {
             ProcessStartInfo = new()
             {
                 FileName = "dotnet",
-                WorkingDirectory = workingDirectory?.FullName,
+                WorkingDirectory = "/",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
