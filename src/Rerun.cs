@@ -34,7 +34,7 @@ namespace dotnet.test.rerun
 
         public void Run()
         {
-            dotnet.Run(config.Path, config.Filter, config.Settings, config.TrxLogger, config.ResultsDirectory);
+            dotnet.Test(config.Path, config.Filter, config.Settings, config.TrxLogger, config.ResultsDirectory);
             if (dotnet.ErrorCode == ErrorCode.FailedTests)
             {
                 IDirectoryInfo resultsDirectory = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
@@ -50,7 +50,7 @@ namespace dotnet.test.rerun
                         {
                             Log.Information($"Rerun attempt {attempt}/{config.RerunMaxAttempts}");
                             Log.Warning($"Found Failed tests. Rerun filter: {testsToRerun}");
-                            dotnet.Run(config.Path, config.Filter, config.Settings, config.TrxLogger, config.ResultsDirectory);
+                            dotnet.Test(config.Path, config.Filter, config.Settings, config.TrxLogger, config.ResultsDirectory);
                             attempt++;
                         }
                         else
