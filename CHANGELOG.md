@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.0.9"></a>
+## [1.0.9](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.9) (2023-2-14)
+
+### Bug Fixes
+
+* **dotnet:** use StdOut and StdErr stream asynchronously ([728e3bf](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/728e3bf73d15590adb4fea6b230ab3089c99bf40))
+* **rerun:** allow filter option as optional ([3bfb93b](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/3bfb93bb9b1575341a26a91be19a1772784f9b05))
+
 <a name="1.0.8"></a>
 ## [1.0.8](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.8) (2023-2-14)
 
