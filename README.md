@@ -1,4 +1,4 @@
-# dotnet-test-rerun [![dotnet-test-rerun][1]][2]
+# dotnet-test-rerun ![build-and-publish](https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/build-and-publish.yml/badge.svg)[![dotnet-test-rerun][1]][2]
 wrapper of `dotnet test` command that automatic rerun failed tests
 
 # installation
