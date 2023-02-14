@@ -1,4 +1,4 @@
-# dotnet-test-rerun ![build-and-publish](https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/build-and-publish.yml/badge.svg)[![dotnet-test-rerun][1]][2]
+# dotnet-test-rerun [![build-and-publish][3]][4] [![dotnet-test-rerun][1]][2]
 wrapper of `dotnet test` command that automatic rerun failed tests
 
 # installation
@@ -23,3 +23,5 @@ wrapper of `dotnet test` command that automatic rerun failed tests
 
 [1]: https://img.shields.io/nuget/v/dotnet-test-rerun.svg?label=dotnet-test-rerun
 [2]: https://www.nuget.org/packages/dotnet-test-rerun
+[3]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/build-and-publish.yml/badge.svg
+[4]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/build-and-publish.yml
