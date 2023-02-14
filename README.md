@@ -1,4 +1,4 @@
-# dotnet-test-rerun
+# dotnet-test-rerun [![dotnet-test-rerun][1]][2]
 wrapper of `dotnet test` command that automatic rerun failed tests
 
 # installation
@@ -20,3 +20,6 @@ wrapper of `dotnet test` command that automatic rerun failed tests
 | `--logger, -l`       | Specifies a logger for test results. *(default: trx)*                         |
 | `--resultsDirectory` | The directory where the test results are going to be placed. If the specified directory doesn't exist, it's created. |
 | `--rerunMaxAttempts` | Maximum # of attempts. *(default: 3)*                                                                                |
+
+[1]: https://img.shields.io/nuget/v/dotnet-test-rerun.svg?label=dotnet-test-rerun
+[2]: https://www.nuget.org/packages/dotnet-test-rerun
