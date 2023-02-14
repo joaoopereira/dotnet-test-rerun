@@ -30,17 +30,3 @@ jobs:
           PROJECT_FILE_PATH: src/dotnet-test-rerun.csproj
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
           TAG_COMMIT: false
-
-  tagged-release:
-    name: github tagged release
-    runs-on: ubuntu-latest
-    needs: [build-and-publish]
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - name: ✅ github tagged release
-        uses: rymndhng/release-on-push-action@master
-        with:
-          tag_prefix: "v"
-          release_name: "<RELEASE_VERSION>"
-          use_github_release_notes: true
