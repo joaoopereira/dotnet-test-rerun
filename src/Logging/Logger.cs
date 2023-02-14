@@ -1,5 +1,4 @@
 ﻿using System.CommandLine.Parsing;
-using System.CommandLine;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -112,7 +111,18 @@ namespace dotnet.test.rerun.Logging
         /// Abstracts from the logging library
         /// </summary>
         /// <param name="msg">The MSG.</param>
-        private void Write(string msg) => AnsiConsole.MarkupLine($"  {msg}");
+        private void Write(string msg)
+        {
+            if(AnsiConsole.Profile.Out.IsTerminal)
+            {
+                AnsiConsole.MarkupLine($"  {msg}");
+            }
+            else
+            {
+                Console.WriteLine(msg.RemoveMarkup());
+            }
+            
+        }
 
         /// <summary>
         /// Escapes Spectre Console markup

@@ -1,7 +1,6 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO.Abstractions;
-using System.Runtime.CompilerServices;
 using dotnet.test.rerun.Logging;
 using TrxFileParser;
 

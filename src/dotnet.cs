@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.IO.Abstractions;
 using dotnet.test.rerun.Logging;
 
 namespace dotnet.test.rerun
