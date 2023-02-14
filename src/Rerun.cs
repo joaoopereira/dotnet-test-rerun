@@ -115,7 +115,7 @@ namespace dotnet.test.rerun
         private readonly Option<string> FilterOption = new(new[] { "--filter" })
         {
             Description = "Run tests that match the given expression.",
-            IsRequired = true
+            IsRequired = false
         };
 
         private readonly Option<string> SettingsOption = new(new[] { "--settings", "-s" })

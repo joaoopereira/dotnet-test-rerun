@@ -36,7 +36,21 @@ namespace dotnet.test.rerun
         /// <param name="resultsDirectory">The results directory.</param>
         public void Test(string dll, string filter, string settings, string logger, string resultsDirectory)
         {
-            Run($"test {dll} --filter \"{filter}\" --settings \"{settings}\" --logger {logger} --results-directory {resultsDirectory}");
+            string arguments = $"test {dll}";
+            arguments += !string.IsNullOrEmpty(filter)
+                ? $" --filter \"{filter}\""
+                : string.Empty;
+            arguments += !string.IsNullOrEmpty(settings)
+                ? $" --settings \"{settings}\""
+                : string.Empty;
+            arguments += !string.IsNullOrEmpty(logger)
+                ? $" --logger \"{logger}\""
+                : string.Empty;
+            arguments += !string.IsNullOrEmpty(resultsDirectory)
+                ? $" --results-directory \"{resultsDirectory}\""
+                : string.Empty;
+
+            Run(arguments);
         }
 
         /// <summary>
