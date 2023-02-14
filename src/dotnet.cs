@@ -57,22 +57,31 @@ namespace dotnet.test.rerun
         /// Runs dotnet test with the specified arguments.
         /// </summary>
         /// <param name="arguments">The arguments.</param>
-        private void Run(string arguments) => Log.Status("running dotnet", ctx =>
+        private void Run(string arguments)
         {
             Log.Debug($"working directory: {ProcessStartInfo.WorkingDirectory}");
             Log.Debug($"forking {arguments}");
             ProcessStartInfo.Arguments = arguments;
 
             using var ps = Process.Start(ProcessStartInfo);
-            Output = ps.StandardOutput.ReadToEnd();
-            Error = ps.StandardError.ReadLine() ?? string.Empty;
+            ps.OutputDataReceived += (sender, args) =>
+            {
+                Log.Verbose(args.Data);
+                Output += $"\n{args.Data}";
+            };
+            ps.ErrorDataReceived += (sender, args) =>
+            {
+                Log.Error(args.Data);
+                Error += $"\n{args.Data}";
+            };
+            ps.BeginOutputReadLine();
+            ps.BeginErrorReadLine();
 
             ps.WaitForExit();
-            Log.Verbose(Output);
             ExitCode = ps.ExitCode;
 
             HandleProcessEnd();
-        });
+        }
 
         /// <summary>
         /// Handles the process end.
