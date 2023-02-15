@@ -1,0 +1,23 @@
+{
+   "tasks": [
+      {
+         "name": "run-dotnet-test",
+         "command": "dotnet",
+         "args": [
+            "test",
+            "src/dotnet-test-rerun.csproj"
+         ]
+      },
+      {
+         "name": "commit-message-linter",
+         "command": "dotnet",
+         "args": [
+           "husky",
+           "exec",
+           ".husky/csx/commit-lint.csx",
+           "--args",
+           "${args}"
+         ]
+       }
+   ]
+}
