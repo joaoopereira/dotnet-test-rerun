@@ -9,17 +9,7 @@
     <PackAsTool>true</PackAsTool>
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <ToolCommandName>test-rerun</ToolCommandName>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="Spectre.Console" Version="0.46.0" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageReference Include="System.IO.Abstractions" Version="19.1.14" />
-    <PackageReference Include="TrxFileParser" Version="4.0.0" />
-  </ItemGroup>
-
-  <PropertyGroup>
+    <AssemblyName>test-rerun</AssemblyName>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression> GPL-3.0-or-later</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -29,6 +19,14 @@
     <RepositoryUrl>https://github.com/joaoopereira/dotnet-test-rerun</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Spectre.Console" Version="0.46.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.IO.Abstractions" Version="19.1.14" />
+    <PackageReference Include="TrxFileParser" Version="4.0.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="../README.md" Pack="true" PackagePath="/">
