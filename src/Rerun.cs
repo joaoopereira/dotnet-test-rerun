@@ -13,7 +13,7 @@ namespace dotnet.test.rerun
         private readonly dotnet dotnet;
         private readonly IFileSystem fileSystem;
 
-        public RerunCommand(ILogger logger, RerunCommandConfiguration config, dotnet dotnet, IFileSystem fileSystem)
+        public RerunCommand(ILogger logger, RerunCommandConfiguration config, dotnet dotnet, IFileSystem fileSystem) : base("wrapper of dotnet test command with the extra option to automatic rerun failed tests")
         {
             this.Log = logger;
             this.config = config;
@@ -138,13 +138,13 @@ namespace dotnet.test.rerun
 
         private readonly Option<int> RerunMaxAttemptsOption = new(new[] { "--rerunMaxAttempts" }, getDefaultValue: () => 3)
         {
-            Description = "Maximum # of attempts. Default: 3.",
+            Description = "Maximum # of attempts.",
             IsRequired = false
         };
 
         private readonly Option<LogLevel> LogLevelOption = new(new[] { "--loglevel" }, parseArgument: Logger.ParseLogLevel, isDefault: true)
         {
-            Description = "ParseLogLevel",
+            Description = "Log Level",
             IsRequired = false,
         };
 
