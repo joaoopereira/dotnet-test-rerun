@@ -121,7 +121,7 @@ namespace dotnet.test.rerun
         private readonly Option<string> SettingsOption = new(new[] { "--settings", "-s" })
         {
             Description = "The run settings file to use when running tests.",
-            IsRequired = true
+            IsRequired = false
         };
 
         private readonly Option<string> LoggerOption = new(new[] { "--logger", "-l" }, getDefaultValue: () => "trx")
