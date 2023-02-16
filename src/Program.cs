@@ -1,5 +1,4 @@
-﻿using System.CommandLine;
-using System.CommandLine.Builder;
+﻿using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
 using System.IO.Abstractions;
 using System.Reflection;
