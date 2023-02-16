@@ -33,18 +33,28 @@ namespace dotnet.test.rerun
 
         public void Run()
         {
-            dotnet.Test(config.Path, config.Filter, config.Settings, config.TrxLogger, config.ResultsDirectory);
+            IDirectoryInfo resultsDirectory = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+            var oldTrxFile = GetTrxFile(resultsDirectory);
+            dotnet.Test(config.Path, config.Filter, config.Settings, config.TrxLogger, resultsDirectory.FullName);
             if (dotnet.ErrorCode == ErrorCode.FailedTests)
             {
-                IDirectoryInfo resultsDirectory = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-
                 var attempt = 1;
                 while (attempt < config.RerunMaxAttempts)
                 {
-                    var trxFile = resultsDirectory.EnumerateFiles("*.trx").OrderBy(f => f.Name).LastOrDefault();
+                    var trxFile = GetTrxFile(resultsDirectory);
+                    
                     if (trxFile != null)
                     {
+                        if (oldTrxFile != null &&
+                            trxFile.FullName.Equals(oldTrxFile.FullName, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            Log.Error("No new trx file was generated");
+                            break;
+                        }
+
+                        
                         var testsToRerun = GetFailedTestsFilter(trxFile);
+                        oldTrxFile = trxFile;
                         if (!string.IsNullOrEmpty(testsToRerun))
                         {
                             Log.Information($"Rerun attempt {attempt}/{config.RerunMaxAttempts}");
@@ -58,11 +68,16 @@ namespace dotnet.test.rerun
                             attempt = config.RerunMaxAttempts;
                         }
                     }
+                    else
+                    {
+                        Log.Information($"No trx file found in {resultsDirectory.FullName}");
+                        break;
+                    }
                 }
             }
         }
 
-        private string GetFailedTestsFilter(IFileInfo trxFile)
+        internal string GetFailedTestsFilter(IFileInfo trxFile)
         {
             var testFilter = string.Empty;
             var outcome = "Failed";
@@ -85,6 +100,9 @@ namespace dotnet.test.rerun
             }
             return testFilter;
         }
+        
+        private IFileInfo? GetTrxFile(IDirectoryInfo resultsDirectory) 
+            => resultsDirectory.EnumerateFiles("*.trx").OrderBy(f => f.Name).LastOrDefault();
     }
 
     public class RerunCommandConfiguration
