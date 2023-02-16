@@ -8,15 +8,15 @@ namespace dotnet.test.rerun.Logging
     {
         private readonly IAnsiConsole AnsiConsole;
 
-        public Logger()
+        public Logger(IAnsiConsole? console = null)
         {
-            AnsiConsole = Spectre.Console.AnsiConsole.Console;
+            AnsiConsole = console ?? Spectre.Console.AnsiConsole.Console;
         }
 
         /// <summary>
         /// The default log level
         /// </summary>
-        LogLevel Level  = LogLevel.Verbose;
+        LogLevel Level = LogLevel.Verbose;
         public void SetLogLevel(LogLevel logLevel)
         {
             Level = logLevel;

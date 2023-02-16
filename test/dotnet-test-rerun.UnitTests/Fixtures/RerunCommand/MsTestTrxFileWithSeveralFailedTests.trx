@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ffd371cb-837a-4d56-b3d8-a6dc49495c2a" name="Utilizador@DESKTOP-PD528C3 2023-02-16 00:15:27" runUser="DESKTOP-PD528C3\Utilizador">
+  <Times creation="2023-02-16T00:15:27.8817881+00:00" queuing="2023-02-16T00:15:27.8817883+00:00" start="2023-02-16T00:15:24.9440821+00:00" finish="2023-02-16T00:15:27.8913935+00:00" />
+  <TestSettings name="default" id="3d1d1005-02cd-4497-9789-ec2a39b0e922">
+    <Deployment runDeploymentRoot="Utilizador_DESKTOP-PD528C3_2023-02-16_00_15_27" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="80302c60-3a89-4771-8f6b-66decbc183ac" testId="3166aaa6-fbd0-458f-9a2e-c1c3855de7ab" testName="SimpleNumberCompare (1,2)" computerName="DESKTOP-PD528C3" duration="00:00:00.0296359" startTime="2023-02-16T00:15:27.6496728+00:00" endTime="2023-02-16T00:15:27.6968934+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="80302c60-3a89-4771-8f6b-66decbc183ac">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual failed. Expected:&lt;2&gt;. Actual:&lt;1&gt;. </Message>
+          <StackTrace>   at MSTestExample.UnitTest1.SimpleNumberCompare(Int32 number, Int32 expectedNumber) in C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\SimpleTest.cs:line 13
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0572cb9c-0fcd-43b8-94c4-35235fa1a272" testId="106de2fa-29af-4354-a009-4f51373a1b7f" testName="SimpleNumberCompare (2,2)" computerName="DESKTOP-PD528C3" duration="00:00:00.0000233" startTime="2023-02-16T00:15:27.7032452+00:00" endTime="2023-02-16T00:15:27.7034192+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0572cb9c-0fcd-43b8-94c4-35235fa1a272" />
+    <UnitTestResult executionId="2f98a737-a5ac-4fdc-a726-d35b92e0bb6d" testId="f5615cdc-5c90-478a-8661-6d481bf826e5" testName="SimpleStringCompare" computerName="DESKTOP-PD528C3" duration="00:00:00.0007959" startTime="2023-02-16T00:15:27.7053674+00:00" endTime="2023-02-16T00:15:27.7084314+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2f98a737-a5ac-4fdc-a726-d35b92e0bb6d">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual failed. Expected:&lt;value&gt;. Actual:&lt;value 2&gt;. </Message>
+          <StackTrace>   at MSTestExample.UnitTest1.SimpleStringCompare() in C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\SimpleTest.cs:line 19
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="230768a5-908b-438c-b61d-71ef96b869a7" testId="94b39e80-b389-4148-93b4-1b44ad81da5d" testName="SimpleNumberCompare (3,2)" computerName="DESKTOP-PD528C3" duration="00:00:00.0004617" startTime="2023-02-16T00:15:27.7034567+00:00" endTime="2023-02-16T00:15:27.7039775+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="230768a5-908b-438c-b61d-71ef96b869a7">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual failed. Expected:&lt;2&gt;. Actual:&lt;3&gt;. </Message>
+          <StackTrace>   at MSTestExample.UnitTest1.SimpleNumberCompare(Int32 number, Int32 expectedNumber) in C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\SimpleTest.cs:line 13
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="543fd781-0059-4d9f-9d0b-b2543f5e6fb3" testId="0a10d0d4-af22-4571-a3d6-abe1b89c284e" testName="SimpleNumberCompare (4,2)" computerName="DESKTOP-PD528C3" duration="00:00:00.0011089" startTime="2023-02-16T00:15:27.7039999+00:00" endTime="2023-02-16T00:15:27.7052971+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="543fd781-0059-4d9f-9d0b-b2543f5e6fb3">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.AreEqual failed. Expected:&lt;2&gt;. Actual:&lt;4&gt;. </Message>
+          <StackTrace>   at MSTestExample.UnitTest1.SimpleNumberCompare(Int32 number, Int32 expectedNumber) in C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\SimpleTest.cs:line 13
+</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SimpleNumberCompare (3,2)" storage="c:\users\utilizador\riderprojects\testsolution\mstestexample\bin\debug\net6.0\mstestexample.dll" id="94b39e80-b389-4148-93b4-1b44ad81da5d">
+      <Execution id="230768a5-908b-438c-b61d-71ef96b869a7" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\bin\Debug\net6.0\MSTestExample.dll" adapterTypeName="executor://mstestadapter/v2" className="MSTestExample.UnitTest1" name="SimpleNumberCompare" />
+    </UnitTest>
+    <UnitTest name="SimpleNumberCompare (4,2)" storage="c:\users\utilizador\riderprojects\testsolution\mstestexample\bin\debug\net6.0\mstestexample.dll" id="0a10d0d4-af22-4571-a3d6-abe1b89c284e">
+      <Execution id="543fd781-0059-4d9f-9d0b-b2543f5e6fb3" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\bin\Debug\net6.0\MSTestExample.dll" adapterTypeName="executor://mstestadapter/v2" className="MSTestExample.UnitTest1" name="SimpleNumberCompare" />
+    </UnitTest>
+    <UnitTest name="SimpleStringCompare" storage="c:\users\utilizador\riderprojects\testsolution\mstestexample\bin\debug\net6.0\mstestexample.dll" id="f5615cdc-5c90-478a-8661-6d481bf826e5">
+      <Execution id="2f98a737-a5ac-4fdc-a726-d35b92e0bb6d" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\bin\Debug\net6.0\MSTestExample.dll" adapterTypeName="executor://mstestadapter/v2" className="MSTestExample.UnitTest1" name="SimpleStringCompare" />
+    </UnitTest>
+    <UnitTest name="SimpleNumberCompare (2,2)" storage="c:\users\utilizador\riderprojects\testsolution\mstestexample\bin\debug\net6.0\mstestexample.dll" id="106de2fa-29af-4354-a009-4f51373a1b7f">
+      <Execution id="0572cb9c-0fcd-43b8-94c4-35235fa1a272" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\bin\Debug\net6.0\MSTestExample.dll" adapterTypeName="executor://mstestadapter/v2" className="MSTestExample.UnitTest1" name="SimpleNumberCompare" />
+    </UnitTest>
+    <UnitTest name="SimpleNumberCompare (1,2)" storage="c:\users\utilizador\riderprojects\testsolution\mstestexample\bin\debug\net6.0\mstestexample.dll" id="3166aaa6-fbd0-458f-9a2e-c1c3855de7ab">
+      <Execution id="80302c60-3a89-4771-8f6b-66decbc183ac" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\MSTestExample\bin\Debug\net6.0\MSTestExample.dll" adapterTypeName="executor://mstestadapter/v2" className="MSTestExample.UnitTest1" name="SimpleNumberCompare" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="3166aaa6-fbd0-458f-9a2e-c1c3855de7ab" executionId="80302c60-3a89-4771-8f6b-66decbc183ac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="106de2fa-29af-4354-a009-4f51373a1b7f" executionId="0572cb9c-0fcd-43b8-94c4-35235fa1a272" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f5615cdc-5c90-478a-8661-6d481bf826e5" executionId="2f98a737-a5ac-4fdc-a726-d35b92e0bb6d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94b39e80-b389-4148-93b4-1b44ad81da5d" executionId="230768a5-908b-438c-b61d-71ef96b869a7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0a10d0d4-af22-4571-a3d6-abe1b89c284e" executionId="543fd781-0059-4d9f-9d0b-b2543f5e6fb3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="1" failed="4" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+</TestRun>

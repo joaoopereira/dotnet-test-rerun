@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ebace3b0-d7b5-41a8-aa06-39c529f0ccfc" name="Utilizador@DESKTOP-PD528C3 2023-02-16 00:00:58" runUser="DESKTOP-PD528C3\Utilizador">
+  <Times creation="2023-02-16T00:00:58.9957241+00:00" queuing="2023-02-16T00:00:58.9957243+00:00" start="2023-02-16T00:00:57.4602683+00:00" finish="2023-02-16T00:00:59.0116368+00:00" />
+  <TestSettings name="default" id="da40e58e-1516-4434-ad68-1b7fb36d745a">
+    <Deployment runDeploymentRoot="Utilizador_DESKTOP-PD528C3_2023-02-16_00_00_58" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="88a5f785-839f-4ba3-a13b-9d621aad2260" testId="2a8c437a-123f-6bc1-cd38-fd1c7d1ddadb" testName="XUnitExample.UnitTest1.SimpleNumberCompare(number: 2)" computerName="DESKTOP-PD528C3" duration="00:00:00.0006766" startTime="2023-02-16T00:00:58.8733794+00:00" endTime="2023-02-16T00:00:58.8733797+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="88a5f785-839f-4ba3-a13b-9d621aad2260" />
+    <UnitTestResult executionId="7c0aa8da-8e7b-4d75-9530-b21d2a3323be" testId="4cb306ab-9f7f-5f48-d793-3b321ceae25b" testName="XUnitExample.UnitTest1.SimpleNumberCompare(number: 1)" computerName="DESKTOP-PD528C3" duration="00:00:00.0051462" startTime="2023-02-16T00:00:58.8681436+00:00" endTime="2023-02-16T00:00:58.8681650+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7c0aa8da-8e7b-4d75-9530-b21d2a3323be">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure
+Expected: 2
+Actual:   1</Message>
+          <StackTrace>   at XUnitExample.UnitTest1.SimpleNumberCompare(Int32 number) in C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\SimpleTest.cs:line 12</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="001cb731-8999-4319-a4f8-05ebe1354859" testId="26866b78-2fe3-477b-ed97-e912c97c0f91" testName="XUnitExample.UnitTest1.SimpleStringCompare" computerName="DESKTOP-PD528C3" duration="00:00:00.0010380" startTime="2023-02-16T00:00:58.8747656+00:00" endTime="2023-02-16T00:00:58.8747657+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="001cb731-8999-4319-a4f8-05ebe1354859">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure
+               ↓ (pos 5)
+Expected: value
+Actual:   value 2
+               ↑ (pos 5)</Message>
+          <StackTrace>   at XUnitExample.UnitTest1.SimpleStringCompare() in C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\SimpleTest.cs:line 18</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="63b54224-8d29-4005-a3df-17a25a1198a1" testId="546629f0-a31d-fa2e-712c-85e50d9b9125" testName="XUnitExample.UnitTest1.SimpleNumberCompare(number: 3)" computerName="DESKTOP-PD528C3" duration="00:00:00.0003739" startTime="2023-02-16T00:00:58.8740690+00:00" endTime="2023-02-16T00:00:58.8740691+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="63b54224-8d29-4005-a3df-17a25a1198a1">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure
+Expected: 2
+Actual:   3</Message>
+          <StackTrace>   at XUnitExample.UnitTest1.SimpleNumberCompare(Int32 number) in C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\SimpleTest.cs:line 12</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2d773173-58ef-4de9-9d1c-2986cc74ae97" testId="68145988-cf26-4c86-a5e2-7dbee814b6c5" testName="XUnitExample.UnitTest1.SimpleNumberCompare(number: 4)" computerName="DESKTOP-PD528C3" duration="00:00:00.0002373" startTime="2023-02-16T00:00:58.8743753+00:00" endTime="2023-02-16T00:00:58.8743754+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2d773173-58ef-4de9-9d1c-2986cc74ae97">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure
+Expected: 2
+Actual:   4</Message>
+          <StackTrace>   at XUnitExample.UnitTest1.SimpleNumberCompare(Int32 number) in C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\SimpleTest.cs:line 12</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="XUnitExample.UnitTest1.SimpleNumberCompare(number: 3)" storage="c:\users\utilizador\riderprojects\testsolution\xunitexample\bin\debug\net6.0\xunitexample.dll" id="546629f0-a31d-fa2e-712c-85e50d9b9125">
+      <Execution id="63b54224-8d29-4005-a3df-17a25a1198a1" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\bin\Debug\net6.0\XUnitExample.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="XUnitExample.UnitTest1" name="SimpleNumberCompare" />
+    </UnitTest>
+    <UnitTest name="XUnitExample.UnitTest1.SimpleStringCompare" storage="c:\users\utilizador\riderprojects\testsolution\xunitexample\bin\debug\net6.0\xunitexample.dll" id="26866b78-2fe3-477b-ed97-e912c97c0f91">
+      <Execution id="001cb731-8999-4319-a4f8-05ebe1354859" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\bin\Debug\net6.0\XUnitExample.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="XUnitExample.UnitTest1" name="SimpleStringCompare" />
+    </UnitTest>
+    <UnitTest name="XUnitExample.UnitTest1.SimpleNumberCompare(number: 2)" storage="c:\users\utilizador\riderprojects\testsolution\xunitexample\bin\debug\net6.0\xunitexample.dll" id="2a8c437a-123f-6bc1-cd38-fd1c7d1ddadb">
+      <Execution id="88a5f785-839f-4ba3-a13b-9d621aad2260" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\bin\Debug\net6.0\XUnitExample.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="XUnitExample.UnitTest1" name="SimpleNumberCompare" />
+    </UnitTest>
+    <UnitTest name="XUnitExample.UnitTest1.SimpleNumberCompare(number: 4)" storage="c:\users\utilizador\riderprojects\testsolution\xunitexample\bin\debug\net6.0\xunitexample.dll" id="68145988-cf26-4c86-a5e2-7dbee814b6c5">
+      <Execution id="2d773173-58ef-4de9-9d1c-2986cc74ae97" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\bin\Debug\net6.0\XUnitExample.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="XUnitExample.UnitTest1" name="SimpleNumberCompare" />
+    </UnitTest>
+    <UnitTest name="XUnitExample.UnitTest1.SimpleNumberCompare(number: 1)" storage="c:\users\utilizador\riderprojects\testsolution\xunitexample\bin\debug\net6.0\xunitexample.dll" id="4cb306ab-9f7f-5f48-d793-3b321ceae25b">
+      <Execution id="7c0aa8da-8e7b-4d75-9530-b21d2a3323be" />
+      <TestMethod codeBase="C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\bin\Debug\net6.0\XUnitExample.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="XUnitExample.UnitTest1" name="SimpleNumberCompare" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="2a8c437a-123f-6bc1-cd38-fd1c7d1ddadb" executionId="88a5f785-839f-4ba3-a13b-9d621aad2260" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4cb306ab-9f7f-5f48-d793-3b321ceae25b" executionId="7c0aa8da-8e7b-4d75-9530-b21d2a3323be" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="26866b78-2fe3-477b-ed97-e912c97c0f91" executionId="001cb731-8999-4319-a4f8-05ebe1354859" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="546629f0-a31d-fa2e-712c-85e50d9b9125" executionId="63b54224-8d29-4005-a3df-17a25a1198a1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="68145988-cf26-4c86-a5e2-7dbee814b6c5" executionId="2d773173-58ef-4de9-9d1c-2986cc74ae97" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="5" executed="5" passed="1" failed="4" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.4.3+1b45f5407b (64-bit .NET 6.0.14)
+[xUnit.net 00:00:00.66]   Discovering: XUnitExample
+[xUnit.net 00:00:00.72]   Discovered:  XUnitExample
+[xUnit.net 00:00:00.72]   Starting:    XUnitExample
+[xUnit.net 00:00:00.81]       Assert.Equal() Failure
+[xUnit.net 00:00:00.81]       Expected: 2
+[xUnit.net 00:00:00.81]       Actual:   1
+[xUnit.net 00:00:00.82]       Stack Trace:
+[xUnit.net 00:00:00.82]         C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\SimpleTest.cs(12,0): at XUnitExample.UnitTest1.SimpleNumberCompare(Int32 number)
+[xUnit.net 00:00:00.83]       Assert.Equal() Failure
+[xUnit.net 00:00:00.83]       Expected: 2
+[xUnit.net 00:00:00.83]       Actual:   3
+[xUnit.net 00:00:00.83]       Stack Trace:
+[xUnit.net 00:00:00.83]         C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\SimpleTest.cs(12,0): at XUnitExample.UnitTest1.SimpleNumberCompare(Int32 number)
+[xUnit.net 00:00:00.83]       Assert.Equal() Failure
+[xUnit.net 00:00:00.83]       Expected: 2
+[xUnit.net 00:00:00.83]       Actual:   4
+[xUnit.net 00:00:00.83]       Stack Trace:
+[xUnit.net 00:00:00.83]         C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\SimpleTest.cs(12,0): at XUnitExample.UnitTest1.SimpleNumberCompare(Int32 number)
+[xUnit.net 00:00:00.83]       Assert.Equal() Failure
+[xUnit.net 00:00:00.83]                      ↓ (pos 5)
+[xUnit.net 00:00:00.83]       Expected: value
+[xUnit.net 00:00:00.83]       Actual:   value 2
+[xUnit.net 00:00:00.83]                      ↑ (pos 5)
+[xUnit.net 00:00:00.83]       Stack Trace:
+[xUnit.net 00:00:00.83]         C:\Users\Utilizador\RiderProjects\TestSolution\XUnitExample\SimpleTest.cs(18,0): at XUnitExample.UnitTest1.SimpleStringCompare()
+[xUnit.net 00:00:00.83]   Finished:    XUnitExample
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="DESKTOP-PD528C3" outcome="Error" timestamp="2023-02-16T00:00:58.8626238+00:00">
+        <Text>[xUnit.net 00:00:00.81]     XUnitExample.UnitTest1.SimpleNumberCompare(number: 1) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-PD528C3" outcome="Error" timestamp="2023-02-16T00:00:58.8739571+00:00">
+        <Text>[xUnit.net 00:00:00.83]     XUnitExample.UnitTest1.SimpleNumberCompare(number: 3) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-PD528C3" outcome="Error" timestamp="2023-02-16T00:00:58.8742204+00:00">
+        <Text>[xUnit.net 00:00:00.83]     XUnitExample.UnitTest1.SimpleNumberCompare(number: 4) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-PD528C3" outcome="Error" timestamp="2023-02-16T00:00:58.8745120+00:00">
+        <Text>[xUnit.net 00:00:00.83]     XUnitExample.UnitTest1.SimpleStringCompare [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

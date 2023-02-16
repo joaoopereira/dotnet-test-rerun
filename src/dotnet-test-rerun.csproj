@@ -32,6 +32,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnet-test-rerun.UnitTests" />
+  </ItemGroup>
   <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
     <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
     <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory=".." />
