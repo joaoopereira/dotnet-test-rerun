@@ -264,3 +264,6 @@ FakesAssemblies/
 
 # Properties folder
 **/Properties/launchSettings.json
+
+# include .husky/csx
+!.husky/csx
