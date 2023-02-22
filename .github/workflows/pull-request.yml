@@ -1,17 +1,11 @@
-name: Build and Publish
-
+name: Pull Request
 on:
-  push:
-    branches: [main]
-    paths:
-      - "src/dotnet-test-rerun.csproj"
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+ pull_request:
+   types: [opened, reopened]
 
 jobs:
-  build-and-publish:
-    name: build, pack, test & publish
+  pull-request:
+    name: build & test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -34,11 +28,3 @@ jobs:
 
       - name: 🧪 Test
         run: dotnet test --configuration Release --no-restore
-
-      - name: 🚚 Pack & publish
-        uses: alirezanet/publish-nuget@v3.0.4
-        with:
-          PROJECT_FILE_PATH: src/dotnet-test-rerun.csproj
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          TAG_COMMIT: false
-          NO_BUILD: true
