@@ -1,7 +1,7 @@
 # dotnet-test-rerun
 
 # Status
-[![build-and-publish][1]][2] [![dotnet-test-rerun][3]][4]
+[![1]][2] [![3]][4] [![5]][4]
 
 # Description
 Unfortunately, the isn't a way with plain `dotnet test` to automatically rerun failed tests.
@@ -39,3 +39,4 @@ This tool is licensed under GNU General Public License v3.0. See the [LICENSE](/
 [2]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/build-and-publish.yml
 [3]: https://img.shields.io/nuget/v/dotnet-test-rerun.svg?label=dotnet-test-rerun
 [4]: https://www.nuget.org/packages/dotnet-test-rerun
+[5]: https://img.shields.io/nuget/dt/dotnet-test-rerun.svg?label=downloads
