@@ -3,8 +3,8 @@ name: Build and Publish
 on:
   push:
     branches: [main]
-    paths:
-      - "src/dotnet-test-rerun.csproj"
+    tags:
+      - '*'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -35,7 +35,7 @@ jobs:
       - name: 🧪 Test
         run: dotnet test --configuration Release --no-restore
 
-      - name: 🚚 Pack & publish
+      - name: 🚚 Pack & Publish
         uses: alirezanet/publish-nuget@v3.0.4
         with:
           PROJECT_FILE_PATH: src/dotnet-test-rerun.csproj
