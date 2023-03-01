@@ -1,4 +1,4 @@
-﻿namespace dotnet.test.rerun
+﻿namespace dotnet.test.rerun.RerunCommand
 {
     public class RerunException : Exception
     {
