@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.Reflection;
 using dotnet.test.rerun;
 using dotnet.test.rerun.Logging;
+using dotnet.test.rerun.RerunCommand;
 using Microsoft.Extensions.DependencyInjection;
 
 // Setup Dependency Injection

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using dotnet.test.rerun.Logging;
+using dotnet.test.rerun.RerunCommand;
 
 namespace dotnet.test.rerun
 {
@@ -29,26 +30,14 @@ namespace dotnet.test.rerun
         /// <summary>
         /// Runs dotnet test with the specified arguments
         /// </summary>
-        /// <param name="dll">The DLL.</param>
-        /// <param name="filter">The filter.</param>
-        /// <param name="settings">The settings.</param>
-        /// <param name="logger">The logger.</param>
+        /// <param name="config">The config.</param>
         /// <param name="resultsDirectory">The results directory.</param>
-        public void Test(string dll, string filter, string settings, string logger, string resultsDirectory)
+        public void Test(RerunCommandConfiguration config, string resultsDirectory)
         {
-            string arguments = $"test {dll}";
-            arguments += !string.IsNullOrEmpty(filter)
-                ? $" --filter \"{filter}\""
-                : string.Empty;
-            arguments += !string.IsNullOrEmpty(settings)
-                ? $" --settings \"{settings}\""
-                : string.Empty;
-            arguments += !string.IsNullOrEmpty(logger)
-                ? $" --logger \"{logger}\""
-                : string.Empty;
-            arguments += !string.IsNullOrEmpty(resultsDirectory)
-                ? $" --results-directory \"{resultsDirectory}\""
-                : string.Empty;
+            string arguments = config.GetArgumentList();
+
+            if (string.IsNullOrEmpty(resultsDirectory) is false)
+                arguments = string.Concat(arguments, $" --results-directory {resultsDirectory}");
 
             Run(arguments);
         }

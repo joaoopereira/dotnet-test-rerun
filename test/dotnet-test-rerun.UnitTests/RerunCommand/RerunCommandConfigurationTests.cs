@@ -3,6 +3,7 @@ using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using dotnet.test.rerun;
 using dotnet.test.rerun.Logging;
+using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
 using Xunit;
 

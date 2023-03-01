@@ -1,6 +1,7 @@
 ﻿using System.IO.Abstractions;
 using dotnet.test.rerun;
 using dotnet.test.rerun.Logging;
+using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
 using Xunit;
 
@@ -11,7 +12,7 @@ public class RerunCommandTests
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly ILogger Logger = new Logger();
 
-    private dotnet.test.rerun.RerunCommand RerunCommand = new dotnet.test.rerun.RerunCommand(Logger,
+    private dotnet.test.rerun.RerunCommand.RerunCommand RerunCommand = new dotnet.test.rerun.RerunCommand.RerunCommand(Logger,
         new RerunCommandConfiguration(),
         new dotnet.test.rerun.dotnet(Logger),
         FileSystem);
