@@ -39,7 +39,7 @@ public class RerunCommand : RootCommand
         if (dotnet.ErrorCode == ErrorCode.FailedTests)
         {
             var attempt = 1;
-            while (attempt < config.RerunMaxAttempts)
+            while (attempt <= config.RerunMaxAttempts)
             {
                 var trxFile = GetTrxFile(resultsDirectory);
 
