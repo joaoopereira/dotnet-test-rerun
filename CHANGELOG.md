@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.0.13"></a>
+## [1.0.13](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.13) (2023-3-2)
+
+### Bug Fixes
+
+* solved issue of running the rerun one less time then the given by parameter ([256248d](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/256248d314b006ef5806a57413e52ffd65d0e5fb))
+
 <a name="1.0.12"></a>
 ## [1.0.12](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.12) (2023-2-23)
 
