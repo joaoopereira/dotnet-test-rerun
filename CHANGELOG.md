@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.0.12"></a>
+## [1.0.12](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.12) (2023-2-23)
+
+<a name="1.0.11"></a>
+## [1.0.11](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.11) (2023-2-23)
+
+### Bug Fixes
+
+* **options:** set --settings as optional ([02c9d36](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/02c9d361aae5a08b6ca010d44d961f77c50212e5))
+* **rerun:** handle no file is found scenario and use same folder when no results directory is given ([939111a](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/939111a98527f927bdeedfd47d2b89834703b722))
+
 <a name="1.0.10"></a>
 ## [1.0.10](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.10) (2023-2-15)
 

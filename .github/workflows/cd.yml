@@ -1,0 +1,40 @@
+name: CD
+run-name: CD - ${{ github.event.head_commit.message }}
+
+on:
+  push:
+    tags: [v*]
+
+defaults:
+  run:
+    working-directory: src
+
+jobs:
+  publish:
+    name: 📦 Pack & 🚚 Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: .config/global.json
+
+      - name: restore
+        run: dotnet restore
+
+      - name: build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: test
+        run: dotnet test --configuration Release --no-build --no-restore
+
+      - name: pack
+        run: dotnet pack --configuration Release --no-build --no-restore
+
+      - name: push
+        run: dotnet nuget push nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}

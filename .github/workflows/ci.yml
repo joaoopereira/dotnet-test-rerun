@@ -1,0 +1,38 @@
+name: CI
+run-name: CI - ${{ github.event.head_commit.message }}
+
+on:
+  push:
+    branches: [main]
+    tags-ignore: [v*]
+    paths-ignore: ["**.md"]
+
+  pull_request:
+    types: [opened, reopened]
+    paths-ignore: ["**.md"]
+
+defaults:
+  run:
+    working-directory: src
+
+jobs:
+  build:
+    name: 🛠️ Build & 🧪 Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: .config/global.json
+
+      - name: restore
+        run: dotnet restore
+
+      - name: build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: test
+        run: dotnet test --configuration Release --no-build --no-restore
