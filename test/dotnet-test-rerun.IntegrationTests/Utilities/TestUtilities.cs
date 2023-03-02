@@ -18,6 +18,20 @@ namespace dotnet_test_rerun.IntegrationTests.Utilities;
         }
 
         /// <summary>
+        /// Resolves default fixture path 
+        /// </summary>
+        /// <param name="fixture"></param>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public static string GetFixturePath(string fixture, string item)
+        {
+            return System.IO.Path.GetFullPath(
+                System.IO.Path.Join(
+            AppDomain.CurrentDomain.BaseDirectory,
+                        "..", "..", "..", "Fixtures", fixture, item));
+        }
+
+        /// <summary>
         /// Copies the fixture to a directory
         /// </summary>
         /// <param name="fixtureName"></param>
