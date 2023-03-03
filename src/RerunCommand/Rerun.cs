@@ -41,6 +41,7 @@ public class RerunCommand : RootCommand
             var attempt = 1;
             while (attempt <= config.RerunMaxAttempts)
             {
+                Thread.Sleep(config.Delay);
                 var trxFile = GetTrxFile(resultsDirectory);
 
                 if (trxFile != null)
