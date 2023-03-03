@@ -17,6 +17,7 @@ public class RerunCommandConfiguration
     public LogLevel LogLevel { get; private set; }
     public bool NoBuild { get; private set; }
     public bool NoRestore { get; private set; }
+    public int Delay { get; private set; }
 
     #endregion Properties
 
@@ -86,6 +87,13 @@ public class RerunCommandConfiguration
             Arity = ArgumentArity.Zero
         };
 
+    private readonly Option<int> DelayOption =
+        new(new[] { "--delay", "-d" })
+        {
+            Description = "Delay between test runs in seconds.",
+            IsRequired = false,
+        };
+
     #endregion Options
 
     public void Set(Command cmd)
@@ -99,6 +107,7 @@ public class RerunCommandConfiguration
         cmd.Add(LogLevelOption);
         cmd.Add(NoBuildOption);
         cmd.Add(NoRestoreOption);
+        cmd.Add(DelayOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -112,21 +121,22 @@ public class RerunCommandConfiguration
         LogLevel = context.ParseResult.GetValueForOption(LogLevelOption);
         NoBuild = context.ParseResult.FindResultFor(NoBuildOption) is not null;
         NoRestore = context.ParseResult.FindResultFor(NoRestoreOption) is not null;
+        Delay = context.ParseResult.GetValueForOption(DelayOption) * 1000;
     }
-    
-    public string GetArgumentList()
-     => string.Concat("test ",
-         $"{Path}", 
-         AddArguments(Filter, FilterOption), 
-         AddArguments(Settings, SettingsOption),
-         AddArguments(TrxLogger, LoggerOption),
-         AddArguments(NoBuild, NoBuildOption),
-         AddArguments(NoRestore, NoRestoreOption));
 
-    public string AddArguments<T>( T value, Option<T> option)
-     => value is not null
-        ? $" {option.Aliases.First()} \"{value}\""
-        : string.Empty;
+    public string GetArgumentList()
+        => string.Concat("test ",
+            $"{Path}",
+            AddArguments(Filter, FilterOption),
+            AddArguments(Settings, SettingsOption),
+            AddArguments(TrxLogger, LoggerOption),
+            AddArguments(NoBuild, NoBuildOption),
+            AddArguments(NoRestore, NoRestoreOption));
+
+    public string AddArguments<T>(T value, Option<T> option)
+        => value is not null
+            ? $" {option.Aliases.First()} \"{value}\""
+            : string.Empty;
 
     public string AddArguments<T>(bool value, Option<T> option)
         => value
