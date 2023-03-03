@@ -29,8 +29,12 @@ test-rerun [somepathtodll] [OPTIONS]
 | `--filter`           | Run tests that match the given expression.                                                                           |
 | `--settings, -s`     | The run settings file to use when running tests.                                                                     |
 | `--logger, -l`       | Specifies a logger for test results. *(default: trx)*                                                                |
-| `--resultsDirectory` | The directory where the test results are going to be placed. If the specified directory doesn't exist, it's created. |
+| `--results-directory, -r` | The directory where the test results are going to be placed. If the specified directory doesn't exist, it's created. |
 | `--rerunMaxAttempts` | Maximum # of attempts. *(default: 3)*                                                                                |
+| `--loglevel` | Log Level. *(default: Verbose)*                                                                                |
+| `--no-build` | Do not build the project before testing. Implies --no-restore.                                      |
+| `--no-restore` | Do not restore the project before building.*                                                                                |
+| `--delay, -d` | Delay between test runs in seconds.                                                                                  |
 
 # License
 This tool is licensed under GNU General Public License v3.0. See the [LICENSE](/LICENSE) file for details.
