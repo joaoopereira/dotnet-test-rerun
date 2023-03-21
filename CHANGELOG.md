@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.1.0"></a>
+## [1.1.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.1.0) (2023-3-21)
+
+### Features
+
+* add delay option to rerun command (issue #2) ([18e095c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/18e095c895923d6596e3503689f62f6d63317bde))
+
 <a name="1.0.13"></a>
 ## [1.0.13](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.0.13) (2023-3-2)
 
