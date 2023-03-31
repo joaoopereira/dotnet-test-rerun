@@ -1,20 +1,21 @@
 ﻿using System.Diagnostics;
+using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 
-namespace dotnet.test.rerun
+namespace dotnet.test.rerun.DotNetTestRunner
 {
-    public class dotnet
+    public class DotNetTestRunner : IDotNetTestRunner
     {
-        public ErrorCode ErrorCode;
-        private string Output;
-        private string Error;
+        private ErrorCode ErrorCode;
         private int ExitCode;
         private readonly ILogger Log;
         private readonly ProcessStartInfo ProcessStartInfo;
-        private string[] WellKnownErrors = new[] { "No test source files were specified." };
+        private readonly IProcessExecution ProcessExecution;
+        private string[] WellKnownErrors = { "No test source files were specified." };
 
-        public dotnet(ILogger logger)
+        public DotNetTestRunner(ILogger logger,
+            IProcessExecution processExecution)
         {
             ProcessStartInfo = new()
             {
@@ -25,6 +26,7 @@ namespace dotnet.test.rerun
                 RedirectStandardError = true
             };
             Log = logger;
+            ProcessExecution = processExecution;
         }
 
         /// <summary>
@@ -32,42 +34,33 @@ namespace dotnet.test.rerun
         /// </summary>
         /// <param name="config">The config.</param>
         /// <param name="resultsDirectory">The results directory.</param>
-        public void Test(RerunCommandConfiguration config, string resultsDirectory)
+        public async Task Test(RerunCommandConfiguration config, string resultsDirectory)
         {
             string arguments = config.GetArgumentList();
 
             if (string.IsNullOrEmpty(resultsDirectory) is false)
-                arguments = string.Concat(arguments, $" --results-directory {resultsDirectory}");
+                arguments = $"{arguments} --results-directory {resultsDirectory}";
 
-            Run(arguments);
+            await Run(arguments);
         }
 
+        public ErrorCode GetErrorCode()
+            => ErrorCode;
+        
         /// <summary>
         /// Runs dotnet test with the specified arguments.
         /// </summary>
         /// <param name="arguments">The arguments.</param>
-        private void Run(string arguments)
+        private async Task Run(string arguments)
         {
             Log.Debug($"working directory: {ProcessStartInfo.WorkingDirectory}");
             Log.Debug($"forking {arguments}");
             ProcessStartInfo.Arguments = arguments;
 
-            using var ps = Process.Start(ProcessStartInfo);
-            ps.OutputDataReceived += (sender, args) =>
-            {
-                Log.Verbose(args.Data);
-                Output += $"\n{args.Data}";
-            };
-            ps.ErrorDataReceived += (sender, args) =>
-            {
-                Log.Error(args.Data);
-                Error += $"\n{args.Data}";
-            };
-            ps.BeginOutputReadLine();
-            ps.BeginErrorReadLine();
-
-            ps.WaitForExit();
-            ExitCode = ps.ExitCode;
+            using Process? ps = await ProcessExecution.Start(ProcessStartInfo);
+            ProcessExecution.FetchOutput(ps);
+            ProcessExecution.FetchError(ps);
+            ExitCode = await ProcessExecution.End(ps);
 
             HandleProcessEnd();
         }
@@ -75,7 +68,7 @@ namespace dotnet.test.rerun
         /// <summary>
         /// Handles the process end.
         /// </summary>
-        /// <exception cref="dotnet.test.rerun.RerunException">command:\n\n\t\tdotnet {ProcessStartInfo.Arguments}</exception>
+        /// <exception cref="RerunException">command:\n\n\t\tdotnet {ProcessStartInfo.Arguments}</exception>
         private void HandleProcessEnd()
         {
             if (ExitCode != 0)
@@ -83,7 +76,7 @@ namespace dotnet.test.rerun
                 if (IsWellKnownError())
                 {
                     ErrorCode = ErrorCode.WellKnownError;
-                    Log.Warning(Error);
+                    Log.Warning(ProcessExecution.GetError());
                 }
                 else if (HaveFailedTests())
                 {
@@ -92,7 +85,7 @@ namespace dotnet.test.rerun
                 else
                 {
                     ErrorCode = ErrorCode.Error;
-                    Log.Verbose(Error);
+                    Log.Verbose(ProcessExecution.GetError());
                     Log.Verbose($"Exit code {ExitCode}.");
                     throw new RerunException($"command:\ndotnet {ProcessStartInfo.Arguments}");
                 }
@@ -105,20 +98,13 @@ namespace dotnet.test.rerun
         /// <returns>
         ///   <c>true</c> if [is well known error] [the specified exit code]; otherwise, <c>false</c>.
         /// </returns>
-        private bool IsWellKnownError() => ExitCode == 1 && WellKnownErrors.Contains(Error);
+        private bool IsWellKnownError() => ExitCode == 1 && WellKnownErrors.Contains(ProcessExecution.GetError());
 
         /// <summary>
         /// Check if the output of dotnet test have in the last line failed tests
         /// </summary>
         /// <returns></returns>
-        private bool HaveFailedTests() => ExitCode == 1 && Output.Split("\n")[^2].StartsWith("Failed!  - Failed:");
-    }
-
-    public enum ErrorCode
-    {
-        Success = 0,
-        Error = 1,
-        FailedTests = 2,
-        WellKnownError = 99
+        private bool HaveFailedTests() => ExitCode == 1 && 
+                                          (ProcessExecution.GetOutput().Contains("Failed!  - Failed:") && ProcessExecution.GetOutput().Split("\n")[^2].StartsWith("Failed!  - Failed:"));
     }
 }
