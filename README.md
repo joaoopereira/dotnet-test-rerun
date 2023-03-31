@@ -4,7 +4,7 @@
 [![1]][2] [![3]][4] [![5]][4]
 
 # Description
-Unfortunately, the isn't a way with plain `dotnet test` to automatically rerun failed tests.
+Unfortunately, there isn't a way with plain `dotnet test` to automatically rerun failed tests.
 
 This tool is wrapper for the `dotnet test` that automatically reruns any tests with the outcome "Failed" until they pass or a maximum number of attempts has been reached. This is useful, for cases where tests may fail intermittently due to external factors such as network connectivity, database availability, or race conditions.
 
