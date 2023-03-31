@@ -4,6 +4,8 @@ using System.CommandLine.Parsing;
 using System.IO.Abstractions;
 using System.Text;
 using dotnet_test_rerun.IntegrationTests.Utilities;
+using dotnet.test.rerun.Analyzers;
+using dotnet.test.rerun.DotNetTestRunner;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
@@ -23,10 +25,10 @@ public class DotNetTestRerunTests
     }
 
     [Fact]
-    public void DotnetTestRerun_RunXUnitExample_Success()
+    public async Task DotnetTestRerun_RunXUnitExample_Success()
     {
         // Act
-        var output = RunDotNetTestRerunAndCollectOutputMessage("XUnitExample");
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("XUnitExample");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
@@ -34,10 +36,10 @@ public class DotNetTestRerunTests
     }
 
     [Fact]
-    public void DotnetTestRerun_RunMSTestExample_Success()
+    public async Task DotnetTestRerun_RunMSTestExample_Success()
     {
         // Act
-        var output = RunDotNetTestRerunAndCollectOutputMessage("MSTestExample");
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("MSTestExample");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
@@ -45,10 +47,10 @@ public class DotNetTestRerunTests
     }
 
     [Fact]
-    public void DotnetTestRerun_RunNUnitExample_Success()
+    public async Task DotnetTestRerun_RunNUnitExample_Success()
     {
         // Act
-        var output = RunDotNetTestRerunAndCollectOutputMessage("NUnitTestExample");
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestExample");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
@@ -56,10 +58,10 @@ public class DotNetTestRerunTests
     }
 
     [Fact]
-    public void DotnetTestRerun_FailingXUnit_Fails()
+    public async Task DotnetTestRerun_FailingXUnit_Fails()
     {
         // Act
-        var output = RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitExample");
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitExample");
 
         // Assert
         output.Should().NotContain("Passed!");
@@ -68,7 +70,7 @@ public class DotNetTestRerunTests
             Exactly.Thrice());
     }
 
-    private static string RunDotNetTestRerunAndCollectOutputMessage(string proj)
+    private async Task<string> RunDotNetTestRerunAndCollectOutputMessage(string proj)
     {
         var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
@@ -87,10 +89,11 @@ public class DotNetTestRerunTests
 
         RerunCommand rerunCommand = new RerunCommand(logger,
             rerunCommandConfiguration,
-            new dotnet.test.rerun.dotnet(logger),
-            FileSystem);
+            new DotNetTestRunner(logger, new ProcessExecution(logger)),
+            FileSystem,
+            new TestResultsAnalyzer(logger));
 
-        rerunCommand.Run();
+        await rerunCommand.Run();
 
         return stringWriter.ToString().Trim();
     }
