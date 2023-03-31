@@ -3,6 +3,7 @@ using FluentAssertions;
 using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
+using StatusContext = dotnet.test.rerun.Logging.StatusContext;
 
 namespace dotnet_test_rerun.UnitTest.Logging;
 
@@ -146,6 +147,23 @@ public class LoggerTests
 
             // Assert
             testConsole.Output.Should().Contain(message);
+        }
+        
+        [Fact]
+        public void LoggerTests_StatusWithAction_ShouldWrite()
+        {
+            // Arrange
+            var testConsole = new TestConsole();
+            var logger = new Logger(testConsole);
+            var message = "test message";
+            var actionCalled = false;
+
+            // Act
+            logger.Status(message, delegate(StatusContext context) { actionCalled = true; });
+
+            // Assert
+            testConsole.Output.Should().Contain(message);
+            actionCalled.Should().BeTrue();
         }
 
         [Fact]

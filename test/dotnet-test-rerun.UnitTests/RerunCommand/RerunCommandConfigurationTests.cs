@@ -1,7 +1,6 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
-using dotnet.test.rerun;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
@@ -76,5 +75,38 @@ public class RerunCommandConfigurationUnitTests
         _configuration.ResultsDirectory.Should().Be(".");
         _configuration.RerunMaxAttempts.Should().Be(3);
         _configuration.LogLevel.Should().Be(LogLevel.Verbose);
+        _configuration.NoBuild.Should().BeFalse();
+        _configuration.NoRestore.Should().BeFalse();
+        _configuration.Delay.Should().Be(0);
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithArguments()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+                                               "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+
+        //Act
+        var args = _configuration.GetArgumentList();
+
+        //Assert
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\"");
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithNoArguments()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+
+        //Act
+        var args = _configuration.GetArgumentList();
+
+        //Assert
+        args.Should().Be("test ");
     }
 }
