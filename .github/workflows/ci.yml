@@ -27,6 +27,6 @@ jobs:
         run: dotnet test --configuration Release
 
       - name: coverage report
-        uses: romeovs/lcov-reporter-action@v0.2.11
+        uses: romeovs/lcov-reporter-action@v0.3.1
         with:
           lcov-file: ../test/dotnet-test-rerun.UnitTests/TestResults/coverage.info
