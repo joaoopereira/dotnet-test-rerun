@@ -2,11 +2,6 @@ name: CI
 run-name: CI - ${{ github.event.head_commit.message }}
 
 on:
-  push:
-    branches: [main]
-    tags-ignore: [v*]
-    paths-ignore: ["**.md"]
-
   pull_request:
     types: [opened, reopened]
     paths-ignore: ["**.md"]
@@ -28,11 +23,10 @@ jobs:
         with:
           global-json-file: .config/global.json
 
-      - name: restore
-        run: dotnet restore
-
-      - name: build
-        run: dotnet build --configuration Release --no-restore
-
       - name: test
-        run: dotnet test --configuration Release --no-build --no-restore
+        run: dotnet test --configuration Release
+
+      - name: coverage report
+        uses: romeovs/lcov-reporter-action@v0.2.11
+        with:
+          lcov-file: ../test/dotnet-test-rerun.UnitTests/TestResults/coverage.info
