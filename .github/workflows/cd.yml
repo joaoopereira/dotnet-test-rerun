@@ -38,3 +38,15 @@ jobs:
         run: dotnet nuget push nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
         env:
           NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
+
+      - name: Coveralls UnitTests
+        uses: coverallsapp/github-action@v2.0.0
+        with:
+          path-to-lcov: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
+          flag-name: UnitTests
+
+      - name: Coveralls IntegrationTests
+        uses: coverallsapp/github-action@v2.0.0
+        with:
+          path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
+          flag-name: IntegrationTests

@@ -25,14 +25,14 @@ jobs:
       - name: test
         run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
 
-      - name: coverage report dotnet-test-rerun.UnitTests
-        uses: romeovs/lcov-reporter-action@v0.3.1
+      - name: Coveralls UnitTests
+        uses: coverallsapp/github-action@v2.0.0
         with:
-          lcov-file: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
-          title: coverage report dotnet-test-rerun.UnitTests
+          path-to-lcov: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
+          flag-name: UnitTests
 
-      - name: coverage report dotnet-test-rerun.IntegrationTests
-        uses: romeovs/lcov-reporter-action@v0.3.1
+      - name: Coveralls IntegrationTests
+        uses: coverallsapp/github-action@v2.0.0
         with:
-          lcov-file: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
-          title: coverage report dotnet-test-rerun.IntegrationTests
+          path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
+          flag-name: IntegrationTests
