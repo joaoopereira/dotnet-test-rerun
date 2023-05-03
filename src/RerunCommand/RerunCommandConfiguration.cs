@@ -18,6 +18,7 @@ public class RerunCommandConfiguration
     public bool NoBuild { get; private set; }
     public bool NoRestore { get; private set; }
     public int Delay { get; private set; }
+    public bool Blame { get; private set; }
 
     #endregion Properties
 
@@ -94,6 +95,14 @@ public class RerunCommandConfiguration
             IsRequired = false,
         };
 
+    private readonly Option<string> BlameOption =
+        new(new[] { "--blame" })
+        {
+            Description = "Runs the tests in blame mode.",
+            IsRequired = false,
+            Arity = ArgumentArity.Zero
+        };
+
     #endregion Options
 
     public void Set(Command cmd)
@@ -108,6 +117,7 @@ public class RerunCommandConfiguration
         cmd.Add(NoBuildOption);
         cmd.Add(NoRestoreOption);
         cmd.Add(DelayOption);
+        cmd.Add(BlameOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -122,6 +132,7 @@ public class RerunCommandConfiguration
         NoBuild = context.ParseResult.FindResultFor(NoBuildOption) is not null;
         NoRestore = context.ParseResult.FindResultFor(NoRestoreOption) is not null;
         Delay = context.ParseResult.GetValueForOption(DelayOption) * 1000;
+        Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
     }
 
     public string GetArgumentList()
@@ -131,7 +142,8 @@ public class RerunCommandConfiguration
             AddArguments(Settings, SettingsOption),
             AddArguments(TrxLogger, LoggerOption),
             AddArguments(NoBuild, NoBuildOption),
-            AddArguments(NoRestore, NoRestoreOption));
+            AddArguments(NoRestore, NoRestoreOption),
+            AddArguments(Blame, BlameOption));
 
     public string AddArguments<T>(T value, Option<T> option)
         => value is not null
