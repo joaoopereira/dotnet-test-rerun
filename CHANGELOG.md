@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.2.0"></a>
+## [1.2.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.2.0) (2023-6-9)
+
+### Features
+
+* add blame option ([a7ffe34](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/a7ffe342a84f4202a56557bd676cf9e07ef551aa))
+
 <a name="1.2.0-alpha.0"></a>
 ## [1.2.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.2.0-alpha.0) (2023-4-2)
 
