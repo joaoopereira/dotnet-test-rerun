@@ -10,8 +10,8 @@ defaults:
     working-directory: src
 
 jobs:
-  publish:
-    name: 📦 Pack & 🚚 Push
+  build_and_test:
+    name: 🛠️ Build & 🧪 Test
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -22,22 +22,8 @@ jobs:
         with:
           global-json-file: .config/global.json
 
-      - name: restore
-        run: dotnet restore
-
-      - name: build
-        run: dotnet build --configuration Release --no-restore
-
-      - name: test
-        run: dotnet test --configuration Release --no-build --no-restore
-
-      - name: pack
-        run: dotnet pack --configuration Release --no-build --no-restore
-
-      - name: push
-        run: dotnet nuget push nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
-        env:
-          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
+      - name: build and test
+        run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
 
       - name: Coveralls UnitTests
         uses: coverallsapp/github-action@v2.2.0
@@ -50,3 +36,27 @@ jobs:
         with:
           path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
           flag-name: IntegrationTests
+
+      - name: pack
+        run: dotnet pack --configuration Release --no-build --no-restore
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dotnet-test-rerun-nupkg
+          path: nupkg/*.nupkg
+          retention-days: 1
+
+  publish:
+    name: 🚚 Push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dotnet-test-rerun-nupkg
+
+      - name: push
+        run: dotnet nuget push nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}

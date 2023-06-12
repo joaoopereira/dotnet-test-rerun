@@ -11,7 +11,7 @@ defaults:
     working-directory: src
 
 jobs:
-  build:
+  build_and_test:
     name: 🛠️ Build & 🧪 Test
     runs-on: ubuntu-latest
     steps:
@@ -23,7 +23,7 @@ jobs:
         with:
           global-json-file: .config/global.json
 
-      - name: test
+      - name: build and test
         run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
 
       - name: Coveralls UnitTests
