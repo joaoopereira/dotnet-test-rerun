@@ -6,11 +6,17 @@
 version: 2
 updates:
 - package-ecosystem: nuget
-  directory: "/"
+  directory: /
+  commit-message:
+    include: scope
+    prefix: chore(deps)
   schedule:
-    interval: daily
+    interval: monthly
   open-pull-requests-limit: 10
-- package-ecosystem: "github-actions"
-  directory: "/"
+- package-ecosystem: github-actions
+  directory: /
+  commit-message:
+    include: scope
+    prefix: chore(deps)
   schedule:
-    interval: "daily"
+    interval: monthly
