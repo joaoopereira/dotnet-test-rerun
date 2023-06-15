@@ -67,7 +67,9 @@ public class DotNetTestRerunTests
         output.Should().NotContain("Passed!");
         output.Should().Contain("Failed!", Exactly.Times(4));
         output.Should().Contain("Rerun filter: FullyQualifiedName~FailingXUnitExample.SimpleTest.SimpleStringCompare",
-            Exactly.Thrice());
+            Exactly.Thrice());        
+        output.Should().Contain("Passed:     4",
+            Exactly.Once());
     }
 
     private async Task<string> RunDotNetTestRerunAndCollectOutputMessage(string proj)
