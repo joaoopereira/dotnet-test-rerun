@@ -9,7 +9,7 @@ public class RerunCommandConfiguration
     #region Properties
 
     public string Path { get; private set; }
-    public string Filter { get; private set; }
+    public string Filter { get; internal set; }
     public string Settings { get; private set; }
     public string TrxLogger { get; private set; }
     public string ResultsDirectory { get; private set; }

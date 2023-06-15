@@ -71,6 +71,7 @@ public class RerunCommand : RootCommand
 
                     Log.Information($"Rerun attempt {attempt}/{Config.RerunMaxAttempts}");
                     Log.Warning($"Found Failed tests. Rerun filter: {testsToRerun}");
+                    Config.Filter = testsToRerun;
                     await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
                     attempt++;
                 }
