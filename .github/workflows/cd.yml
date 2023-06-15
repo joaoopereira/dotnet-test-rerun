@@ -2,6 +2,7 @@ name: CD
 run-name: CD - ${{ github.event.head_commit.message }}
 
 on:
+  workflow_dispatch:
   push:
     tags: [v*]
 
@@ -10,8 +11,8 @@ defaults:
     working-directory: src
 
 jobs:
-  build_and_test:
-    name: 🛠️ Build & 🧪 Test
+  build_test_pack_push:
+    name: 🛠️ Build, 🧪 Test, 📦 Pack & 🚚 Push
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -40,23 +41,7 @@ jobs:
       - name: pack
         run: dotnet pack --configuration Release --no-build --no-restore
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: dotnet-test-rerun-nupkg
-          path: nupkg/*.nupkg
-          retention-days: 1
-
-  publish:
-    name: 🚚 Push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download a single artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dotnet-test-rerun-nupkg
-
       - name: push
-        run: dotnet nuget push nupkg/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+        run: dotnet nuget push nupkg/dotnet-test-rerun.*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
         env:
           NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
