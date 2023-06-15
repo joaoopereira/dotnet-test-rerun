@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.2.1"></a>
+## [1.2.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.2.1) (2023-6-15)
+
+### Bug Fixes
+
+* issue with rerun not using the filter with failed tests ([8533383](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/853338384f612ccbc6fe6fbd334238f815f32bc8))
+
 <a name="1.2.0"></a>
 ## [1.2.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.2.0) (2023-6-9)
 
