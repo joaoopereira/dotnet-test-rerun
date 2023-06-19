@@ -207,7 +207,8 @@ public class DotNetTestRerunTests
             Exactly.Once());
         Environment.ExitCode.Should().Be(1);
     }
-
+    
+    [Fact]
     public async Task DotnetTestRerun_FailingXUnit_WithDeleteFiles()
     {
         // Arrange
