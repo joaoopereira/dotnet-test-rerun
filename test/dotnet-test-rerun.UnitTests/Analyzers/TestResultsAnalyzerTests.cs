@@ -52,10 +52,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
 
         //Assert
-        result.Should().Be("FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare(number: 1) | " +
-                           "FullyQualifiedName~XUnitExample.UnitTest1.SimpleStringCompare | " +
-                           "FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare(number: 3) | " +
-                           "FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare(number: 4)");
+        result.Should().Be("FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare | FullyQualifiedName~XUnitExample.UnitTest1.SimpleStringCompare");
     }
     
     [Fact]
@@ -81,7 +78,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleStringCompare()");
+        result.Should().Be("FullyQualifiedName~SimpleStringCompare");
     }
     
     [Fact]
@@ -94,10 +91,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleStringCompare() | " +
-                           "FullyQualifiedName~SimpleNumberCompare(1,2) | " +
-                           "FullyQualifiedName~SimpleNumberCompare(3,2) | " +
-                           "FullyQualifiedName~SimpleNumberCompare(4,2)");
+        result.Should().Be("FullyQualifiedName~SimpleStringCompare | FullyQualifiedName~SimpleNumberCompare");
     }
     
     [Fact]
@@ -136,10 +130,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleNumberCompare (1,2) | " +
-                           "FullyQualifiedName~SimpleStringCompare | " +
-                           "FullyQualifiedName~SimpleNumberCompare (3,2) | " +
-                           "FullyQualifiedName~SimpleNumberCompare (4,2)");
+        result.Should().Be("FullyQualifiedName~SimpleNumberCompare | FullyQualifiedName~SimpleStringCompare");
     }
     
     [Fact]
