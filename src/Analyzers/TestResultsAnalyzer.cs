@@ -20,7 +20,8 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         var tests = trx.Results.UnitTestResults
             .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
-            .Select(t => $"FullyQualifiedName~{t.TestName}")
+            .Select(t => $"FullyQualifiedName~{(t.TestName.IndexOf("(") > 0 ? t.TestName.Substring(0, t.TestName.IndexOf("(")) : t.TestName).TrimEnd()}")
+            .Distinct()
             .ToList();
 
         if (tests.Count == 0)

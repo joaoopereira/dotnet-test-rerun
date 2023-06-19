@@ -47,6 +47,21 @@ public class DotNetTestRerunTests
     }
 
     [Fact]
+    public async Task DotnetTestRerun_FailingMSTest_Fails()
+    {
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingMSTestExample");
+
+        // Assert
+        output.Should().NotContain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(4));
+        output.Should().Contain("Rerun filter: FullyQualifiedName~SimpleNumberFailCompare",
+            Exactly.Thrice());        
+        output.Should().Contain("Failed:     2, Passed:     6",
+            Exactly.Once());
+    }
+
+    [Fact]
     public async Task DotnetTestRerun_RunNUnitExample_Success()
     {
         // Act
@@ -69,6 +84,21 @@ public class DotNetTestRerunTests
         output.Should().Contain("Rerun filter: FullyQualifiedName~FailingXUnitExample.SimpleTest.SimpleStringCompare",
             Exactly.Thrice());        
         output.Should().Contain("Passed:     4",
+            Exactly.Once());
+    }
+
+    [Fact]
+    public async Task DotnetTestRerun_FailingMultipleXUnit_Fails()
+    {
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingMultipleXUnitExample");
+
+        // Assert
+        output.Should().NotContain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(4));
+        output.Should().Contain("Rerun filter: FullyQualifiedName~FailingXUnitExample.SimpleTest.SimpleFailedNumberCompare",
+            Exactly.Thrice());        
+        output.Should().Contain("Failed:     2, Passed:     5",
             Exactly.Once());
     }
 

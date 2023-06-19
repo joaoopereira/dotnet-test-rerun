@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.IO.Abstractions;
+using System.Text.RegularExpressions;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.DotNetTestRunner;
 using dotnet.test.rerun.Enums;
