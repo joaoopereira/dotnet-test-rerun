@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
       - name: setup dotnet
         uses: actions/setup-dotnet@v3
@@ -37,3 +40,25 @@ jobs:
         with:
           path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
           flag-name: IntegrationTests
+
+      - name: bump & tag
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          cd .. && git reset --hard && git clean -df && cd src
+          dotnet versionize --pre-release alpha
+
+      - name: git push
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
+          tags: true
+
+      - name: pack
+        run: dotnet pack --configuration Release --no-build --no-restore
+
+      - name: push
+        run: dotnet nuget push nupkg/dotnet-test-rerun.*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
