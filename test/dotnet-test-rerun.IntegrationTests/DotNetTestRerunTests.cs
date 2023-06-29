@@ -2,15 +2,12 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.IO.Abstractions;
-using System.Text;
 using dotnet_test_rerun.IntegrationTests.Utilities;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.DotNetTestRunner;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
-using Spectre.Console;
-using Spectre.Console.Testing;
 
 namespace dotnet_test_rerun.IntegrationTests;
 
@@ -73,10 +70,32 @@ public class DotNetTestRerunTests
     }
 
     [Fact]
+    public async Task DotnetTestRerun_RunNUnitExample_WithDeleteFiles()
+    {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestExample", "--deleteReports", testDir);
+
+        // Assert
+        output.Should().Contain("Passed!", Exactly.Once());
+        output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
+
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        files.Should().HaveCount(0);
+    }
+
+    [Fact]
     public async Task DotnetTestRerun_FailingXUnit_Fails()
     {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        
         // Act
-        var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitExample");
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitExample", dir: testDir);
 
         // Assert
         output.Should().NotContain("Passed!");
@@ -85,6 +104,9 @@ public class DotNetTestRerunTests
             Exactly.Thrice());        
         output.Should().Contain("Passed:     4",
             Exactly.Once());
+
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        files.Should().HaveCount(4);
     }
 
     [Fact]
@@ -102,8 +124,30 @@ public class DotNetTestRerunTests
             Exactly.Once());
     }
 
-    private async Task<string> RunDotNetTestRerunAndCollectOutputMessage(string proj)
+    public async Task DotnetTestRerun_FailingXUnit_WithDeleteFiles()
     {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitExample", "--deleteReports", testDir);
+
+        // Assert
+        output.Should().NotContain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(4));
+        output.Should().Contain("Rerun filter: FullyQualifiedName~FailingXUnitExample.SimpleTest.SimpleStringCompare",
+            Exactly.Thrice());        
+        output.Should().Contain("Passed:     4",
+            Exactly.Once());
+
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        files.Should().HaveCount(0);
+    }
+
+    private async Task<string> RunDotNetTestRerunAndCollectOutputMessage(string proj, string extraArgs = "", string? dir = null)
+    {
+        var testDir = dir ?? _dir;
         var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         var logger = new Logger();
@@ -114,7 +158,7 @@ public class DotNetTestRerunTests
         rerunCommandConfiguration.Set(command);
 
         ParseResult result =
-            new Parser(command).Parse($"{_dir}\\{proj} --rerunMaxAttempts 3 --results-directory {_dir}");
+            new Parser(command).Parse($"{testDir}\\{proj} --rerunMaxAttempts 3 --results-directory {testDir} {extraArgs}");
         InvocationContext context = new(result);
 
         rerunCommandConfiguration.GetValues(context);

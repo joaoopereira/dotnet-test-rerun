@@ -83,5 +83,19 @@ public class RerunCommand : RootCommand
                 }
             }
         }
+
+        if (Config.DeleteReportFiles)
+        {
+            TestResultsAnalyzer.AddLastTrxFile(resultsDirectory);
+            DeleteFiles();
+        }
+    }
+    
+    private void DeleteFiles()
+    {
+        foreach (var file in TestResultsAnalyzer.GetReportFiles())
+        {
+            FileSystem.File.Delete(file);
+        }
     }
 }
