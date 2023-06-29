@@ -35,6 +35,8 @@ test-rerun [somepathtodll] [OPTIONS]
 | `--no-build` | Do not build the project before testing. Implies --no-restore.                                      |
 | `--no-restore` | Do not restore the project before building.*                                                                                |
 | `--delay, -d` | Delay between test runs in seconds.                                                                                  |
+| `--blame` | Run the tests in blame mode.  |
+| `--deleteReports` | Delete the generated report files. |
 
 # License
 This tool is licensed under GNU General Public License v3.0. See the [LICENSE](/LICENSE) file for details.

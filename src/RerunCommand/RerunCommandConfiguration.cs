@@ -19,6 +19,7 @@ public class RerunCommandConfiguration
     public bool NoRestore { get; private set; }
     public int Delay { get; private set; }
     public bool Blame { get; private set; }
+    public bool DeleteReportFiles { get; private set; }
 
     #endregion Properties
 
@@ -103,6 +104,14 @@ public class RerunCommandConfiguration
             Arity = ArgumentArity.Zero
         };
 
+    private readonly Option<string> DeleteReportFilesOption =
+        new(new[] { "--deleteReports" })
+        {
+            Description = "Delete the report files generated.",
+            IsRequired = false,
+            Arity = ArgumentArity.Zero
+        };
+
     #endregion Options
 
     public void Set(Command cmd)
@@ -118,6 +127,7 @@ public class RerunCommandConfiguration
         cmd.Add(NoRestoreOption);
         cmd.Add(DelayOption);
         cmd.Add(BlameOption);
+        cmd.Add(DeleteReportFilesOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -133,6 +143,7 @@ public class RerunCommandConfiguration
         NoRestore = context.ParseResult.FindResultFor(NoRestoreOption) is not null;
         Delay = context.ParseResult.GetValueForOption(DelayOption) * 1000;
         Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
+        DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
     }
 
     public string GetArgumentList()
