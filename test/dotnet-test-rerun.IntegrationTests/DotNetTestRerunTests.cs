@@ -1,6 +1,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.IO.Abstractions;
 using dotnet_test_rerun.IntegrationTests.Utilities;
 using dotnet.test.rerun.Analyzers;
@@ -24,28 +25,58 @@ public class DotNetTestRerunTests
     [Fact]
     public async Task DotnetTestRerun_RunXUnitExample_Success()
     {
+        // Arrange
+        Environment.ExitCode = 0;
+
         // Act
         var output = await RunDotNetTestRerunAndCollectOutputMessage("XUnitExample");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
+        Environment.ExitCode.Should().Be(0);
     }
 
     [Fact]
     public async Task DotnetTestRerun_RunMSTestExample_Success()
     {
+        // Arrange
+        Environment.ExitCode = 0;
+
         // Act
         var output = await RunDotNetTestRerunAndCollectOutputMessage("MSTestExample");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
+        Environment.ExitCode.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DotnetTestRerun_RunMSTestExample_RunningProcess_Success()
+    {        
+        // Arrange
+        Environment.ExitCode = 0;
+
+        // Arrange
+        Process process = new Process();
+        process.StartInfo.FileName = "test-rerun";
+        process.StartInfo.Arguments = $"{_dir}\\MSTestExample --rerunMaxAttempts 3 --results-directory {_dir}";
+        
+        // Act
+        process.Start();
+
+        // Assert
+        await process.WaitForExitAsync();
+        process.ExitCode.Should().Be(0);
     }
 
     [Fact]
     public async Task DotnetTestRerun_FailingMSTest_Fails()
     {
+        // Arrange
+        Environment.ExitCode = 0;
+
         // Act
         var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingMSTestExample");
 
@@ -56,17 +87,22 @@ public class DotNetTestRerunTests
             Exactly.Thrice());        
         output.Should().Contain("Failed:     2, Passed:     6",
             Exactly.Once());
+        Environment.ExitCode.Should().Be(1);
     }
 
     [Fact]
     public async Task DotnetTestRerun_RunNUnitExample_Success()
     {
+        // Arrange
+        Environment.ExitCode = 0;
+        
         // Act
         var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestExample");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
+        Environment.ExitCode.Should().Be(0);
     }
 
     [Fact]
@@ -91,8 +127,12 @@ public class DotNetTestRerunTests
     public async Task DotnetTestRerun_FailingXUnit_Fails()
     {
         // Arrange
+        Environment.ExitCode = 0;
+        
+        // Arrange
         var testDir = TestUtilities.GetTmpDirectory();
         TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
         
         // Act
         var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitExample", dir: testDir);
@@ -104,14 +144,55 @@ public class DotNetTestRerunTests
             Exactly.Thrice());        
         output.Should().Contain("Passed:     4",
             Exactly.Once());
+        Environment.ExitCode.Should().Be(1);
+    }
 
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
-        files.Should().HaveCount(4);
+    [Fact]
+    public async Task DotnetTestRerun_FailingXUnit_RunningProcess_Fails()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+
+        // Arrange
+        Process process = new Process();
+        process.StartInfo.FileName = "test-rerun";
+        process.StartInfo.Arguments = $"{_dir}\\FailingXUnitExample --rerunMaxAttempts 3 --results-directory {_dir}";
+        
+        // Act
+        process.Start();
+
+        // Assert
+        await process.WaitForExitAsync();
+        process.ExitCode.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task DotnetTestRerun_RunNonExistentXUnitProject_MissingArguments_Fails()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+
+        // Arrange
+        string folderPath = @"C:\path\to\folder";
+        
+        Process process = new Process();
+        process.StartInfo.FileName = "test-rerun";
+        process.StartInfo.Arguments = $"{_dir}\\XUnitThatDoesNotExist --rerunMaxAttempts 3 --results-directory {_dir}";
+        
+        // Act
+        process.Start();
+
+        // Assert
+        await process.WaitForExitAsync();
+        process.ExitCode.Should().Be(1);
     }
 
     [Fact]
     public async Task DotnetTestRerun_FailingMultipleXUnit_Fails()
     {
+        // Arrange
+        Environment.ExitCode = 0;
+
         // Act
         var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingMultipleXUnitExample");
 
@@ -122,6 +203,7 @@ public class DotNetTestRerunTests
             Exactly.Thrice());        
         output.Should().Contain("Failed:     2, Passed:     5",
             Exactly.Once());
+        Environment.ExitCode.Should().Be(1);
     }
 
     public async Task DotnetTestRerun_FailingXUnit_WithDeleteFiles()

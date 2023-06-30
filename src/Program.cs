@@ -22,7 +22,7 @@ var serviceProvider = new ServiceCollection()
 var Log = serviceProvider.GetRequiredService<ILogger>();
 var cmd = serviceProvider.GetService<RerunCommand>();
 
-return await new CommandLineBuilder(cmd)
+await new CommandLineBuilder(cmd)
     .UseDefaults()
     .UseExceptionHandler((exception, context) =>
     {
@@ -37,6 +37,10 @@ return await new CommandLineBuilder(cmd)
         {
             Log.Exception(exception);
         }
+        
+        Environment.ExitCode = 1;
     })
     .Build()
     .InvokeAsync(args);
+
+return Environment.ExitCode;

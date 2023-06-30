@@ -84,13 +84,18 @@ public class RerunCommand : RootCommand
             }
         }
 
+        if (DotNetTestRunner.GetErrorCode() == ErrorCode.FailedTests)
+        {
+            Environment.ExitCode = 1;
+        }
+
         if (Config.DeleteReportFiles)
         {
             TestResultsAnalyzer.AddLastTrxFile(resultsDirectory);
             DeleteFiles();
         }
     }
-    
+
     private void DeleteFiles()
     {
         foreach (var file in TestResultsAnalyzer.GetReportFiles())
