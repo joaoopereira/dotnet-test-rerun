@@ -83,5 +83,10 @@ public class RerunCommand : RootCommand
                 }
             }
         }
+
+        if (DotNetTestRunner.GetErrorCode() == ErrorCode.FailedTests)
+        {
+            Environment.ExitCode = 1;
+        }
     }
 }
