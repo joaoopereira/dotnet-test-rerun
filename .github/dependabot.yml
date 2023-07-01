@@ -9,7 +9,7 @@ updates:
   directory: /
   commit-message:
     include: scope
-    prefix: chore(deps)
+    prefix: chore
   schedule:
     interval: monthly
   open-pull-requests-limit: 10
@@ -17,6 +17,6 @@ updates:
   directory: /
   commit-message:
     include: scope
-    prefix: chore(deps)
+    prefix: chore
   schedule:
     interval: monthly
