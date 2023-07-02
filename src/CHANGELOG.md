@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.3.0-alpha.1"></a>
+## [1.3.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.0-alpha.1) (2023-7-2)
+
+### Bug Fixes
+
+* add additional tests for several tests inside data method failing ([f1d9864](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/f1d9864d15d429a4b7cb2ab6a3b70057508104ab))
+* add additional tests for several tests inside data method failing ([433b9e4](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/433b9e4f3bcaadd3a62d08e4c9bc76561533f206))
+* return failure return code to process when tests fail #45 ([f9f15d1](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/f9f15d1858a449a9a682fd03920bca6e5eca7a5b))
+
 <a name="1.3.0-alpha.0"></a>
 ## [1.3.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.0-alpha.0) (2023-7-2)
 
