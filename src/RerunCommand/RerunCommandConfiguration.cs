@@ -133,10 +133,10 @@ public class RerunCommandConfiguration
     public void GetValues(InvocationContext context)
     {
         Path = context.ParseResult.GetValueForArgument(PathArgument);
-        Filter = context.ParseResult.GetValueForOption(FilterOption);
-        Settings = context.ParseResult.GetValueForOption(SettingsOption);
-        TrxLogger = context.ParseResult.GetValueForOption(LoggerOption);
-        ResultsDirectory = context.ParseResult.GetValueForOption(ResultsDirectoryOption);
+        Filter = context.ParseResult.GetValueForOption(FilterOption)!;
+        Settings = context.ParseResult.GetValueForOption(SettingsOption)!;
+        TrxLogger = context.ParseResult.GetValueForOption(LoggerOption)!;
+        ResultsDirectory = context.ParseResult.GetValueForOption(ResultsDirectoryOption)!;
         RerunMaxAttempts = context.ParseResult.GetValueForOption(RerunMaxAttemptsOption);
         LogLevel = context.ParseResult.GetValueForOption(LogLevelOption);
         NoBuild = context.ParseResult.FindResultFor(NoBuildOption) is not null;

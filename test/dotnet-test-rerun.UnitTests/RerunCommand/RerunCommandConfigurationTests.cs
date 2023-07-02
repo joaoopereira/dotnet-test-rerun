@@ -30,8 +30,8 @@ public class RerunCommandConfigurationUnitTests
         //Assert
         var option = Command.Children.FirstOrDefault(x => x is Option opt && opt.HasAlias(optionName)) as Option;
         option.Should().NotBeNull();
-        option.Description.Should().Be(description);
-        option.IsRequired.Should().Be(isRequired);
+        option!.Description.Should().Be(description);
+        option!.IsRequired.Should().Be(isRequired);
     }
 
     [Fact]

@@ -17,7 +17,7 @@ namespace dotnet_test_rerun.UnitTest.DotNetTestRunner;
 public class DotNetTestRunnerTests
 {
     [Fact]
-    public async Task GetErrorCode_GetDefaultValue()
+    public void GetErrorCode_GetDefaultValue()
     {
         // Arrange
         var logger = new Logger();
