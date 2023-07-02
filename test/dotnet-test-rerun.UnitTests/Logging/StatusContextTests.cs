@@ -13,7 +13,7 @@ public class StatusContextTests
     public void StatusContextTests_WithNullContext_Status_ShouldThrowException()
     {
         // Arrange
-        var statusContext = new StatusContext(null);
+        var statusContext = new StatusContext(null!);
         
         // Act
         var act = () => statusContext.Status("test");

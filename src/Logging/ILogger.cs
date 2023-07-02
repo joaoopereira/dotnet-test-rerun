@@ -49,7 +49,7 @@ namespace dotnet.test.rerun.Logging
         /// Logs the progress of an operation, single line with a spinner
         /// </summary>
         /// <param name="msg">initial message to print</param>
-        public void Status(string msg, Action<StatusContext> action = null);
+        public void Status(string msg, Action<StatusContext> action = null!);
 
         /// <summary>
         /// renders a renderable Spectre object (currently we use it for trees)

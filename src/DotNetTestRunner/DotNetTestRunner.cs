@@ -58,9 +58,9 @@ namespace dotnet.test.rerun.DotNetTestRunner
             ProcessStartInfo.Arguments = arguments;
 
             using Process? ps = await ProcessExecution.Start(ProcessStartInfo);
-            ProcessExecution.FetchOutput(ps);
-            ProcessExecution.FetchError(ps);
-            ExitCode = await ProcessExecution.End(ps);
+            ProcessExecution.FetchOutput(ps!);
+            ProcessExecution.FetchError(ps!);
+            ExitCode = await ProcessExecution.End(ps!);
 
             HandleProcessEnd();
         }

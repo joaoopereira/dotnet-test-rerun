@@ -22,7 +22,7 @@ public class ProcessExecution : IProcessExecution
     {
         process.OutputDataReceived += (sender, args) =>
         {
-            Log.Verbose(args.Data);
+            Log.Verbose(args.Data!);
             Output += $"\n{args.Data}";
         };
         process.BeginOutputReadLine();
@@ -32,7 +32,7 @@ public class ProcessExecution : IProcessExecution
     {
         process.ErrorDataReceived += (sender, args) =>
         {
-            Log.Error(args.Data);
+            Log.Error(args.Data!);
             Error += $"\n{args.Data}";
         };
         process.BeginErrorReadLine();

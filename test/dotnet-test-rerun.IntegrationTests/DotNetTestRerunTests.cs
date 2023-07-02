@@ -173,9 +173,6 @@ public class DotNetTestRerunTests
     {
         // Arrange
         Environment.ExitCode = 0;
-
-        // Arrange
-        string folderPath = @"C:\path\to\folder";
         
         Process process = new Process();
         process.StartInfo.FileName = "test-rerun";
