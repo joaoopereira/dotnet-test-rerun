@@ -200,7 +200,7 @@ public class DotNetTestRerunTests
 
         // Assert
         output.Should().NotContain("Passed!");
-        output.Should().Contain("Failed!", Exactly.Times(4));g
+        output.Should().Contain("Failed!", Exactly.Times(4));
         output.Should().Contain("Rerun filter: FullyQualifiedName~FailingXUnitExample.SimpleTest.SimpleFailedNumberCompare",
             Exactly.Thrice());        
         output.Should().Contain("Failed:     2, Passed:     5",
