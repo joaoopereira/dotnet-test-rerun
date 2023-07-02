@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.3.0-alpha.0"></a>
+## [1.3.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.0-alpha.0) (2023-7-2)
+
+### Features
+
+* add option to delete report files ([8aa07d8](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/8aa07d882f2686bcd1ee00da8dc487041edaa4ad))
+
+### Bug Fixes
+
+* return failure return code to process when tests fail #45 ([3666dc0](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/3666dc0a47a27cf681c8c5189cea7b5e720511e7))
+
 <a name="1.2.2-alpha.1"></a>
 ## [1.2.2-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.2.2-alpha.1) (2023-7-1)
 
