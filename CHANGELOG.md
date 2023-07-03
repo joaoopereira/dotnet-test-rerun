@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.3.0"></a>
+## [1.3.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.0) (2023-7-3)
+
+### Features
+
+* add option to delete report files ([8aa07d8](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/8aa07d882f2686bcd1ee00da8dc487041edaa4ad))
+
+### Bug Fixes
+
+* add additional tests for several tests inside data method failing ([790ca82](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/790ca821be6ec3f2462718e4e61d160ed30f3995))
+* add additional tests for several tests inside data method failing ([433b9e4](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/433b9e4f3bcaadd3a62d08e4c9bc76561533f206))
+* add additional tests for several tests inside data method failing ([5550b2d](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/5550b2d8885f7b1fcdeef08d2b25f7e9c2d9c193))
+* return failure return code to process when tests fail #45 ([b68688e](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/b68688eb3fa1a9f90d24220918c640284433a2d4))
+* solve warnings and issue in tests ([cb925d0](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/cb925d0573e9cfa6172563f560ed03af768c2e1b))
+
 <a name="1.2.1"></a>
 ## [1.2.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.2.1) (2023-6-15)
 
