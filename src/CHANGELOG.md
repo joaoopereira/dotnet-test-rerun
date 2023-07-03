@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.3.1-alpha.0"></a>
+## [1.3.1-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.1-alpha.0) (2023-7-3)
+
+### Bug Fixes
+
+* return status code 0 if pass after first failure #45 ([4cb24ad](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/4cb24ada8a212224f91a56c4b171489c22d377fa))
+
 <a name="1.3.0-alpha.2"></a>
 ## [1.3.0-alpha.2](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.0-alpha.2) (2023-7-2)
 
