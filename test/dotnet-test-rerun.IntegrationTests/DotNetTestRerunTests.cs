@@ -204,6 +204,25 @@ public class DotNetTestRerunTests
             Exactly.Once());
         Environment.ExitCode.Should().Be(1);
     }
+
+    [Fact]
+    public async Task DotnetTestRerun_FailingNUnit_PassOnSecond()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestPassOnSecondRunExample");
+
+        // Assert
+        output.Should().Contain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(1));
+        output.Should().Contain("Rerun filter: FullyQualifiedName~SecondSimpleNumberCompare",
+            Exactly.Once());        
+        output.Should().Contain("Failed:     1, Passed:     1",
+            Exactly.Once());
+        Environment.ExitCode.Should().Be(0);
+    }
     
     [Fact]
     public async Task DotnetTestRerun_FailingXUnit_WithDeleteFiles()
