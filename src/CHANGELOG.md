@@ -44,3 +44,5 @@ All notable changes to this project will be documented in this file. See [versio
 
 * add additional tests for several tests inside data method failing ([0aa5ca2](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/0aa5ca2aafad864667bbf0012aa4dca80caee651))
 
+<a name="1.2.0-alpha.0"></a>
+## [1.2.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.2.0-alpha.0) (2023-4-2)
