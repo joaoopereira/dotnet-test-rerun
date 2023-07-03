@@ -90,6 +90,10 @@ namespace dotnet.test.rerun.DotNetTestRunner
                     throw new RerunException($"command:\ndotnet {ProcessStartInfo.Arguments}");
                 }
             }
+            else
+            {
+                ErrorCode = ErrorCode.Success;
+            }
         }
 
         /// <summary>

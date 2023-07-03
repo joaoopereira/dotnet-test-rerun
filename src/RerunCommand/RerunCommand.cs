@@ -1,6 +1,5 @@
 ﻿using System.CommandLine;
 using System.IO.Abstractions;
-using System.Text.RegularExpressions;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.DotNetTestRunner;
 using dotnet.test.rerun.Enums;
@@ -66,6 +65,7 @@ public class RerunCommand : RootCommand
                     oldTrxFile = trxFile;
                     if (string.IsNullOrEmpty(testsToRerun))
                     {
+                        Environment.ExitCode = 0;
                         Log.Information($"Rerun attempt {attempt} not needed. All testes Passed.");
                         break;
                     }
