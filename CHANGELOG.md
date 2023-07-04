@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.3.1"></a>
+## [1.3.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.1) (2023-7-4)
+
+### Bug Fixes
+
+* return status code 0 if pass after first failure #45 ([4a41541](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/4a41541519e50658a829d88995f178d069947854))
+
 <a name="1.3.0"></a>
 ## [1.3.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.0) (2023-7-3)
 
