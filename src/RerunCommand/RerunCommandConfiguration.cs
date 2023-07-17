@@ -20,6 +20,7 @@ public class RerunCommandConfiguration
     public int Delay { get; private set; }
     public bool Blame { get; private set; }
     public bool DeleteReportFiles { get; private set; }
+    public string Collector { get; private set; }
 
     #endregion Properties
 
@@ -111,6 +112,14 @@ public class RerunCommandConfiguration
             IsRequired = false,
             Arity = ArgumentArity.Zero
         };
+    
+    private readonly Option<string> CollectorOption =
+        new(new[] { "--collect" })
+        {
+            Description =
+                "Enables data collector for the test run.",
+            IsRequired = false
+        };
 
     #endregion Options
 
@@ -128,6 +137,7 @@ public class RerunCommandConfiguration
         cmd.Add(DelayOption);
         cmd.Add(BlameOption);
         cmd.Add(DeleteReportFilesOption);
+        cmd.Add(CollectorOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -144,6 +154,7 @@ public class RerunCommandConfiguration
         Delay = context.ParseResult.GetValueForOption(DelayOption) * 1000;
         Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
+        Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
     }
 
     public string GetArgumentList()
@@ -154,7 +165,8 @@ public class RerunCommandConfiguration
             AddArguments(TrxLogger, LoggerOption),
             AddArguments(NoBuild, NoBuildOption),
             AddArguments(NoRestore, NoRestoreOption),
-            AddArguments(Blame, BlameOption));
+            AddArguments(Blame, BlameOption),
+            AddArguments(Collector, CollectorOption));
 
     public string AddArguments<T>(T value, Option<T> option)
         => value is not null

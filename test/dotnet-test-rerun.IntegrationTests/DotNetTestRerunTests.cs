@@ -35,6 +35,7 @@ public class DotNetTestRerunTests
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
         Environment.ExitCode.Should().Be(0);
+        IsThereACoverageFile().Should().BeFalse();
     }
 
     [Fact]
@@ -44,12 +45,13 @@ public class DotNetTestRerunTests
         Environment.ExitCode = 0;
 
         // Act
-        var output = await RunDotNetTestRerunAndCollectOutputMessage("MSTestExample");
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("MSTestExample", "--collect \"XPlat Code Coverage\"");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
         Environment.ExitCode.Should().Be(0);
+        IsThereACoverageFile().Should().BeTrue();
     }
 
     [Fact]
@@ -274,4 +276,7 @@ public class DotNetTestRerunTests
 
         return stringWriter.ToString().Trim();
     }
+
+    private static bool IsThereACoverageFile()
+     => Directory.GetFiles(_dir, "*cobertura.xml", SearchOption.AllDirectories).Any();
 }

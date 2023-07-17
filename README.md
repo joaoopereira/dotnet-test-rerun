@@ -37,6 +37,7 @@ test-rerun [somepathtodll] [OPTIONS]
 | `--delay, -d` | Delay between test runs in seconds.                                                                                  |
 | `--blame` | Run the tests in blame mode.  |
 | `--deleteReports` | Delete the generated report files. |
+| `--collect` | Enables data collector for the test run. Example: --collect "Code Coverage" or --collect "XPlat Code Coverage" |
 
 # License
 This tool is licensed under GNU General Public License v3.0. See the [LICENSE](/LICENSE) file for details.
