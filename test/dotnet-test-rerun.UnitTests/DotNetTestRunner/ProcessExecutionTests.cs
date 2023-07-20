@@ -4,7 +4,7 @@ using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using dotnet.test.rerun.Analyzers;
-using dotnet.test.rerun.DotNetTestRunner;
+using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;

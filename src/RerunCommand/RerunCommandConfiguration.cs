@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 
 namespace dotnet.test.rerun.RerunCommand;
@@ -8,19 +9,20 @@ public class RerunCommandConfiguration
 {
     #region Properties
 
-    public string Path { get; private set; }
+    public string Path { get; internal set; }
     public string Filter { get; internal set; }
-    public string Settings { get; private set; }
-    public string TrxLogger { get; private set; }
-    public string ResultsDirectory { get; private set; }
-    public int RerunMaxAttempts { get; private set; }
-    public LogLevel LogLevel { get; private set; }
-    public bool NoBuild { get; private set; }
-    public bool NoRestore { get; private set; }
-    public int Delay { get; private set; }
-    public bool Blame { get; private set; }
-    public bool DeleteReportFiles { get; private set; }
-    public string Collector { get; private set; }
+    public string Settings { get; internal set; }
+    public string TrxLogger { get; internal set; }
+    public string ResultsDirectory { get; internal set; }
+    public int RerunMaxAttempts { get; internal set; }
+    public LogLevel LogLevel { get; internal set; }
+    public bool NoBuild { get; internal set; }
+    public bool NoRestore { get; internal set; }
+    public int Delay { get; internal set; }
+    public bool Blame { get; internal set; }
+    public bool DeleteReportFiles { get; internal set; }
+    public string Collector { get; internal set; }
+    public CoverageFormat? MergeCoverageFormat { get; internal set; }
 
     #endregion Properties
 
@@ -121,6 +123,14 @@ public class RerunCommandConfiguration
             IsRequired = false
         };
 
+    private readonly Option<CoverageFormat> MergeCoverageFormatOption =
+        new(new[] { "--mergeCoverageFormat" })
+        {
+            Description =
+                "Output coverage format. Note: requires dotnet coverage tool to be installed.",
+            IsRequired = false
+        };
+
     #endregion Options
 
     public void Set(Command cmd)
@@ -138,6 +148,7 @@ public class RerunCommandConfiguration
         cmd.Add(BlameOption);
         cmd.Add(DeleteReportFilesOption);
         cmd.Add(CollectorOption);
+        cmd.Add(MergeCoverageFormatOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -155,9 +166,10 @@ public class RerunCommandConfiguration
         Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
+        MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
     }
 
-    public string GetArgumentList()
+    public string GetTestArgumentList()
         => string.Concat("test ",
             $"{Path}",
             AddArguments(Filter, FilterOption),
@@ -167,7 +179,13 @@ public class RerunCommandConfiguration
             AddArguments(NoRestore, NoRestoreOption),
             AddArguments(Blame, BlameOption),
             AddArguments(Collector, CollectorOption));
-
+    
+    public string GetMergeCoverageArgumentList(string fileNames, string resultsDirectory)
+        => string.Concat("merge ",
+            $"-o {System.IO.Path.Combine(resultsDirectory, $"merged.{GetMergeExtension()}")} ",
+            $"-f {MergeCoverageFormat} ",
+            $"-r {fileNames}");
+    
     public string AddArguments<T>(T value, Option<T> option)
         => value is not null
             ? $" {option.Aliases.First()} \"{value}\""
@@ -177,4 +195,13 @@ public class RerunCommandConfiguration
         => value
             ? $" {option.Aliases.First()}"
             : string.Empty;
+
+    private string GetMergeExtension()
+        => MergeCoverageFormat switch
+        {
+            CoverageFormat.Cobertura => "cobertura.xml",
+            CoverageFormat.Xml => "xml",
+            CoverageFormat.Coverage => "coverage",
+            _ => throw new ArgumentOutOfRangeException(nameof(MergeCoverageFormat), MergeCoverageFormat, null)
+        };
 }
