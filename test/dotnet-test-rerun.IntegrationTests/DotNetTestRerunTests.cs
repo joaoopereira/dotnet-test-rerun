@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO.Abstractions;
 using dotnet_test_rerun.IntegrationTests.Utilities;
 using dotnet.test.rerun.Analyzers;
-using dotnet.test.rerun.DotNetTestRunner;
+using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
@@ -269,6 +269,7 @@ public class DotNetTestRerunTests
         RerunCommand rerunCommand = new RerunCommand(logger,
             rerunCommandConfiguration,
             new DotNetTestRunner(logger, new ProcessExecution(logger)),
+            new DotNetCoverageRunner(logger, new ProcessExecution(logger)),
             FileSystem,
             new TestResultsAnalyzer(logger));
 

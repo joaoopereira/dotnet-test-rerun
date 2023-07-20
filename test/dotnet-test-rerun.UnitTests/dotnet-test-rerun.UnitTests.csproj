@@ -31,6 +31,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\dotnet-test-rerun.csproj" />
+      <ProjectReference Include="..\dotnet-test-rerun.IntegrationTests\dotnet-test-rerun.IntegrationTests.csproj" />
     </ItemGroup>
 
     <ItemGroup>

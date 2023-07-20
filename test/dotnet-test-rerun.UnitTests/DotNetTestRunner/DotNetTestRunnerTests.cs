@@ -4,7 +4,7 @@ using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using dotnet.test.rerun.Analyzers;
-using dotnet.test.rerun.DotNetTestRunner;
+using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
@@ -22,7 +22,7 @@ public class DotNetTestRunnerTests
         // Arrange
         var logger = new Logger();
         var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetTestRunner.DotNetTestRunner(logger, processExecution.Object);
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
 
         // Act
         var error = dotNetTestRunner.GetErrorCode();
@@ -37,7 +37,7 @@ public class DotNetTestRunnerTests
         // Arrange
         var logger = new Logger();
         var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetTestRunner.DotNetTestRunner(logger, processExecution.Object);
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
         processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>()));
         processExecution.Setup(x => x.FetchError(It.IsAny<Process>()));
         processExecution.Setup(x => x.End(It.IsAny<Process>()))
@@ -62,7 +62,7 @@ public class DotNetTestRunnerTests
         // Arrange
         var logger = new Logger();
         var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetTestRunner.DotNetTestRunner(logger, processExecution.Object);
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
         processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>()));
         processExecution.Setup(x => x.FetchError(It.IsAny<Process>()));
         processExecution.Setup(x => x.End(It.IsAny<Process>()))
@@ -88,7 +88,7 @@ public class DotNetTestRunnerTests
         // Arrange
         var logger = new Logger();
         var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetTestRunner.DotNetTestRunner(logger, processExecution.Object);
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
         processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>()));
         processExecution.Setup(x => x.FetchError(It.IsAny<Process>()));
         processExecution.Setup(x => x.End(It.IsAny<Process>()))
@@ -113,7 +113,7 @@ public class DotNetTestRunnerTests
         // Arrange
         var logger = new Logger();
         var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetTestRunner.DotNetTestRunner(logger, processExecution.Object);
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
         processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>()));
         processExecution.Setup(x => x.FetchError(It.IsAny<Process>()));
         processExecution.Setup(x => x.End(It.IsAny<Process>()))

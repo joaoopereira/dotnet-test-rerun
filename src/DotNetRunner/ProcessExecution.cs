@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using dotnet.test.rerun.Logging;
 
-namespace dotnet.test.rerun.DotNetTestRunner;
+namespace dotnet.test.rerun.DotNetRunner;
 
 public class ProcessExecution : IProcessExecution
 {

@@ -43,7 +43,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
     public void AddLastTrxFile(IDirectoryInfo resultsDirectory)
     {
-        var fileInfo = resultsDirectory.EnumerateFiles("*.trx").MaxBy(f => f.Name);
+        var fileInfo = GetTrxFile(resultsDirectory);
 
         if (fileInfo is not null)
             reportFiles.Add(fileInfo.FullName);
