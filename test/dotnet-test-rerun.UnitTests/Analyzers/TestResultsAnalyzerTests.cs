@@ -1,6 +1,5 @@
 ﻿using System.IO.Abstractions;
 using dotnet.test.rerun.Analyzers;
-using dotnet.test.rerun.DotNetTestRunner;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
@@ -155,5 +154,18 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Should().BeNull();
+    }
+    
+    [Fact]
+    public void AddLastTrxFile_FromValidDirectory_ReturnFiles()
+    {
+        //Act
+        TestResultsAnalyzer.AddLastTrxFile(ResultsDirectory);
+
+        //Assert
+        var reportFiles = TestResultsAnalyzer.GetReportFiles();
+        reportFiles.Should().NotBeNull();
+        reportFiles.Should().HaveCount(1);
+        reportFiles.ElementAt(0).Should().Be(TestResultsAnalyzer.GetTrxFile(ResultsDirectory)?.FullName);
     }
 }

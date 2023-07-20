@@ -1,7 +1,7 @@
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.RerunCommand;
 
-namespace dotnet.test.rerun.DotNetTestRunner;
+namespace dotnet.test.rerun.DotNetRunner;
 
 public interface IDotNetTestRunner
 {
