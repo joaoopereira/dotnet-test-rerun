@@ -35,14 +35,7 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// <param name="config">The config.</param>
     /// <param name="resultsDirectory">The results directory.</param>
     public async Task Test(RerunCommandConfiguration config, string resultsDirectory)
-    {
-        string arguments = config.GetTestArgumentList();
-
-        if (string.IsNullOrEmpty(resultsDirectory) is false)
-            arguments = $"{arguments} --results-directory {resultsDirectory}";
-
-        await Run(arguments);
-    }
+        => await Run(config.GetTestArgumentList(resultsDirectory));
 
     public ErrorCode GetErrorCode()
         => ErrorCode;
