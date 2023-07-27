@@ -91,10 +91,10 @@ public class RerunCommandConfigurationUnitTests
         _configuration.GetValues(context);
 
         //Act
-        var args = _configuration.GetTestArgumentList();
+        var args = _configuration.GetTestArgumentList("results-directory");
 
         //Assert
-        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\"");
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" --results-directory \"results-directory\"");
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Set(Command); 
 
         //Act
-        var args = _configuration.GetTestArgumentList();
+        var args = _configuration.GetTestArgumentList("");
 
         //Assert
         args.Should().Be("test ");

@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 
@@ -23,7 +24,8 @@ public class RerunCommandConfiguration
     public bool DeleteReportFiles { get; internal set; }
     public string Collector { get; internal set; }
     public CoverageFormat? MergeCoverageFormat { get; internal set; }
-
+    public string pArguments { get; internal set; }
+    
     #endregion Properties
 
     #region Arguments
@@ -148,7 +150,6 @@ public class RerunCommandConfiguration
         cmd.Add(BlameOption);
         cmd.Add(DeleteReportFilesOption);
         cmd.Add(CollectorOption);
-        cmd.Add(MergeCoverageFormatOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -166,10 +167,10 @@ public class RerunCommandConfiguration
         Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
-        MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
+        pArguments = FetchPArgumentsFromParse(context.ParseResult);
     }
 
-    public string GetTestArgumentList()
+    public string GetTestArgumentList(string resultsDirectory)
         => string.Concat("test ",
             $"{Path}",
             AddArguments(Filter, FilterOption),
@@ -178,7 +179,9 @@ public class RerunCommandConfiguration
             AddArguments(NoBuild, NoBuildOption),
             AddArguments(NoRestore, NoRestoreOption),
             AddArguments(Blame, BlameOption),
-            AddArguments(Collector, CollectorOption));
+            AddArguments(Collector, CollectorOption),
+            string.IsNullOrWhiteSpace(resultsDirectory) ? resultsDirectory : AddArguments(resultsDirectory, ResultsDirectoryOption),
+            GetPArguments());
     
     public string GetMergeCoverageArgumentList(string fileNames, string resultsDirectory)
         => string.Concat("merge ",
@@ -204,4 +207,11 @@ public class RerunCommandConfiguration
             CoverageFormat.Coverage => "coverage",
             _ => throw new ArgumentOutOfRangeException(nameof(MergeCoverageFormat), MergeCoverageFormat, null)
         };
+
+    public string GetPArguments()
+        => string.IsNullOrWhiteSpace(pArguments) ? pArguments : $" {pArguments}";
+    
+    private string FetchPArgumentsFromParse(ParseResult parseResult)
+        => string.Join(' ', parseResult.UnmatchedTokens.Where(p => p.StartsWith("/p:")));
+
 }

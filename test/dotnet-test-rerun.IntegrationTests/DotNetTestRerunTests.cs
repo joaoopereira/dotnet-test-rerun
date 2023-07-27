@@ -108,6 +108,21 @@ public class DotNetTestRerunTests
     }
 
     [Fact]
+    public async Task DotnetTestRerun_RunNUnitExample_WithPropertiesActive_Success()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+        
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestExample", extraArgs: $"/p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput={_dir}\\TestResults\\Coverage\\UnitTests-TestResults.opencover.xml");
+
+        // Assert
+        output.Should().Contain("Passed!", Exactly.Once());
+        output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
+        Environment.ExitCode.Should().Be(0);
+    }
+
+    [Fact]
     public async Task DotnetTestRerun_RunNUnitExample_WithDeleteFiles()
     {
         // Arrange

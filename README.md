@@ -40,6 +40,9 @@ test-rerun [somepathtodll] [OPTIONS]
 | `--collect` | Enables data collector for the test run. Example: --collect "Code Coverage" or --collect "XPlat Code Coverage"                     |
 | `--mergeCoverageFormat` | Output coverage format. Possible values: Coverage, Cobertura or Xml <br/><br/>Note: requires dotnet coverage tool to be installed. |
 
+
+Note: Sending `/p:` instructions to set property values is also allowed. 
+
 # License
 This tool is licensed under GNU General Public License v3.0. See the [LICENSE](/LICENSE) file for details.
 
