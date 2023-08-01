@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.4.0"></a>
+## [1.4.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.4.0) (2023-8-2)
+
+### Features
+
+* add merge coverage report capability ([86a2d4b](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/86a2d4b231779e3f02d12136bc4e1c0165b77bca))
+* add option to collect coverage reports ([c0afe43](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/c0afe43b58a04821f56ee06cd67b1dbe983184e7))
+* allow properties to be set (/p:) on execution of dotnet test rerun ([619e904](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/619e9042ff6767c7d53096b74a162b67580fb941))
+
 <a name="1.3.1"></a>
 ## [1.3.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.1) (2023-7-4)
 
