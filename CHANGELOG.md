@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.4.0-alpha.5"></a>
+## [1.4.0-alpha.5](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.4.0-alpha.5) (2023-8-2)
+
+### Features
+
+* add blame option ([a7ffe34](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/a7ffe342a84f4202a56557bd676cf9e07ef551aa))
+* add delay option to rerun command (issue #2) ([18e095c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/18e095c895923d6596e3503689f62f6d63317bde))
+* add merge coverage report capability ([2962ee6](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/2962ee6a25712c3e30edc37ef8475d330997f81c))
+* add option to collect coverage reports ([c0afe43](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/c0afe43b58a04821f56ee06cd67b1dbe983184e7))
+* add option to delete report files ([8aa07d8](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/8aa07d882f2686bcd1ee00da8dc487041edaa4ad))
+* allow properties to be set (/p:) on execution of dotnet test rerun ([0b0b9b6](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/0b0b9b6a7ddb39d762431ea9853329bd00928ad5))
+
+### Bug Fixes
+
+* add additional tests for several tests inside data method failing ([790ca82](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/790ca821be6ec3f2462718e4e61d160ed30f3995))
+* add additional tests for several tests inside data method failing ([433b9e4](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/433b9e4f3bcaadd3a62d08e4c9bc76561533f206))
+* add additional tests for several tests inside data method failing ([5550b2d](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/5550b2d8885f7b1fcdeef08d2b25f7e9c2d9c193))
+* issue with rerun not using the filter with failed tests ([a9b77e8](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/a9b77e809ad91fcb84ab674f4a560e03a2568e31))
+* readme typo ([82c9ef9](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/82c9ef96af37e4cad728c2bfbd9d79dafd94899d))
+* return failure return code to process when tests fail #45 ([b68688e](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/b68688eb3fa1a9f90d24220918c640284433a2d4))
+* return status code 0 if pass after first failure #45 ([4a41541](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/4a41541519e50658a829d88995f178d069947854))
+* solve warnings and issue in tests ([cb925d0](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/cb925d0573e9cfa6172563f560ed03af768c2e1b))
+* solved issue of running the rerun one less time then the given by parameter ([256248d](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/256248d314b006ef5806a57413e52ffd65d0e5fb))
+* **dotnet:** add default working directory ([3c84d0f](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/3c84d0fb9546b2063daa23bac97787549aa1840e))
+* **dotnet:** use StdOut and StdErr stream asynchronously ([728e3bf](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/728e3bf73d15590adb4fea6b230ab3089c99bf40))
+* **entrypoint:** replace try catch with UseExceptionHandler ([7718584](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/771858450c6152e15087d573da30d40874a3ceee))
+* **log:** add missing loglevel option ([bf9eb7c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/bf9eb7cb0b39fa93159704dec4a2c4361326c8f6))
+* **log:** do not use AnsiConsole if is not running in terminal ([d8179c8](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/d8179c887cf51ed99f476a86d27e3e115378e61b))
+* **logging:** loglevel not setted and exitcode handling ([23985c6](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/23985c6c63c5ce94495c26b669404a959d606a94))
+* **options:** set --settings as optional ([02c9d36](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/02c9d361aae5a08b6ca010d44d961f77c50212e5))
+* **rerun:** allow filter option as optional ([3bfb93b](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/3bfb93bb9b1575341a26a91be19a1772784f9b05))
+* **rerun:** handle no file is found scenario and use same folder when no results directory is given ([939111a](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/939111a98527f927bdeedfd47d2b89834703b722))
+
 <a name="1.3.1"></a>
 ## [1.3.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.3.1) (2023-7-4)
 
