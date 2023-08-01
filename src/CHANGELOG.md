@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.4.0-alpha.4"></a>
+## [1.4.0-alpha.4](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.4.0-alpha.4) (2023-8-1)
+
+### Features
+
+* allow properties to be set (/p:) on execution of dotnet test rerun ([113e8d0](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/113e8d0ccacff375ea86833b50fb7c05a73b1efa))
+
 <a name="1.4.0-alpha.3"></a>
 ## [1.4.0-alpha.3](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.4.0-alpha.3) (2023-8-1)
 
