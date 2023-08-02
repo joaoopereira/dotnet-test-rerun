@@ -39,7 +39,9 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     }
     
     public IFileInfo? GetTrxFile(IDirectoryInfo resultsDirectory)
-        => resultsDirectory.EnumerateFiles("*.trx").MaxBy(f => f.Name);
+        => resultsDirectory.Exists ?
+           resultsDirectory.EnumerateFiles("*.trx").MaxBy(f => f.Name) :
+           default;
 
     public void AddLastTrxFile(IDirectoryInfo resultsDirectory)
     {
