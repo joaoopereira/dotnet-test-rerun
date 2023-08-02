@@ -150,6 +150,7 @@ public class RerunCommandConfiguration
         cmd.Add(BlameOption);
         cmd.Add(DeleteReportFilesOption);
         cmd.Add(CollectorOption);
+        cmd.Add(MergeCoverageFormatOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -167,6 +168,7 @@ public class RerunCommandConfiguration
         Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
+        MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
         pArguments = FetchPArgumentsFromParse(context.ParseResult);
     }
 
