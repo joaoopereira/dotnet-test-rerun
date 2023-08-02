@@ -102,6 +102,5 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// </summary>
     /// <returns></returns>
     private bool HaveFailedTests() => ExitCode == 1 &&
-                                      (ProcessExecution.GetOutput().Contains("Failed!  - Failed:") &&
-                                       ProcessExecution.GetOutput().Split("\n")[^2].StartsWith("Failed!  - Failed:"));
+                                      (ProcessExecution.GetOutput().Contains("Failed!  - Failed:"));
 }
