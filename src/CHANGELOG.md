@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.4.0-alpha.7"></a>
+## [1.4.0-alpha.7](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.4.0-alpha.7) (2023-8-2)
+
+### Bug Fixes
+
+* add option to merge coverage report lost in previous rebase ([dbbfb72](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/dbbfb72d9963f996490093291af2e9d1aedcf5d7))
+
 <a name="1.4.0-alpha.6"></a>
 ## [1.4.0-alpha.6](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.4.0-alpha.6) (2023-8-2)
 
