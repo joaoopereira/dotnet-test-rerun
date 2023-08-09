@@ -29,6 +29,8 @@ jobs:
           filters: |
             src:
               - 'src/**'
+            csproj:
+              - modified: 'src/*.csproj'
 
       - name: setup dotnet
         uses: actions/setup-dotnet@v3
@@ -51,15 +53,15 @@ jobs:
           flag-name: IntegrationTests
 
         # run only if some file in 'src' folder was changed
-      - if: steps.changes.outputs.src == 'true'
+      - if: steps.changes.outputs.src == 'true' && steps.changes.outputs.csproj == 'false'
         name: bump & tag
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           cd .. && git reset --hard && git clean -df && cd src
-          dotnet versionize --pre-release alpha
+          dotnet versionize --pre-release alpha --skip-tag --proj-version-bump-logic
 
-      - if: steps.changes.outputs.src == 'true'
+      - if: steps.changes.outputs.src == 'true' && steps.changes.outputs.csproj == 'false'
         name: git push
         uses: ad-m/github-push-action@master
         with:
@@ -67,11 +69,11 @@ jobs:
           branch: ${{ github.head_ref }}
           tags: true
 
-      - if: steps.changes.outputs.src == 'true'
+      - if: steps.changes.outputs.src == 'true' && steps.changes.outputs.csproj == 'false'
         name: pack
         run: dotnet pack --configuration Release --no-build --no-restore
 
-      - if: steps.changes.outputs.src == 'true'
+      - if: steps.changes.outputs.src == 'true' && steps.changes.outputs.csproj == 'false'
         name: push
         run: dotnet nuget push nupkg/dotnet-test-rerun.*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
         env:
