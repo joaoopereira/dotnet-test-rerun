@@ -1,0 +1,17 @@
+{
+	"name": "dotnet-test-rerun",
+	"env": {},
+	"commands": {
+	 "bump": [
+	  "cd src",
+	  "dotnet versionize --pre-release alpha --proj-version-bump-logic",
+	  "git push --tag origin",
+	  "git push"
+	 ],
+	 "bump:live": [
+	   "dotnet versionize --aggregate-pre-releases --proj-version-bump-logic",
+	   "git push --tag origin",
+	   "git push"
+	  ]
+	}
+   }
