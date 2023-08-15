@@ -5,7 +5,7 @@
          "command": "dotnet",
          "args": [
             "test",
-            "src/dotnet-test-rerun.csproj"
+            "./test/dotnet-test-rerun.UnitTests/dotnet-test-rerun.UnitTests.csproj"
          ]
       },
       {
