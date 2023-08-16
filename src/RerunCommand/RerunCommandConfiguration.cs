@@ -32,7 +32,8 @@ public class RerunCommandConfiguration
 
     private Argument<string> PathArgument = new("path")
     {
-        Description = "Path to a test project .dll file."
+        Description = "Path to a test project .dll file.",
+        Arity = ArgumentArity.ZeroOrOne
     };
 
     #endregion Arguments
@@ -173,8 +174,8 @@ public class RerunCommandConfiguration
     }
 
     public string GetTestArgumentList(string resultsDirectory)
-        => string.Concat("test ",
-            $"{Path}",
+        => string.Concat("test",
+            string.IsNullOrWhiteSpace(Path) ? string.Empty : $" {Path}",
             AddArguments(Filter, FilterOption),
             AddArguments(Settings, SettingsOption),
             AddArguments(TrxLogger, LoggerOption),
@@ -210,7 +211,7 @@ public class RerunCommandConfiguration
             _ => throw new ArgumentOutOfRangeException(nameof(MergeCoverageFormat), MergeCoverageFormat, null)
         };
 
-    public string GetPArguments()
+    private string GetPArguments()
         => string.IsNullOrWhiteSpace(pArguments) ? pArguments : $" {pArguments}";
     
     private string FetchPArgumentsFromParse(ParseResult parseResult)
