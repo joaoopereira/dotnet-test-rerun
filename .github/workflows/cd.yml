@@ -2,7 +2,6 @@ name: CD
 run-name: CD - ${{ github.event.release.tag_name }}
 
 on:
-  workflow_dispatch:
   release:
     types: [published]
 
