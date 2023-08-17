@@ -78,6 +78,8 @@ public class RerunCommandConfigurationUnitTests
         _configuration.NoBuild.Should().BeFalse();
         _configuration.NoRestore.Should().BeFalse();
         _configuration.Delay.Should().Be(0);
+        _configuration.Verbosity.Should().BeNull();
+        _configuration.Configuration.Should().BeNull();
     }
 
     [Fact]
@@ -86,7 +88,8 @@ public class RerunCommandConfigurationUnitTests
         //Arrange
         _configuration.Set(Command); 
         var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
-                                               "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug");
+                                               "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug " +
+                                               "--configuration release --verbosity minimal");
         var context = new InvocationContext(result);
         _configuration.GetValues(context);
 
@@ -94,7 +97,7 @@ public class RerunCommandConfigurationUnitTests
         var args = _configuration.GetTestArgumentList("results-directory");
 
         //Assert
-        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" --results-directory \"results-directory\"");
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\"");
     }
 
     [Fact]
@@ -108,5 +111,21 @@ public class RerunCommandConfigurationUnitTests
 
         //Assert
         args.Should().Be("test");
+    }
+    
+    [Fact]
+    public void RerunCommandConfiguration_InvalidVerbosity()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse("path --settings settings --verbosity test");
+        var context = new InvocationContext(result);
+
+        //Act
+        var act = () => _configuration.GetValues(context);
+
+        //Assert
+        act.Should().Throw<InvalidOperationException>().WithMessage(
+            "Cannot parse argument 'test' for option '-v' as expected type 'dotnet.test.rerun.Enums.LoggerVerbosity'.");
     }
 }

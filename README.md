@@ -36,6 +36,8 @@ test-rerun [somepathtodll] [OPTIONS]
 | `--no-restore` | Do not restore the project before building.*                                                                           |
 | `--delay, -d` | Delay between test runs in seconds.                                                                                    |
 | `--blame` | Run the tests in blame mode.                                                                                           |
+| `--configuration, -c` | Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project. |
+| `--verbosity, -v` | Sets the verbosity level of the command. Allowed values are quiet, minimal, normal, detailed, and diagnostic. |
 | `--deleteReports` | Delete the generated report files.                                                                                     |
 | `--collect` | Enables data collector for the test run. Example: --collect "Code Coverage" or --collect "XPlat Code Coverage"         |
 | `--mergeCoverageFormat` | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed. |
