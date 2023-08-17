@@ -45,11 +45,12 @@ public class DotNetTestRerunTests
         Environment.ExitCode = 0;
 
         // Act
-        var output = await RunDotNetTestRerunAndCollectOutputMessage("MSTestExample", "--collect \"XPlat Code Coverage\"");
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("MSTestExample", "--collect \"XPlat Code Coverage\" --configuration \"debug\" --verbosity \"detailed\"");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
+        output.Should().Contain("-property:Configuration=debug");
         Environment.ExitCode.Should().Be(0);
         IsThereACoverageFile().Should().BeTrue();
     }

@@ -24,6 +24,8 @@ public class RerunCommandConfiguration
     public bool DeleteReportFiles { get; internal set; }
     public string Collector { get; internal set; }
     public CoverageFormat? MergeCoverageFormat { get; internal set; }
+    public string Configuration { get; internal set; }
+    public LoggerVerbosity? Verbosity { get; internal set; }
     public string pArguments { get; internal set; }
     
     #endregion Properties
@@ -132,6 +134,22 @@ public class RerunCommandConfiguration
                 "Output coverage format. Note: requires dotnet coverage tool to be installed.",
             IsRequired = false
         };
+    
+    private readonly Option<string> ConfigurationOption =
+        new(new[] { "-c", "--configuration" })
+        {
+            Description =
+                "Defines the build configuration.",
+            IsRequired = false
+        };
+    
+    private readonly Option<LoggerVerbosity?> VerbosityOption =
+        new(new[] { "-v", "--verbosity" })
+        {
+            Description =
+                "Sets the verbosity level of the command. Possible values: Quiet, Minimal, Normal, Detailed, Diagnostic",
+            IsRequired = false,
+        };
 
     #endregion Options
 
@@ -148,6 +166,8 @@ public class RerunCommandConfiguration
         cmd.Add(NoRestoreOption);
         cmd.Add(DelayOption);
         cmd.Add(BlameOption);
+        cmd.Add(ConfigurationOption);
+        cmd.Add(VerbosityOption);
         cmd.Add(DeleteReportFilesOption);
         cmd.Add(CollectorOption);
         cmd.Add(MergeCoverageFormatOption);
@@ -166,6 +186,8 @@ public class RerunCommandConfiguration
         NoRestore = context.ParseResult.FindResultFor(NoRestoreOption) is not null;
         Delay = context.ParseResult.GetValueForOption(DelayOption) * 1000;
         Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
+        Configuration = context.ParseResult.GetValueForOption(ConfigurationOption)!;
+        Verbosity = context.ParseResult.GetValueForOption(VerbosityOption);
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
         MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
@@ -181,6 +203,8 @@ public class RerunCommandConfiguration
             AddArguments(NoBuild, NoBuildOption),
             AddArguments(NoRestore, NoRestoreOption),
             AddArguments(Blame, BlameOption),
+            AddArguments(Configuration, ConfigurationOption),
+            AddArguments(Verbosity, VerbosityOption),
             AddArguments(Collector, CollectorOption),
             string.IsNullOrWhiteSpace(resultsDirectory) ? resultsDirectory : AddArguments(resultsDirectory, ResultsDirectoryOption),
             GetPArguments());
