@@ -9,16 +9,20 @@ using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace dotnet_test_rerun.IntegrationTests;
 
 public class DotNetTestRerunTests
 {
+    private readonly ITestOutputHelper TestOutputHelper;
     private static string _dir = TestUtilities.GetTmpDirectory();
     private static readonly IFileSystem FileSystem = new FileSystem();
 
-    public DotNetTestRerunTests()
+    public DotNetTestRerunTests(ITestOutputHelper testOutputHelper)
     {
+        TestOutputHelper = testOutputHelper;
         TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(_dir));
     }
 
@@ -45,12 +49,12 @@ public class DotNetTestRerunTests
         Environment.ExitCode = 0;
 
         // Act
-        var output = await RunDotNetTestRerunAndCollectOutputMessage("MSTestExample", "--collect \"XPlat Code Coverage\" --configuration \"debug\" --verbosity \"detailed\"");
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("MSTestExample", "--collect \"XPlat Code Coverage\" --configuration \"debug\" --verbosity \"minimal\"");
 
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] {"Failed!", "Rerun attempt"});
-        output.Should().Contain("-property:Configuration=debug");
+        output.Should().Contain("-c \"debug\" -v \"Minimal\"");
         Environment.ExitCode.Should().Be(0);
         IsThereACoverageFile().Should().BeTrue();
     }

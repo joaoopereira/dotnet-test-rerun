@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 
