@@ -110,7 +110,7 @@ public class RerunCommandConfigurationUnitTests
         var args = _configuration.GetTestArgumentList("");
 
         //Assert
-        args.Should().Be("test ");
+        args.Should().Be("test");
     }
     
     [Fact]
