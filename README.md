@@ -4,26 +4,25 @@
 [![1]][2] [![6]][7] [![3]][4] [![5]][4]
 
 # Description
-Unfortunately, there isn't a way with plain `dotnet test` to automatically rerun failed tests.
-
+Unfortunately, there isn't a way with plain `dotnet test` to automatically rerun failed tests.\
 This tool is wrapper for the `dotnet test` that automatically reruns any tests with the outcome "Failed" until they pass or a maximum number of attempts has been reached. This is useful, for cases where tests may fail intermittently due to external factors such as network connectivity, database availability, or race conditions.
 
-# Installation
+# :package: Installation
 ```sh
 dotnet tool install --global dotnet-test-rerun
 ```
 
-# Usage
+# :keyboard: Usage
 ```sh
 test-rerun [somepathtodll] [OPTIONS]
 ```
 
-## Arguments
+## :arrow_forward: Arguments
 | argument | description                       |
 | -------- | --------------------------------- |
 | `path`   | Path to a test project .dll file. |
 
-## Options
+## :arrow_forward: Options
 | option               | description                                                                                                            |
 | -------------------- |------------------------------------------------------------------------------------------------------------------------|
 | `--filter`           | Run tests that match the given expression.                                                                             |
@@ -43,9 +42,31 @@ test-rerun [somepathtodll] [OPTIONS]
 | `--mergeCoverageFormat` | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed. |
 
 
-Note: Sending `/p:` instructions to set property values is also allowed. 
+Note: Sending `/p:` instructions to set property values is also allowed.
 
-# License
+## 👤 Author & Contributors
+
+👤 **João Pereira**
+
+- Website: [jo-pereira.com](https://jo-pereira.com)
+- Github: [@joaoopereira](https://github.com/joaoopereira)
+
+👥 **Contributors**
+
+[![Contributors](https://contrib.rocks/image?repo=joaoopereira/dotnet-test-rerun)](https://github.com/joaoopereira/dotnet-test-rerun/graphs/contributors)
+
+## :handshake: Contributing
+
+Contributions, issues and feature requests are welcome!\
+Feel free to check the [issues page](https://github.com/joaoopereira/dotnet-test-rerun/issues).
+
+## Show your support
+
+Give a :star: if this project helped you!
+
+## :memo: License
+
+Copyright © 2023 [João Pereira](https://github.com/joaoopereira).\
 This tool is licensed under GNU General Public License v3.0. See the [LICENSE](/LICENSE) file for details.
 
 [1]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/cd.yml/badge.svg
