@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.5.0-alpha.0"></a>
+## [1.5.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.5.0-alpha.0) (2023-8-24)
+
+### Features
+
+* add configuration and verbosity options ([2263b91](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/2263b911dac6be2758c59efa18ac0dfa1b84ef64))
+* add configuration and verbosity options ([391047c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/391047c783c0e83a09bc43ea4c088d11128b107f))
+* allow path to be optional ([fccc53c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/fccc53cb7bb4e949372626184d0f17eaae6cbccf))
+
 <a name="1.4.0-alpha.5"></a>
 ## [1.4.0-alpha.5](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.4.0-alpha.5) (2023-8-1)
 
