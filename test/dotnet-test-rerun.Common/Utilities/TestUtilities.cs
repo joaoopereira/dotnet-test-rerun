@@ -33,6 +33,23 @@ namespace dotnet_test_rerun.IntegrationTests.Utilities;
         }
 
         /// <summary>
+        /// Copies the fixture to a directory
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="fixtureName"></param>
+        /// <param name="target"></param>
+        public static void CopyFixtureFile(string folder, string fixtureName, DirectoryInfo target)
+        {
+            Directory.CreateDirectory(target.FullName);
+            var source = new DirectoryInfo(System.IO.Path.GetFullPath(
+                System.IO.Path.Join(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "..", "..", "..", "Fixtures", folder)));
+            var file = source.GetFiles().FirstOrDefault(file => file.Name == fixtureName);
+            file!.CopyTo(Path.Combine(target.FullName, file.Name), true);
+        }
+        
+        /// <summary>
         /// Copies all files from a source directory to a target directory
         /// </summary>
         /// <param name="source"></param>

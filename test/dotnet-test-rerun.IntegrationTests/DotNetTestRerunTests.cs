@@ -10,7 +10,6 @@ using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace dotnet_test_rerun.IntegrationTests;
 
@@ -266,6 +265,29 @@ public class DotNetTestRerunTests
 
         var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
         files.Should().HaveCount(0);
+    }
+    
+    [Fact]
+    public async Task DotnetTestRerun_FailingNUnit_PassOnSecond_TwoFailingProjects()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitMultipleFailingProjects");
+
+        // Assert
+        output.Should().Contain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(3));
+        output.Should().Contain("Rerun filter:",
+            Exactly.Twice());
+        output.Should().Contain("Failed:     2, Passed:     1",
+            Exactly.Once());            
+        output.Should().Contain("Failed:     1, Passed:     1",
+            Exactly.Twice());        
+        output.Should().Contain("Failed:     0, Passed:     1",
+            Exactly.Twice());
+        Environment.ExitCode.Should().Be(0);
     }
 
     private async Task<string> RunDotNetTestRerunAndCollectOutputMessage(string proj, string extraArgs = "", string? dir = null)
