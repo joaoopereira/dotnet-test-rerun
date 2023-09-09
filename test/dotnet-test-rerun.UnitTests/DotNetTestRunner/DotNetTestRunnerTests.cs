@@ -1,15 +1,10 @@
-﻿using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
-using System.Diagnostics;
-using System.IO.Abstractions;
-using dotnet.test.rerun.Analyzers;
+﻿using System.Diagnostics;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.DotNetTestRunner;
@@ -21,8 +16,8 @@ public class DotNetTestRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
 
         // Act
         var error = dotNetTestRunner.GetErrorCode();
@@ -36,18 +31,16 @@ public class DotNetTestRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
-        processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>()));
-        processExecution.Setup(x => x.FetchError(It.IsAny<Process>()));
-        processExecution.Setup(x => x.End(It.IsAny<Process>()))
-            .ReturnsAsync(0);
-        processExecution.Setup(x => x.GetOutput())
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
+        processExecution.End(Arg.Any<Process>())
+            .Returns(0);
+        processExecution.GetOutput()
             .Returns("No errors");
-        processExecution.Setup(x => x.GetError())
+        processExecution.GetError()
             .Returns(string.Empty);
-        processExecution.Setup(x => x.Start(It.IsAny<ProcessStartInfo>()))
-            .ReturnsAsync(new Process());
+        processExecution.Start(Arg.Any<ProcessStartInfo>())
+            .Returns(new Process());
 
         // Act
         await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
@@ -61,18 +54,16 @@ public class DotNetTestRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
-        processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>()));
-        processExecution.Setup(x => x.FetchError(It.IsAny<Process>()));
-        processExecution.Setup(x => x.End(It.IsAny<Process>()))
-            .ReturnsAsync(1);
-        processExecution.Setup(x => x.GetOutput())
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
+        processExecution.End(Arg.Any<Process>())
+            .Returns(1);
+        processExecution.GetOutput()
             .Returns(string.Empty);
-        processExecution.Setup(x => x.GetError())
+        processExecution.GetError()
             .Returns("Unexpected error");
-        processExecution.Setup(x => x.Start(It.IsAny<ProcessStartInfo>()))
-            .ReturnsAsync(new Process());
+        processExecution.Start(Arg.Any<ProcessStartInfo>())
+            .Returns(new Process());
 
         // Act
         var act = () => dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
@@ -87,18 +78,16 @@ public class DotNetTestRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
-        processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>()));
-        processExecution.Setup(x => x.FetchError(It.IsAny<Process>()));
-        processExecution.Setup(x => x.End(It.IsAny<Process>()))
-            .ReturnsAsync(1);
-        processExecution.Setup(x => x.GetOutput())
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
+        processExecution.End(Arg.Any<Process>())
+            .Returns(1);
+        processExecution.GetOutput()
             .Returns(String.Empty);
-        processExecution.Setup(x => x.GetError())
+        processExecution.GetError()
             .Returns("No test source files were specified.");
-        processExecution.Setup(x => x.Start(It.IsAny<ProcessStartInfo>()))
-            .ReturnsAsync(new Process());
+        processExecution.Start(Arg.Any<ProcessStartInfo>())
+            .Returns(new Process());
 
         // Act
         await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
@@ -112,18 +101,16 @@ public class DotNetTestRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution.Object);
-        processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>()));
-        processExecution.Setup(x => x.FetchError(It.IsAny<Process>()));
-        processExecution.Setup(x => x.End(It.IsAny<Process>()))
-            .ReturnsAsync(1);
-        processExecution.Setup(x => x.GetOutput())
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
+        processExecution.End(Arg.Any<Process>())
+            .Returns(1);
+        processExecution.GetOutput()
             .Returns("FirstLine\nFailed!  - Failed:\nThirdLine");
-        processExecution.Setup(x => x.GetError())
+        processExecution.GetError()
             .Returns(string.Empty);
-        processExecution.Setup(x => x.Start(It.IsAny<ProcessStartInfo>()))
-            .ReturnsAsync(new Process());
+        processExecution.Start(Arg.Any<ProcessStartInfo>())
+            .Returns(new Process());
 
         // Act
         await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
