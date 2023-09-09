@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.5.0"></a>
+## [1.5.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.5.0) (2023-9-9)
+
+### Features
+
+* allow the processing of multiple trx files ([3d82209](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/3d822098115c4f4d57a8474fef604960c2c4dae2))
+
 <a name="1.4.2-alpha.0"></a>
 ## [1.4.2-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.4.2-alpha.0) (2023-8-16)
 
