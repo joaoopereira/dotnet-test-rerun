@@ -1,16 +1,12 @@
-﻿using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
-using System.Diagnostics;
-using System.IO.Abstractions;
+﻿using System.Diagnostics;
 using dotnet_test_rerun.IntegrationTests.Utilities;
-using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
-using Moq;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.DotNetTestRunner;
@@ -25,8 +21,8 @@ public class DotNetCoverageRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution.Object);
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunCommandConfiguration()
         {
@@ -34,20 +30,19 @@ public class DotNetCoverageRunnerTests
         };
 
         TestUtilities.CopyFixture("DotNetCoverage", new DirectoryInfo(_dir));
-        
-        processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>())).Verifiable();
-        processExecution.Setup(x => x.FetchError(It.IsAny<Process>())).Verifiable();
-        processExecution.Setup(x => x.End(It.IsAny<Process>()))
-            .ReturnsAsync(0).Verifiable();
-        processExecution.Setup(x => x.Start(It.IsAny<ProcessStartInfo>()))
-            .ReturnsAsync(new Process()).Verifiable();
+
+        processExecution.End(Arg.Any<Process>()).Returns(0);
+        processExecution.Start(Arg.Any<ProcessStartInfo>()).Returns(new Process());
 
         // Act
         var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
 
         // Assert
         await act.Should().NotThrowAsync<RerunException>();
-        processExecution.VerifyAll();
+        processExecution.Received(1).FetchOutput(Arg.Any<Process>());
+        processExecution.Received(1).FetchError(Arg.Any<Process>());
+        await processExecution.Received(1).End(Arg.Any<Process>());
+        await processExecution.Received(1).Start(Arg.Any<ProcessStartInfo>());
     }
     
     [Fact]
@@ -55,8 +50,8 @@ public class DotNetCoverageRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution.Object);
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunCommandConfiguration()
         {
@@ -77,8 +72,8 @@ public class DotNetCoverageRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution.Object);
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunCommandConfiguration()
         {
@@ -88,21 +83,20 @@ public class DotNetCoverageRunnerTests
 
         TestUtilities.CopyFixture("DotNetCoverage", new DirectoryInfo(_dir));
         
-        processExecution.Setup(x => x.FetchOutput(It.IsAny<Process>())).Verifiable();
-        processExecution.Setup(x => x.FetchError(It.IsAny<Process>())).Verifiable();
-        processExecution.Setup(x => x.End(It.IsAny<Process>()))
-            .ReturnsAsync(1).Verifiable();
-        processExecution.Setup(x => x.Start(It.IsAny<ProcessStartInfo>()))
-            .ReturnsAsync(new Process()).Verifiable();
-        processExecution.Setup(x => x.GetError())
-            .Returns(errorMessage).Verifiable();
+        processExecution.End(Arg.Any<Process>()).Returns(1);
+        processExecution.Start(Arg.Any<ProcessStartInfo>())!.Returns(new Process());
+        processExecution.GetError().Returns(errorMessage);
 
         // Act
         var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
 
         // Assert
         await act.Should().ThrowAsync<RerunException>().WithMessage($"*{errorMessage}");
-        processExecution.VerifyAll();
+        processExecution.Received(1).FetchOutput(Arg.Any<Process>());
+        processExecution.Received(1).FetchError(Arg.Any<Process>());
+        await processExecution.Received(1).End(Arg.Any<Process>());
+        await processExecution.Received(1).Start(Arg.Any<ProcessStartInfo>());
+        processExecution.Received(2).GetError();
     }
     
     [Fact]
@@ -110,8 +104,8 @@ public class DotNetCoverageRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = new Mock<IProcessExecution>(MockBehavior.Strict);
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution.Object);
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunCommandConfiguration()
         {
@@ -121,14 +115,12 @@ public class DotNetCoverageRunnerTests
 
         TestUtilities.CopyFixture("DotNetCoverage", new DirectoryInfo(_dir));
         
-        processExecution.Setup(x => x.Start(It.IsAny<ProcessStartInfo>()))
-            .ThrowsAsync(new Exception(errorMessage)).Verifiable();
+        processExecution.Start(Arg.Any<ProcessStartInfo>()).Throws(new Exception(errorMessage));
 
         // Act
         var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
 
         // Assert
         await act.Should().ThrowAsync<RerunException>().WithMessage($"*{errorMessage}");
-        processExecution.VerifyAll();
     }
 }

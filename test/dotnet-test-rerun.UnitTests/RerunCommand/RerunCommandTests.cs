@@ -8,7 +8,7 @@ using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
-using Moq;
+using NSubstitute;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.RerunCommand;
@@ -22,22 +22,22 @@ public class RerunCommandTests
         var logger = new Logger();
         var config = new RerunCommandConfiguration();
         InitialConfigurationSetup(config);
-        var dotNetTestRunner = new Mock<IDotNetTestRunner>();
-        var dotNetCoverageRunner = new Mock<IDotNetCoverageRunner>();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
         var fileSystem = new FileSystem();
-        var testResultsAnalyzer = new Mock<ITestResultsAnalyzer>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner.Object,
-            dotNetCoverageRunner.Object, fileSystem, testResultsAnalyzer.Object);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Setup(x => x.Test(config, directoryInfo.FullName))
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
 
         // Act
         await command.Run();
 
         // Assert
-        dotNetTestRunner.Verify(x => x.Test(config, directoryInfo.FullName), Times.Once);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
     }
 
 
@@ -49,15 +49,15 @@ public class RerunCommandTests
         var config = new RerunCommandConfiguration();
         var cmd = new Command("test-rerun");
         config.Set(cmd);
-        var dotNetTestRunner = new Mock<IDotNetTestRunner>();
-        var dotNetCoverageRunner = new Mock<IDotNetCoverageRunner>();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
         var fileSystem = new FileSystem();
-        var testResultsAnalyzer = new Mock<ITestResultsAnalyzer>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var directoryInfo = fileSystem.DirectoryInfo.New("results-directory");
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner.Object,
-            dotNetCoverageRunner.Object, fileSystem, testResultsAnalyzer.Object);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Setup(x => x.Test(config, directoryInfo.FullName))
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
 
         // Act
@@ -65,7 +65,7 @@ public class RerunCommandTests
                                   "--results-directory results-directory --rerunMaxAttempts 2 --loglevel Debug");
 
         // Assert
-        dotNetTestRunner.Verify(x => x.Test(config, directoryInfo.FullName), Times.Once);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
     }
 
     [Fact]
@@ -75,27 +75,28 @@ public class RerunCommandTests
         var logger = new Logger();
         var config = new RerunCommandConfiguration();
         InitialConfigurationSetup(config);
-        var dotNetTestRunner = new Mock<IDotNetTestRunner>();
-        var dotNetCoverageRunner = new Mock<IDotNetCoverageRunner>();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
         var fileSystem = new FileSystem();
-        var testResultsAnalyzer = new Mock<ITestResultsAnalyzer>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner.Object,
-            dotNetCoverageRunner.Object, fileSystem, testResultsAnalyzer.Object);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Setup(x => x.Test(config, directoryInfo.FullName))
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
-        dotNetTestRunner.Setup(x => x.GetErrorCode())
+        dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
-        testResultsAnalyzer.SetupSequence(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()))
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(Array.Empty<IFileInfo>());
 
         // Act
         await command.Run();
 
         // Assert
-        dotNetTestRunner.Verify(x => x.Test(config, directoryInfo.FullName), Times.Once);
-        testResultsAnalyzer.Verify(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()), Times.Once);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
 
     [Fact]
@@ -105,30 +106,32 @@ public class RerunCommandTests
         var logger = new Logger();
         var config = new RerunCommandConfiguration();
         InitialConfigurationSetup(config);
-        var dotNetTestRunner = new Mock<IDotNetTestRunner>();
-        var dotNetCoverageRunner = new Mock<IDotNetCoverageRunner>();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
         var fileSystem = new FileSystem();
-        var testResultsAnalyzer = new Mock<ITestResultsAnalyzer>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner.Object,
-            dotNetCoverageRunner.Object, fileSystem, testResultsAnalyzer.Object);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var trxFile = fileSystem.FileInfo.New("Second.trx");
 
-        dotNetTestRunner.Setup(x => x.Test(config, directoryInfo.FullName))
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
-        dotNetTestRunner.Setup(x => x.GetErrorCode())
+        dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
-        testResultsAnalyzer.SetupSequence(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()))
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { trxFile });
-        testResultsAnalyzer.Setup(x => x.GetFailedTestsFilter(It.Is<IFileInfo[]>(files => files[0] == trxFile)))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile))
             .Returns(String.Empty);
 
         // Act
         await command.Run();
 
         // Assert
-        dotNetTestRunner.Verify(x => x.Test(config, directoryInfo.FullName), Times.Once);
-        testResultsAnalyzer.Verify(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()), Times.Once);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile));
     }
 
     [Fact]
@@ -138,37 +141,36 @@ public class RerunCommandTests
         var logger = new Logger();
         var config = new RerunCommandConfiguration();
         InitialConfigurationSetup(config);
-        var dotNetTestRunner = new Mock<IDotNetTestRunner>();
-        var dotNetCoverageRunner = new Mock<IDotNetCoverageRunner>();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
         var fileSystem = new FileSystem();
-        var testResultsAnalyzer = new Mock<ITestResultsAnalyzer>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner.Object,
-            dotNetCoverageRunner.Object, fileSystem, testResultsAnalyzer.Object);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var firstTrxFile = fileSystem.FileInfo.New("First.trx");
         var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
 
-        dotNetTestRunner.SetupSequence(x => x.Test(config, directoryInfo.FullName))
-            .Returns(Task.CompletedTask)
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
-        dotNetTestRunner.SetupSequence(x => x.GetErrorCode())
-            .Returns(ErrorCode.FailedTests)
-            .Returns(ErrorCode.Success);
-        testResultsAnalyzer.SetupSequence(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()))
-            .Returns(new[] { firstTrxFile })
-            .Returns(new[] { secondTrxFile });
-        testResultsAnalyzer.Setup(x => x.GetFailedTestsFilter(It.Is<IFileInfo[]>(files => files[0] == firstTrxFile)))
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns("filterToRerun");
-        testResultsAnalyzer.Setup(x => x.GetFailedTestsFilter(It.Is<IFileInfo[]>(files => files[0] == secondTrxFile)))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
             .Returns(string.Empty);
 
         // Act
         await command.Run();
 
-        // Assert
-        dotNetTestRunner.Verify(x => x.Test(config, directoryInfo.FullName), Times.Exactly(2));
-        testResultsAnalyzer.Verify(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()), Times.Exactly(2));
-        testResultsAnalyzer.Verify(x => x.GetFailedTestsFilter(new[] { secondTrxFile}), Times.Exactly(1));
+        // Assert       
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
     }
 
     [Fact]
@@ -178,35 +180,33 @@ public class RerunCommandTests
         var logger = new Logger();
         var config = new RerunCommandConfiguration();
         InitialConfigurationSetup(config);
-        var dotNetTestRunner = new Mock<IDotNetTestRunner>();
-        var dotNetCoverageRunner = new Mock<IDotNetCoverageRunner>();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
         var fileSystem = new FileSystem();
-        var testResultsAnalyzer = new Mock<ITestResultsAnalyzer>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner.Object,
-            dotNetCoverageRunner.Object, fileSystem, testResultsAnalyzer.Object);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var firstTrxFile = fileSystem.FileInfo.New("First.trx");
         var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
 
-        dotNetTestRunner.SetupSequence(x => x.Test(config, directoryInfo.FullName))
-            .Returns(Task.CompletedTask)
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
-        dotNetTestRunner.SetupSequence(x => x.GetErrorCode())
-            .Returns(ErrorCode.FailedTests)
-            .Returns(ErrorCode.Success);
-        testResultsAnalyzer.SetupSequence(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()))
-            .Returns(new[] { firstTrxFile, secondTrxFile })
-            .Returns(Array.Empty<IFileInfo>() );
-        testResultsAnalyzer.Setup(x => x.GetFailedTestsFilter(It.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile)))
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { firstTrxFile, secondTrxFile }, Array.Empty<IFileInfo>());
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile))
             .Returns("filterToRerun");
 
         // Act
         await command.Run();
 
         // Assert
-        dotNetTestRunner.Verify(x => x.Test(config, directoryInfo.FullName), Times.Exactly(2));
-        testResultsAnalyzer.Verify(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()), Times.Exactly(2));
-        testResultsAnalyzer.Verify(x => x.GetFailedTestsFilter(new[] { firstTrxFile, secondTrxFile}), Times.Once);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile));
     }
 
     [Fact]
@@ -216,39 +216,39 @@ public class RerunCommandTests
         var logger = new Logger();
         var config = new RerunCommandConfiguration();
         InitialConfigurationSetup(config, "--deleteReports");
-        var dotNetTestRunner = new Mock<IDotNetTestRunner>();
-        var dotNetCoverageRunner = new Mock<IDotNetCoverageRunner>();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
         var fileSystem = new FileSystem();
-        var testResultsAnalyzer = new Mock<ITestResultsAnalyzer>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner.Object,
-            dotNetCoverageRunner.Object, fileSystem, testResultsAnalyzer.Object);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var firstTrxFile = fileSystem.FileInfo.New("First.trx");
         var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
-
-        dotNetTestRunner.SetupSequence(x => x.Test(config, directoryInfo.FullName))
-            .Returns(Task.CompletedTask)
+        
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
-        dotNetTestRunner.SetupSequence(x => x.GetErrorCode())
-            .Returns(ErrorCode.FailedTests)
-            .Returns(ErrorCode.Success);
-        testResultsAnalyzer.SetupSequence(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()))
-            .Returns(new []{ firstTrxFile })
-            .Returns(new [] { secondTrxFile });
-        testResultsAnalyzer.Setup(x => x.GetFailedTestsFilter(It.Is<IFileInfo[]>(files => files[0] == firstTrxFile)))
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new []{ firstTrxFile },new [] { secondTrxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns("filterToRerun");
-        testResultsAnalyzer.Setup(x => x.GetFailedTestsFilter(It.Is<IFileInfo[]>(files => files[0] == secondTrxFile)))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
             .Returns(string.Empty);
-        testResultsAnalyzer.Setup(x => x.GetReportFiles())
+        testResultsAnalyzer.GetReportFiles()
             .Returns(new HashSet<string>() {firstTrxFile.FullName, secondTrxFile.FullName});
 
         // Act
         await command.Run();
 
         // Assert
-        dotNetTestRunner.Verify(x => x.Test(config, directoryInfo.FullName), Times.Exactly(2));
-        testResultsAnalyzer.Verify(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()), Times.Exactly(2));
-        testResultsAnalyzer.Verify(x => x.GetFailedTestsFilter(new[] { secondTrxFile}), Times.Exactly(1));
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
+        testResultsAnalyzer.Received().GetReportFiles();
         firstTrxFile.Exists.Should().BeFalse();
         secondTrxFile.Exists.Should().BeFalse();
     }
@@ -260,38 +260,33 @@ public class RerunCommandTests
         var logger = new Logger();
         var config = new RerunCommandConfiguration();
         InitialConfigurationSetup(config);
-        var dotNetTestRunner = new Mock<IDotNetTestRunner>();
-        var dotNetCoverageRunner = new Mock<IDotNetCoverageRunner>();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
         var fileSystem = new FileSystem();
-        var testResultsAnalyzer = new Mock<ITestResultsAnalyzer>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner.Object,
-            dotNetCoverageRunner.Object, fileSystem, testResultsAnalyzer.Object);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var firstTrxFile = fileSystem.FileInfo.New("First.trx");
         var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
-
-        dotNetTestRunner.SetupSequence(x => x.Test(config, directoryInfo.FullName))
-            .Returns(Task.CompletedTask)
-            .Returns(Task.CompletedTask)
+        
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
-        dotNetTestRunner.SetupSequence(x => x.GetErrorCode())
-            .Returns(ErrorCode.FailedTests)
-            .Returns(ErrorCode.FailedTests)
+        dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
-        testResultsAnalyzer.SetupSequence(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()))
-            .Returns(new [] {firstTrxFile})
-            .Returns(new [] {secondTrxFile});
-        testResultsAnalyzer.SetupSequence(x => x.GetFailedTestsFilter(It.IsAny<IFileInfo[]>()))
-            .Returns("filterToRerun")
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new [] {firstTrxFile},new [] {secondTrxFile});
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns("filterToRerun");
 
         // Act
         await command.Run();
 
         // Assert
-        dotNetTestRunner.Verify(x => x.Test(config, directoryInfo.FullName), Times.Exactly(3));
-        testResultsAnalyzer.Verify(x => x.GetTrxFiles(It.IsAny<IDirectoryInfo>(), It.IsAny<DateTime>()), Times.Exactly(2));
-        testResultsAnalyzer.Verify(x => x.GetFailedTestsFilter(It.IsAny<IFileInfo[]>()), Times.Exactly(2));
+        await dotNetTestRunner.Received(3).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+        testResultsAnalyzer.Received(2).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
     }
 
     private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "")
