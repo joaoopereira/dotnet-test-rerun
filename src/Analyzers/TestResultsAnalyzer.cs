@@ -14,43 +14,47 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         Log = logger;
         reportFiles = new ();
     }
-    
-    public string GetFailedTestsFilter(IFileInfo trxFile)
+
+    public string GetFailedTestsFilter(IFileInfo[] trxFiles)
     {
-        const string outcome = "Failed";
-        var trx = TrxDeserializer.Deserialize(trxFile.FullName);
-        reportFiles.Add(trxFile.FullName);
+        var failedTests = new List<string>();
+        foreach (var trxFile in trxFiles)
+            failedTests.AddRange(GetFailedTestsFilter(trxFile));
         
-        var tests = trx.Results.UnitTestResults
-            .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
-            .Select(t => $"FullyQualifiedName~{(t.TestName.IndexOf("(") > 0 ? t.TestName.Substring(0, t.TestName.IndexOf("(")) : t.TestName).TrimEnd()}")
-            .Distinct()
-            .ToList();
-
-        if (tests.Count == 0)
-        {
-            Log.Warning($"No tests found with the Outcome {outcome}");
-            return "";
-        }
-
-        var testFilter = string.Join(" | ", tests);
+        var testFilter = string.Join(" | ", failedTests);
         Log.Debug(testFilter);
         return testFilter;
     }
     
-    public IFileInfo? GetTrxFile(IDirectoryInfo resultsDirectory)
+    public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
         => resultsDirectory.Exists ?
-           resultsDirectory.EnumerateFiles("*.trx").MaxBy(f => f.Name) :
-           default;
+           resultsDirectory.EnumerateFiles("*.trx").Where(file => file.CreationTime >= startSearchTime).ToArray() :
+           Array.Empty<IFileInfo>();
 
-    public void AddLastTrxFile(IDirectoryInfo resultsDirectory)
+    public void AddLastTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
     {
-        var fileInfo = GetTrxFile(resultsDirectory);
-
-        if (fileInfo is not null)
+        foreach (var fileInfo in GetTrxFiles(resultsDirectory, startSearchTime))
             reportFiles.Add(fileInfo.FullName);
     }
     
     public HashSet<string> GetReportFiles()
         => reportFiles;
+
+    private List<string> GetFailedTestsFilter(IFileInfo trxFile)
+    {
+        const string outcome = "Failed";
+        var trx = TrxDeserializer.Deserialize(trxFile.FullName);
+        reportFiles.Add(trxFile.FullName);
+
+        var tests = trx.Results?.UnitTestResults
+            .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
+            .Select(t => $"FullyQualifiedName~{(t.TestName.IndexOf("(") > 0 ? t.TestName.Substring(0, t.TestName.IndexOf("(")) : t.TestName).TrimEnd()}")
+            .Distinct()
+            .ToList() ?? new List<string>();
+
+        if (tests.Count == 0)
+            Log.Warning($"No tests found with the Outcome {outcome} in file {trxFile.Name}");
+
+        return tests;
+    }
 }

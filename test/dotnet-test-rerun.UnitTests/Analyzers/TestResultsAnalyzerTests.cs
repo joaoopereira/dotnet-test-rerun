@@ -1,7 +1,7 @@
 ﻿using System.IO.Abstractions;
+using dotnet_test_rerun.IntegrationTests.Utilities;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Logging;
-using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
 using Xunit;
 
@@ -12,7 +12,7 @@ public class TestResultsAnalyzerTests
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly ILogger Logger = new Logger();
 
-    private TestResultsAnalyzer TestResultsAnalyzer = new TestResultsAnalyzer(Logger);
+    private TestResultsAnalyzer TestResultsAnalyzer = new (Logger);
     private readonly IDirectoryInfo ResultsDirectory = FileSystem.DirectoryInfo.New("../../../Fixtures/RerunCommand/");
 
     [Fact]
@@ -22,7 +22,7 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithAllTestsPassing.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().BeEmpty();
@@ -35,7 +35,7 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithOneFailedTest.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().Be("FullyQualifiedName~XUnitExample.SimpleTest.SimpleStringCompare");
@@ -48,7 +48,7 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithSeveralFailedTests.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().Be("FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare | FullyQualifiedName~XUnitExample.UnitTest1.SimpleStringCompare");
@@ -61,7 +61,7 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithAllTestsPassing.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().BeEmpty();
@@ -74,7 +74,7 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithOneFailedTest.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().Be("FullyQualifiedName~SimpleStringCompare");
@@ -87,7 +87,7 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithSeveralFailedTests.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().Be("FullyQualifiedName~SimpleStringCompare | FullyQualifiedName~SimpleNumberCompare");
@@ -100,7 +100,7 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("MsTestTrxFileWithAllTestsPassing.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().BeEmpty();
@@ -113,7 +113,7 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("MsTestTrxFileWithOneFailedTest.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().Be("FullyQualifiedName~SimpleStringCompare");
@@ -126,46 +126,115 @@ public class TestResultsAnalyzerTests
         var trxFile = ResultsDirectory.EnumerateFiles("MsTestTrxFileWithSeveralFailedTests.trx").OrderBy(f => f.Name).LastOrDefault();
 
         //Act
-        var result = TestResultsAnalyzer.GetFailedTestsFilter(trxFile!);
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
         result.Should().Be("FullyQualifiedName~SimpleNumberCompare | FullyQualifiedName~SimpleStringCompare");
     }
     
     [Fact]
-    public void GetTrxFile_FromValidDirectory_ReturnFile()
+    public void GetTrxFiles_FromValidDirectory_ReturnFile()
     {
+        //Arrange
+        DateTime start = DateTime.MinValue;
+        var testDirPath = TestUtilities.GetTmpDirectory();
+        IDirectoryInfo testDir = FileSystem.DirectoryInfo.New(testDirPath);
+        TestUtilities.CopyFixtureFile("RerunCommand", "XUnitTrxFileWithSeveralFailedTests.trx", new DirectoryInfo(testDirPath));
+        
         //Act
-        var result = TestResultsAnalyzer.GetTrxFile(ResultsDirectory);
+        var result = TestResultsAnalyzer.GetTrxFiles(testDir, start);
 
         //Assert
         result.Should().NotBeNull();
-        result!.Name.Should().Be("XUnitTrxFileWithSeveralFailedTests.trx");
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("XUnitTrxFileWithSeveralFailedTests.trx");
+    }
+    
+    
+    [Fact]
+    public void GetTrxFiles_FromValidDirectory_ReturnFiles()
+    {
+        //Act
+        var result = TestResultsAnalyzer.GetTrxFiles(ResultsDirectory, DateTime.MinValue);
+
+        //Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(9);
     }
     
     [Fact]
-    public void GetTrxFile_FromDirectoryWithoutFiles_ReturnNoFile()
+    public void GetTrxFiles_FromDirectoryWithoutFiles_ReturnNoFile()
     {
         //Arrange
         IDirectoryInfo dir = FileSystem.DirectoryInfo.New(".");
+        DateTime start = DateTime.MinValue;
         
         //Act
-        var result = TestResultsAnalyzer.GetTrxFile(dir);
+        var result = TestResultsAnalyzer.GetTrxFiles(dir, start);
 
         //Assert
-        result.Should().BeNull();
+        result.Should().BeEmpty();
     }
     
     [Fact]
     public void AddLastTrxFile_FromValidDirectory_ReturnFiles()
     {
+        //Arrange
+        DateTime start = DateTime.MinValue;
+        var testDirPath = TestUtilities.GetTmpDirectory();
+        IDirectoryInfo testDir = FileSystem.DirectoryInfo.New(testDirPath);
+        TestUtilities.CopyFixtureFile("RerunCommand", "MsTestTrxFileWithOneFailedTest.trx", new DirectoryInfo(testDirPath));
+        
         //Act
-        TestResultsAnalyzer.AddLastTrxFile(ResultsDirectory);
+        TestResultsAnalyzer.AddLastTrxFiles(testDir, start);
 
         //Assert
         var reportFiles = TestResultsAnalyzer.GetReportFiles();
         reportFiles.Should().NotBeNull();
         reportFiles.Should().HaveCount(1);
-        reportFiles.ElementAt(0).Should().Be(TestResultsAnalyzer.GetTrxFile(ResultsDirectory)?.FullName);
+        var trxFiles = TestResultsAnalyzer.GetTrxFiles(testDir, start);
+        trxFiles.Should().HaveCount(1);
+        reportFiles.ElementAt(0).Should().Be(trxFiles[0].FullName);
+    }
+    
+    [Fact]
+    public void GetFailedTestsFilter_MsTest_NoFailedTests_WithTwoFiles_ReturnEmpty()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("MsTestTrxFileWithAllTestsPassing.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!, trxFile!});
+
+        //Assert
+        result.Should().BeEmpty();
+    }
+    
+    [Fact]
+    public void GetFailedTestsFilter_NUnit_FailedTests_InTwoFiles_ReturnAll()
+    {
+        //Arrange
+        var firstTrxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithOneFailedTest.trx").OrderBy(f => f.Name).LastOrDefault();
+        var secondTrxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithSeveralFailedTests.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { firstTrxFile!, secondTrxFile!});
+
+        //Assert
+        result.Should().Be("FullyQualifiedName~SimpleStringCompare | FullyQualifiedName~SimpleStringCompare | FullyQualifiedName~SimpleNumberCompare");
+    }
+    
+    [Fact]
+    public void GetFailedTestsFilter_NUnit_OneFileWithFailing_AnotherWithPassing_ReturnOne()
+    {
+        //Arrange
+        var firstTrxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithOneFailedTest.trx").OrderBy(f => f.Name).LastOrDefault();
+        var secondTrxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithAllTestsPassing.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { firstTrxFile!, secondTrxFile!});
+
+        //Assert
+        result.Should().Be("FullyQualifiedName~SimpleStringCompare");
     }
 }

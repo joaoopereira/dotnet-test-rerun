@@ -45,8 +45,8 @@ public class RerunCommand : RootCommand
     public async Task Run()
     {
         var startOfProcess = DateTime.Now;
+        var startOfDotnetRun = DateTime.Now;
         IDirectoryInfo resultsDirectory = FileSystem.DirectoryInfo.New(Config.ResultsDirectory);
-        var oldTrxFile = TestResultsAnalyzer.GetTrxFile(resultsDirectory);
         await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
         if (DotNetTestRunner.GetErrorCode() == ErrorCode.FailedTests)
         {
@@ -54,19 +54,11 @@ public class RerunCommand : RootCommand
             while (attempt <= Config.RerunMaxAttempts)
             {
                 await Task.Delay(Config.Delay);
-                var trxFile = TestResultsAnalyzer.GetTrxFile(resultsDirectory);
+                var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startOfDotnetRun);
 
-                if (trxFile != null)
+                if (trxFiles.Length > 0)
                 {
-                    if (oldTrxFile != null &&
-                        trxFile.FullName.Equals(oldTrxFile.FullName, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        Log.Error("No new trx file was generated");
-                        break;
-                    }
-
-                    var testsToRerun = TestResultsAnalyzer.GetFailedTestsFilter(trxFile);
-                    oldTrxFile = trxFile;
+                    var testsToRerun = TestResultsAnalyzer.GetFailedTestsFilter(trxFiles);
                     if (string.IsNullOrEmpty(testsToRerun))
                     {
                         Environment.ExitCode = 0;
@@ -77,6 +69,7 @@ public class RerunCommand : RootCommand
                     Log.Information($"Rerun attempt {attempt}/{Config.RerunMaxAttempts}");
                     Log.Warning($"Found Failed tests. Rerun filter: {testsToRerun}");
                     Config.Filter = testsToRerun;
+                    startOfDotnetRun = DateTime.Now;
                     await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
                     attempt++;
                 }
@@ -95,7 +88,7 @@ public class RerunCommand : RootCommand
 
         if (Config.DeleteReportFiles)
         {
-            TestResultsAnalyzer.AddLastTrxFile(resultsDirectory);
+            TestResultsAnalyzer.AddLastTrxFiles(resultsDirectory, startOfDotnetRun);
             DeleteFiles();
         }
         

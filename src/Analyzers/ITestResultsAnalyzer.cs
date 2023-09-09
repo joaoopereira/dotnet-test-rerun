@@ -4,11 +4,11 @@ namespace dotnet.test.rerun.Analyzers;
 
 public interface ITestResultsAnalyzer
 {
-    string GetFailedTestsFilter(IFileInfo trxFile);
+    string GetFailedTestsFilter(IFileInfo[] trxFiles);
 
-    IFileInfo? GetTrxFile(IDirectoryInfo resultsDirectory);
+    IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime);
 
-    void AddLastTrxFile(IDirectoryInfo resultsDirectory);
+    void AddLastTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime);
 
     HashSet<string> GetReportFiles();
 }
