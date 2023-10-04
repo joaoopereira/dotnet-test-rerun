@@ -140,6 +140,47 @@ public class RerunCommandTests
         // Arrange
         var logger = new Logger();
         var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, filter: string.Empty);
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var firstTrxFile = fileSystem.FileInfo.New("First.trx");
+        var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
+        var filterToRerun = "filterToRerun";
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+            .Returns(filterToRerun);
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+            .Returns(string.Empty);
+
+        // Act
+        await command.Run();
+
+        // Assert       
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        config.Filter.Should().Be(filterToRerun);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
+    }
+
+    [Fact]
+    public async Task Run_TestsFailOnFirstRun_WithPreviousFilterDefined_PassOnSecond()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
         InitialConfigurationSetup(config);
         var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
         var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
@@ -150,6 +191,7 @@ public class RerunCommandTests
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var firstTrxFile = fileSystem.FileInfo.New("First.trx");
         var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
+        var filterToRerun = "filterToRerun";
 
         dotNetTestRunner.Test(config, directoryInfo.FullName)
             .Returns(Task.CompletedTask);
@@ -158,7 +200,7 @@ public class RerunCommandTests
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
-            .Returns("filterToRerun");
+            .Returns(filterToRerun);
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
             .Returns(string.Empty);
 
@@ -167,6 +209,7 @@ public class RerunCommandTests
 
         // Assert       
         await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        config.Filter.Should().Be(string.Concat("(filter)&(", filterToRerun, ")"));
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
@@ -289,11 +332,11 @@ public class RerunCommandTests
         testResultsAnalyzer.Received(2).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
     }
 
-    private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "")
+    private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "", string filter = "--filter filter ")
     {
         var command = new Command("test-rerun");
         configuration.Set(command);
-        var result = new Parser(command).Parse($"path --filter filter --settings settings --logger logger " +
+        var result = new Parser(command).Parse($"path {filter}--settings settings --logger logger " +
                                                $"--results-directory results-directory --rerunMaxAttempts 2 --loglevel Debug {extraParams}");
         var context = new InvocationContext(result);
         configuration.GetValues(context);

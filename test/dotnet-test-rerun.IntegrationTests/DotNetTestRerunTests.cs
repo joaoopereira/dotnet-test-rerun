@@ -244,6 +244,26 @@ public class DotNetTestRerunTests
             Exactly.Once());
         Environment.ExitCode.Should().Be(0);
     }
+
+    [Fact]
+    public async Task DotnetTestRerun_FailingNUnit_PassOnSecond_WithCategory()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestPassOnSecondRunExampleWithCategory",
+            "--filter TestCategory=FirstCategory|TestCategory=SecondCategory");
+
+        // Assert
+        output.Should().Contain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(1));
+        output.Should().Contain("Rerun filter: (TestCategory=FirstCategory|TestCategory=SecondCategory)&(FullyQualifiedName~SecondSimpleNumberCompare)",
+            Exactly.Once());        
+        output.Should().Contain("Failed:     1, Passed:     1",
+            Exactly.Once());
+        Environment.ExitCode.Should().Be(0);
+    }
     
     [Fact]
     public async Task DotnetTestRerun_FailingXUnit_WithDeleteFiles()

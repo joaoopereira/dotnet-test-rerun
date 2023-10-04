@@ -154,6 +154,8 @@ public class RerunCommandConfiguration
 
     #endregion Options
 
+    private string OriginalFilter;
+    
     public void Set(Command cmd)
     {
         cmd.Add(PathArgument);
@@ -193,6 +195,9 @@ public class RerunCommandConfiguration
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
         MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
         pArguments = FetchPArgumentsFromParse(context.ParseResult);
+        
+        //Store Original Values
+        OriginalFilter = Filter;
     }
 
     public string GetTestArgumentList(string resultsDirectory)
@@ -226,6 +231,11 @@ public class RerunCommandConfiguration
             ? $" {option.Aliases.First()}"
             : string.Empty;
 
+    public string AppendFailedTests(string failedTests)
+        => string.IsNullOrWhiteSpace(OriginalFilter) ? 
+            failedTests : 
+            string.Concat("(", OriginalFilter, ")", "&(", failedTests, ")");
+    
     private string GetMergeExtension()
         => MergeCoverageFormat switch
         {

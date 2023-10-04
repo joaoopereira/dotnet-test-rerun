@@ -112,6 +112,22 @@ public class RerunCommandConfigurationUnitTests
         //Assert
         args.Should().Be("test");
     }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithPArguments()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse("path /p:MyCustomProperty=123");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+        
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be("test path --logger \"trx\" /p:MyCustomProperty=123");
+    }
     
     [Fact]
     public void RerunCommandConfiguration_InvalidVerbosity()
@@ -127,5 +143,42 @@ public class RerunCommandConfigurationUnitTests
         //Assert
         act.Should().Throw<InvalidOperationException>().WithMessage(
             "Cannot parse argument 'test' for option '-v' as expected type 'dotnet.test.rerun.Enums.LoggerVerbosity'.");
+    }
+    
+    [Theory]
+    [InlineData("filter")]
+    [InlineData("filter|secondFilter")]
+    [InlineData("filter|secondFilter|")]
+    public void RerunCommandConfiguration_AppendFailedTests_WithOriginalFilter(string originalFilter)
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse($"path --filter {originalFilter}");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+        var firstTest = "firstTest";
+
+        // Act
+        var failedTests = _configuration.AppendFailedTests(firstTest);
+
+        //Assert
+        failedTests.Should().Be(string.Concat("(", originalFilter, ")", "&(", firstTest, ")"));
+    }
+    
+    [Fact]
+    public void RerunCommandConfiguration_AppendFailedTests_WithNoriginalFilter()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse($"path");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+        var firstTest = "firstTest";
+
+        // Act
+        var failedTests = _configuration.AppendFailedTests(firstTest);
+
+        //Assert
+        failedTests.Should().Be(firstTest);
     }
 }
