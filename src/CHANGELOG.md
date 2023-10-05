@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.5.1-alpha.0"></a>
+## [1.5.1-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.5.1-alpha.0) (2023-10-05)
+
+### Bug Fixes
+
+* on retry add original filter as well as failed tests ([81f8367](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/81f83674b6495da99017ae1e6a33d66131035938))
+
 <a name="1.5.0-alpha.0"></a>
 ## [1.5.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.5.0-alpha.0) (2023-8-24)
 
