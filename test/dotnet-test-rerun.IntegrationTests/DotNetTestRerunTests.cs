@@ -89,7 +89,7 @@ public class DotNetTestRerunTests
         // Assert
         output.Should().NotContain("Passed!");
         output.Should().Contain("Failed!", Exactly.Times(4));
-        output.Should().Contain("Rerun filter: FullyQualifiedName~SimpleNumberFailCompare",
+        output.Should().Contain("Rerun filter: FullyQualifiedName~MSTestExample.UnitTest1.SimpleNumberFailCompare",
             Exactly.Thrice());        
         output.Should().Contain("Failed:     2, Passed:     6",
             Exactly.Once());
@@ -238,7 +238,7 @@ public class DotNetTestRerunTests
         // Assert
         output.Should().Contain("Passed!");
         output.Should().Contain("Failed!", Exactly.Times(1));
-        output.Should().Contain("Rerun filter: FullyQualifiedName~SecondSimpleNumberCompare",
+        output.Should().Contain("Rerun filter: FullyQualifiedName~NUnitTestExample.Tests.SecondSimpleNumberCompare",
             Exactly.Once());        
         output.Should().Contain("Failed:     1, Passed:     1",
             Exactly.Once());
@@ -258,7 +258,7 @@ public class DotNetTestRerunTests
         // Assert
         output.Should().Contain("Passed!");
         output.Should().Contain("Failed!", Exactly.Times(1));
-        output.Should().Contain("Rerun filter: (TestCategory=FirstCategory|TestCategory=SecondCategory)&(FullyQualifiedName~SecondSimpleNumberCompare)",
+        output.Should().Contain("Rerun filter: (TestCategory=FirstCategory|TestCategory=SecondCategory)&(FullyQualifiedName~NUnitTestExample.Tests.SecondSimpleNumberCompare)",
             Exactly.Once());        
         output.Should().Contain("Failed:     1, Passed:     1",
             Exactly.Once());
@@ -307,6 +307,27 @@ public class DotNetTestRerunTests
             Exactly.Twice());        
         output.Should().Contain("Failed:     0, Passed:     1",
             Exactly.Twice());
+        Environment.ExitCode.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DotnetTestRerun_FailingNUnit_PassOnSecond_WithFailingTestWithSameNameAsOnePassed()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestWithTwoTestsWithSameNameExample");
+
+        // Assert
+        output.Should().Contain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(1));
+        output.Should().Contain("Rerun filter: FullyQualifiedName~NUnitTestExample.SimpleTest.SecondSimpleNumberCompare",
+            Exactly.Once());        
+        output.Should().Contain("Failed:     1, Passed:     2",
+            Exactly.Once());   
+        output.Should().Contain("Failed:     0, Passed:     1",
+            Exactly.Once());
         Environment.ExitCode.Should().Be(0);
     }
 

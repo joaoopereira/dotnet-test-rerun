@@ -22,7 +22,6 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             failedTests.AddRange(GetFailedTestsFilter(trxFile));
         
         var testFilter = string.Join(" | ", failedTests);
-        Log.Debug(testFilter);
         return testFilter;
     }
     
@@ -46,9 +45,14 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         var trx = TrxDeserializer.Deserialize(trxFile.FullName);
         reportFiles.Add(trxFile.FullName);
 
+        Dictionary<string, string> testClassByTestId = new Dictionary<string, string>();
+        trx.TestDefinitions?.UnitTests.ForEach(t => testClassByTestId[t.Id] = t.TestMethod.ClassName);
+
         var tests = trx.Results?.UnitTestResults
             .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
-            .Select(t => $"FullyQualifiedName~{(t.TestName.IndexOf("(") > 0 ? t.TestName.Substring(0, t.TestName.IndexOf("(")) : t.TestName).TrimEnd()}")
+            .Select(t => $"FullyQualifiedName~" +
+                         $"{(testClassByTestId.ContainsKey(t.TestId) && t.TestName.Contains(testClassByTestId[t.TestId]) is false ? $"{testClassByTestId[t.TestId]}." : string.Empty)}" +
+                         $"{(t.TestName.IndexOf("(") > 0 ? t.TestName.Substring(0, t.TestName.IndexOf("(")) : t.TestName).TrimEnd()}")
             .Distinct()
             .ToList() ?? new List<string>();
 
