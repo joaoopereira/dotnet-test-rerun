@@ -77,7 +77,20 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleStringCompare");
+        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
+    }
+    
+    [Fact]
+    public void GetFailedTestsFilter_NUnit_OneFailedTest_WithSameNameAsPassed_ReturnOne()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithOneFailedTestWithSameName.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
+
+        //Assert
+        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
     }
     
     [Fact]
@@ -90,7 +103,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleStringCompare | FullyQualifiedName~SimpleNumberCompare");
+        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare");
     }
     
     [Fact]
@@ -116,7 +129,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleStringCompare");
+        result.Should().Be("FullyQualifiedName~MSTestExample.UnitTest1.SimpleStringCompare");
     }
     
     [Fact]
@@ -129,7 +142,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleNumberCompare | FullyQualifiedName~SimpleStringCompare");
+        result.Should().Be("FullyQualifiedName~MSTestExample.UnitTest1.SimpleNumberCompare | FullyQualifiedName~MSTestExample.UnitTest1.SimpleStringCompare");
     }
     
     [Fact]
@@ -159,7 +172,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(9);
+        result.Should().HaveCount(10);
     }
     
     [Fact]
@@ -221,7 +234,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { firstTrxFile!, secondTrxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleStringCompare | FullyQualifiedName~SimpleStringCompare | FullyQualifiedName~SimpleNumberCompare");
+        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare");
     }
     
     [Fact]
@@ -235,6 +248,6 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { firstTrxFile!, secondTrxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~SimpleStringCompare");
+        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
     }
 }
