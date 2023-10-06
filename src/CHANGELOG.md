@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.6.0-alpha.0"></a>
+## [1.6.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.6.0-alpha.0) (2023-10-06)
+
+### Features
+
+* find full qualified name of test to rerun tests (avoid running test with same name) ([96e9d20](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/96e9d2008586d5eab801f648407bd5c04ea69b59))
+
 <a name="1.5.1-alpha.0"></a>
 ## [1.5.1-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.5.1-alpha.0) (2023-10-05)
 
