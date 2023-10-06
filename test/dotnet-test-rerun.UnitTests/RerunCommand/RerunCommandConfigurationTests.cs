@@ -1,6 +1,7 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 using FluentAssertions;
@@ -80,6 +81,7 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Delay.Should().Be(0);
         _configuration.Verbosity.Should().BeNull();
         _configuration.Configuration.Should().BeNull();
+        _configuration.MergeCoverageFormat.Should().BeNull();
     }
 
     [Fact]
@@ -181,4 +183,32 @@ public class RerunCommandConfigurationUnitTests
         //Assert
         failedTests.Should().Be(firstTest);
     }
+
+    [Theory]
+    [InlineData("", null)]
+    [InlineData("Coverage", CoverageFormat.Coverage)]
+    [InlineData("Xml", CoverageFormat.Xml)]
+    [InlineData("Cobertura", CoverageFormat.Cobertura)]
+    [InlineData("coverage", CoverageFormat.Coverage)]
+    [InlineData("xml", CoverageFormat.Xml)]
+    [InlineData("cobertura", CoverageFormat.Cobertura)]
+    public void RerunCommandConfiguration_GetValues_MergeCoverageFormat(string formatArg, CoverageFormat? expected)
+    {
+        if(!string.IsNullOrWhiteSpace(formatArg) )
+        {
+            formatArg = "--mergeCoverageFormat " + formatArg;
+        }
+
+        //Arrange
+        _configuration.Set(Command);
+        var result = new Parser(Command).Parse($"path {formatArg}");
+        var context = new InvocationContext(result);
+
+        //Act
+        _configuration.GetValues(context);
+
+        //Assert
+        _configuration.MergeCoverageFormat.Should().Be(expected);
+    }
+
 }
