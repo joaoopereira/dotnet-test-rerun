@@ -128,7 +128,7 @@ public class RerunCommandConfiguration
             IsRequired = false
         };
 
-    private readonly Option<CoverageFormat> MergeCoverageFormatOption =
+    private readonly Option<CoverageFormat?> MergeCoverageFormatOption =
         new(new[] { "--mergeCoverageFormat" })
         {
             Description =
