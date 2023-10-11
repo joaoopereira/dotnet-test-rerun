@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.6.1"></a>
+## [1.6.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.6.1) (2023-10-11)
+
+### Bug Fixes
+
+* Allow MergeCoverageFormat to default to null ([6bfda1d](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/6bfda1d49b0323d8609257ae9ec6a8413707576e))
+
 <a name="1.6.0"></a>
 ## [1.6.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.6.0) (2023-10-06)
 
