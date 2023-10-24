@@ -23,6 +23,7 @@ public class RerunCommandConfiguration
     public bool Blame { get; internal set; }
     public bool DeleteReportFiles { get; internal set; }
     public string Collector { get; internal set; }
+    public string Framework { get; internal set; }
     public CoverageFormat? MergeCoverageFormat { get; internal set; }
     public string Configuration { get; internal set; }
     public LoggerVerbosity? Verbosity { get; internal set; }
@@ -144,6 +145,14 @@ public class RerunCommandConfiguration
             IsRequired = false
         };
     
+    private readonly Option<string> FrameworkOption =
+        new(new[] { "-f", "--framework" })
+        {
+            Description =
+                ".NET Framework to run the tests against.",
+            IsRequired = false
+        };
+    
     private readonly Option<LoggerVerbosity?> VerbosityOption =
         new(new[] { "-v", "--verbosity" })
         {
@@ -173,6 +182,7 @@ public class RerunCommandConfiguration
         cmd.Add(VerbosityOption);
         cmd.Add(DeleteReportFilesOption);
         cmd.Add(CollectorOption);
+        cmd.Add(FrameworkOption);
         cmd.Add(MergeCoverageFormatOption);
     }
 
@@ -193,6 +203,7 @@ public class RerunCommandConfiguration
         Verbosity = context.ParseResult.GetValueForOption(VerbosityOption);
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
+        Framework = context.ParseResult.GetValueForOption(FrameworkOption)!;
         MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
         pArguments = FetchPArgumentsFromParse(context.ParseResult);
         
@@ -212,6 +223,7 @@ public class RerunCommandConfiguration
             AddArguments(Configuration, ConfigurationOption),
             AddArguments(Verbosity, VerbosityOption),
             AddArguments(Collector, CollectorOption),
+            AddArguments(Framework, FrameworkOption),
             string.IsNullOrWhiteSpace(resultsDirectory) ? resultsDirectory : AddArguments(resultsDirectory, ResultsDirectoryOption),
             GetPArguments());
     

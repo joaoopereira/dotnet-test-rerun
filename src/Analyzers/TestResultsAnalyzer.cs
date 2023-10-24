@@ -1,4 +1,6 @@
 using System.IO.Abstractions;
+using System.Linq.Expressions;
+using dotnet.test.rerun.Extensions;
 using dotnet.test.rerun.Logging;
 using TrxFileParser;
 
@@ -15,14 +17,23 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         reportFiles = new ();
     }
 
-    public string GetFailedTestsFilter(IFileInfo[] trxFiles)
-    {
-        var failedTests = new List<string>();
-        foreach (var trxFile in trxFiles)
-            failedTests.AddRange(GetFailedTestsFilter(trxFile));
+    //public string GetFailedTestsFilter(IFileInfo[] trxFiles)
+    //{
+    //    var failedTests = new List<string>();
+    //    foreach (var trxFile in trxFiles)
+    //        failedTests.AddRange(GetFailedTestsFilter(trxFile).Tests);
         
-        var testFilter = string.Join(" | ", failedTests);
-        return testFilter;
+    //    var testFilter = string.Join(" | ", failedTests);
+    //    return testFilter;
+    //}
+    
+    public TestFilterCollection GetFailedTestsFilter(IFileInfo[] trxFiles)
+    {
+        var failedTests = new TestFilterCollection();
+        foreach (var trxFile in trxFiles)
+            failedTests.Add(GetFailedTestsFilter(trxFile));
+                
+        return failedTests;
     }
     
     public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
@@ -39,7 +50,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     public HashSet<string> GetReportFiles()
         => reportFiles;
 
-    private List<string> GetFailedTestsFilter(IFileInfo trxFile)
+    private TestFilter GetFailedTestsFilter(IFileInfo trxFile)
     {
         const string outcome = "Failed";
         var trx = TrxDeserializer.Deserialize(trxFile.FullName);
@@ -57,8 +68,13 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             .ToList() ?? new List<string>();
 
         if (tests.Count == 0)
+        {
             Log.Warning($"No tests found with the Outcome {outcome} in file {trxFile.Name}");
-
-        return tests;
+            return null;
+        }
+        var framework = trx.TestDefinitions?.UnitTests.FirstOrDefault()?.Storage.Split('\\').First(part=>part.IsFramework());
+        if (framework == null)
+            Log.Warning($"No framework found in the file {trxFile.Name}");
+        return new TestFilter(framework,tests);
     }
 }

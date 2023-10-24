@@ -59,7 +59,7 @@ public class RerunCommand : RootCommand
                 if (trxFiles.Length > 0)
                 {
                     var testsToRerun = TestResultsAnalyzer.GetFailedTestsFilter(trxFiles);
-                    if (string.IsNullOrEmpty(testsToRerun))
+                    if (!testsToRerun.HasTestsToReRun)
                     {
                         Environment.ExitCode = 0;
                         Log.Information($"Rerun attempt {attempt} not needed. All testes Passed.");
@@ -67,11 +67,16 @@ public class RerunCommand : RootCommand
                     }
 
                     Log.Information($"Rerun attempt {attempt}/{Config.RerunMaxAttempts}");
-                    Log.Warning($"Found Failed tests: {testsToRerun}");
-                    Config.Filter = Config.AppendFailedTests(testsToRerun);
-                    Log.Warning($"Rerun filter: {Config.Filter}");
-                    startOfDotnetRun = DateTime.Now;
-                    await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
+                    foreach(TestFilter testFilter in testsToRerun)
+                    {
+                        Log.Warning($"Found Failed tests: {testFilter.Filter} in framework {testFilter.Framework}");
+                        Config.Filter = Config.AppendFailedTests(testFilter.Filter);
+                        Log.Warning($"Rerun filter: {Config.Filter}");
+                        Config.Framework = testFilter.Framework;
+                        startOfDotnetRun = DateTime.Now;
+                        await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
+                    }
+                    
                     attempt++;
                 }
                 else

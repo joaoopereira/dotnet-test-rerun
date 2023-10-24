@@ -38,7 +38,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~XUnitExample.SimpleTest.SimpleStringCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~XUnitExample.SimpleTest.SimpleStringCompare");
     }
     
     [Fact]
@@ -51,7 +51,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare | FullyQualifiedName~XUnitExample.UnitTest1.SimpleStringCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare | FullyQualifiedName~XUnitExample.UnitTest1.SimpleStringCompare");
     }
     
     [Fact]
@@ -77,7 +77,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
     }
     
     [Fact]
@@ -90,7 +90,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
     }
     
     [Fact]
@@ -103,7 +103,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare");
     }
     
     [Fact]
@@ -129,7 +129,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~MSTestExample.UnitTest1.SimpleStringCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~MSTestExample.UnitTest1.SimpleStringCompare");
     }
     
     [Fact]
@@ -142,7 +142,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~MSTestExample.UnitTest1.SimpleNumberCompare | FullyQualifiedName~MSTestExample.UnitTest1.SimpleStringCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~MSTestExample.UnitTest1.SimpleNumberCompare | FullyQualifiedName~MSTestExample.UnitTest1.SimpleStringCompare");
     }
     
     [Fact]
@@ -234,7 +234,7 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { firstTrxFile!, secondTrxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare");
     }
     
     [Fact]
@@ -248,6 +248,6 @@ public class TestResultsAnalyzerTests
         var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { firstTrxFile!, secondTrxFile!});
 
         //Assert
-        result.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
+        result.Single().Filter.Should().Be("FullyQualifiedName~NUnitTestExample.Tests.SimpleStringCompare");
     }
 }
