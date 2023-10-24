@@ -19,7 +19,7 @@ namespace dotnet.test.rerun.Analyzers
             {
                 return;
             }
-            TestFilter existingTestFilter = TestFilter.NoFramework;
+            TestFilter existingTestFilter = new TestFilter(testFilter.Framework, new List<string>());
             if (filters.ContainsKey(testFilter.Framework))
             {
                 existingTestFilter = filters[testFilter.Framework];
