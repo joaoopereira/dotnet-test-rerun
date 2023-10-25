@@ -3,7 +3,7 @@ using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO.Abstractions;
-using dotnet_test_rerun.IntegrationTests.Utilities;
+using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
@@ -167,6 +167,31 @@ public class DotNetTestRerunTests
             Exactly.Once());
         var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
         files.Should().HaveCount(4);
+        Environment.ExitCode.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task DotnetTestRerun_FailingXUnit_WithMultipleFrameworks_Fails()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+        
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
+        
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitWithMultipleFrameworksExample", dir: testDir);
+
+        // Assert
+        output.Should().Contain("Failed!", Exactly.Times(4));
+        output.Should().Contain("Rerun filter: FullyQualifiedName~SimpleTest.SimpleStringCompare",
+            Exactly.Thrice());        
+        output.Should().Contain("Passed:     1",
+            Exactly.Once());
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        files.Should().HaveCount(5);
         Environment.ExitCode.Should().Be(1);
     }
 

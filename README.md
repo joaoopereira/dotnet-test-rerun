@@ -23,23 +23,24 @@ test-rerun [somepathtodll] [OPTIONS]
 | `path`   | Path to a test project .dll file. |
 
 ## :arrow_forward: Options
-| option               | description                                                                                                            |
-| -------------------- |------------------------------------------------------------------------------------------------------------------------|
-| `--filter`           | Run tests that match the given expression.                                                                             |
-| `--settings, -s`     | The run settings file to use when running tests.                                                                       |
-| `--logger, -l`       | Specifies a logger for test results. *(default: trx)*                                                                  |
-| `--results-directory, -r` | The directory where the test results are going to be placed. If the specified directory doesn't exist, it's created.   |
-| `--rerunMaxAttempts` | Maximum # of attempts. *(default: 3)*                                                                                  |
-| `--loglevel` | Log Level. *(default: Verbose)*                                                                                        |
-| `--no-build` | Do not build the project before testing. Implies --no-restore.                                                         |
-| `--no-restore` | Do not restore the project before building.*                                                                           |
-| `--delay, -d` | Delay between test runs in seconds.                                                                                    |
-| `--blame` | Run the tests in blame mode.                                                                                           |
-| `--configuration, -c` | Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project. |
-| `--verbosity, -v` | Sets the verbosity level of the command. Allowed values are quiet, minimal, normal, detailed, and diagnostic. |
-| `--deleteReports` | Delete the generated report files.                                                                                     |
-| `--collect` | Enables data collector for the test run. Example: --collect "Code Coverage" or --collect "XPlat Code Coverage"         |
-| `--mergeCoverageFormat` | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed. |
+| option                    | description                                                                                                                                     |
+|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--filter`                | Run tests that match the given expression.                                                                                                      |
+| `--settings, -s`          | The run settings file to use when running tests.                                                                                                |
+| `--logger, -l`            | Specifies a logger for test results. *(default: trx)*                                                                                           |
+| `--results-directory, -r` | The directory where the test results are going to be placed. If the specified directory doesn't exist, it's created.                            |
+| `--rerunMaxAttempts`      | Maximum # of attempts. *(default: 3)*                                                                                                           |
+| `--loglevel`              | Log Level. *(default: Verbose)*                                                                                                                 |
+| `--no-build`              | Do not build the project before testing. Implies --no-restore.                                                                                  |
+| `--no-restore`            | Do not restore the project before building.*                                                                                                    |
+| `--delay, -d`             | Delay between test runs in seconds.                                                                                                             |
+| `--blame`                 | Run the tests in blame mode.                                                                                                                    |
+| `--configuration, -c`     | Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project. |
+| `--framework, -f`         | Defines the target framework.                                                                                                                   |
+| `--verbosity, -v`         | Sets the verbosity level of the command. Allowed values are quiet, minimal, normal, detailed, and diagnostic.                                   |
+| `--deleteReports`         | Delete the generated report files.                                                                                                              |
+| `--collect`               | Enables data collector for the test run. Example: --collect "Code Coverage" or --collect "XPlat Code Coverage"                                  |
+| `--mergeCoverageFormat`   | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed.                          |             
 
 
 Note: Sending `/p:` instructions to set property values is also allowed.

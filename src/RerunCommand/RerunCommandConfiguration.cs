@@ -26,6 +26,7 @@ public class RerunCommandConfiguration
     public CoverageFormat? MergeCoverageFormat { get; internal set; }
     public string Configuration { get; internal set; }
     public LoggerVerbosity? Verbosity { get; internal set; }
+    public string Framework { get; internal set; }
     public string pArguments { get; internal set; }
     
     #endregion Properties
@@ -144,6 +145,14 @@ public class RerunCommandConfiguration
             IsRequired = false
         };
     
+    private readonly Option<string> FrameworkOption =
+        new(new[] { "-f", "--framework" })
+        {
+            Description =
+                "Defines the target framework to run the tests.",
+            IsRequired = false
+        };
+    
     private readonly Option<LoggerVerbosity?> VerbosityOption =
         new(new[] { "-v", "--verbosity" })
         {
@@ -170,6 +179,7 @@ public class RerunCommandConfiguration
         cmd.Add(DelayOption);
         cmd.Add(BlameOption);
         cmd.Add(ConfigurationOption);
+        cmd.Add(FrameworkOption);
         cmd.Add(VerbosityOption);
         cmd.Add(DeleteReportFilesOption);
         cmd.Add(CollectorOption);
@@ -190,6 +200,7 @@ public class RerunCommandConfiguration
         Delay = context.ParseResult.GetValueForOption(DelayOption) * 1000;
         Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
         Configuration = context.ParseResult.GetValueForOption(ConfigurationOption)!;
+        Framework = context.ParseResult.GetValueForOption(FrameworkOption)!;
         Verbosity = context.ParseResult.GetValueForOption(VerbosityOption);
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
@@ -210,6 +221,7 @@ public class RerunCommandConfiguration
             AddArguments(NoRestore, NoRestoreOption),
             AddArguments(Blame, BlameOption),
             AddArguments(Configuration, ConfigurationOption),
+            AddArguments(Framework, FrameworkOption),
             AddArguments(Verbosity, VerbosityOption),
             AddArguments(Collector, CollectorOption),
             string.IsNullOrWhiteSpace(resultsDirectory) ? resultsDirectory : AddArguments(resultsDirectory, ResultsDirectoryOption),

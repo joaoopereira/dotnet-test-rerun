@@ -1,6 +1,7 @@
 ﻿using System.CommandLine;
 using System.IO.Abstractions;
 using dotnet.test.rerun.Analyzers;
+using dotnet.test.rerun.Domain;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
@@ -59,7 +60,7 @@ public class RerunCommand : RootCommand
                 if (trxFiles.Length > 0)
                 {
                     var testsToRerun = TestResultsAnalyzer.GetFailedTestsFilter(trxFiles);
-                    if (string.IsNullOrEmpty(testsToRerun))
+                    if (testsToRerun.HasTestsToReRun is false)
                     {
                         Environment.ExitCode = 0;
                         Log.Information($"Rerun attempt {attempt} not needed. All testes Passed.");
@@ -68,10 +69,21 @@ public class RerunCommand : RootCommand
 
                     Log.Information($"Rerun attempt {attempt}/{Config.RerunMaxAttempts}");
                     Log.Warning($"Found Failed tests: {testsToRerun}");
-                    Config.Filter = Config.AppendFailedTests(testsToRerun);
-                    Log.Warning($"Rerun filter: {Config.Filter}");
                     startOfDotnetRun = DateTime.Now;
-                    await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
+
+                    foreach (var tests in testsToRerun.Filters)
+                    {
+                        Config.Filter = Config.AppendFailedTests(tests.Value.Filter);
+
+                        if (tests.Key != TestFilter.NoFrameworkName)
+                        {
+                            Log.Warning($"Framework: {tests.Key}");
+                            Config.Framework = tests.Key;
+                        }
+
+                        Log.Warning($"Rerun filter: {Config.Filter}");
+                        await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
+                    }
                     attempt++;
                 }
                 else
