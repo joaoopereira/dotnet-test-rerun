@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.7.0-alpha.0"></a>
+## [1.7.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.7.0-alpha.0) (2023-10-25)
+
+### Features
+
+* add capability to identify framework to rerun and handle reruns ([e02ee26](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/e02ee26d5de3ec0cf99bd6676e97402fe96ad800))
+
 <a name="1.6.0-alpha.0"></a>
 ## [1.6.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.6.0-alpha.0) (2023-10-06)
 
