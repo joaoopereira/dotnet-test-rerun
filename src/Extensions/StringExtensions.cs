@@ -6,16 +6,14 @@ public static class StringExtensions
 {
     public static string FetchDotNetVersion(this string path)
     {
-        string? directoryName = Path.GetDirectoryName(path) ?? string.Empty;
-
         string pattern = @"(\\|/)(net|netcoreapp|netfx|netstandard)\d+(\.\d+)*";
-        Match match = Regex.Match(directoryName, pattern);
+        Match match = Regex.Match(path, pattern);
         int firstPositionAfterMatch = match.Index + match.Length;
 
         if (match.Success && 
-            (directoryName.IsTheEnd(firstPositionAfterMatch) || 
-             directoryName.NextPositionIsCharacter(firstPositionAfterMatch, '\\') ||
-             directoryName.NextPositionIsCharacter(firstPositionAfterMatch, '/')))
+            (path.IsTheEnd(firstPositionAfterMatch) || 
+             path.NextPositionIsCharacter(firstPositionAfterMatch, '\\') ||
+             path.NextPositionIsCharacter(firstPositionAfterMatch, '/')))
             return match.Value
                 .Replace("\\", "")
                 .Replace("/", "");
