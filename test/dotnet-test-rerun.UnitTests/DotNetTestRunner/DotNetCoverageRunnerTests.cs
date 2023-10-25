@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using dotnet_test_rerun.IntegrationTests.Utilities;
+using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace dotnet_test_rerun.IntegrationTests.Utilities;
+namespace dotnet_test_rerun.Common.Utilities;
 
     public static class TestUtilities
     {

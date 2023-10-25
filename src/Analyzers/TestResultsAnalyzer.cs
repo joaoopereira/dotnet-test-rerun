@@ -1,4 +1,7 @@
 using System.IO.Abstractions;
+using System.Text.RegularExpressions;
+using dotnet.test.rerun.Domain;
+using dotnet.test.rerun.Extensions;
 using dotnet.test.rerun.Logging;
 using TrxFileParser;
 
@@ -15,14 +18,15 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         reportFiles = new ();
     }
 
-    public string GetFailedTestsFilter(IFileInfo[] trxFiles)
+    public TestFilterCollection GetFailedTestsFilter(IFileInfo[] trxFiles)
     {
-        var failedTests = new List<string>();
+        var allFailedTests = new TestFilterCollection();
         foreach (var trxFile in trxFiles)
-            failedTests.AddRange(GetFailedTestsFilter(trxFile));
-        
-        var testFilter = string.Join(" | ", failedTests);
-        return testFilter;
+        {
+            var failedTests = GetFailedTestsFilter(trxFile);
+            allFailedTests.Add(failedTests);
+        }
+        return allFailedTests;
     }
     
     public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
@@ -39,7 +43,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     public HashSet<string> GetReportFiles()
         => reportFiles;
 
-    private List<string> GetFailedTestsFilter(IFileInfo trxFile)
+    private TestFilter GetFailedTestsFilter(IFileInfo trxFile)
     {
         const string outcome = "Failed";
         var trx = TrxDeserializer.Deserialize(trxFile.FullName);
@@ -47,6 +51,8 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         Dictionary<string, string> testClassByTestId = new Dictionary<string, string>();
         trx.TestDefinitions?.UnitTests.ForEach(t => testClassByTestId[t.Id] = t.TestMethod.ClassName);
+        string? framework = trx.TestDefinitions?.UnitTests.Select(test => test.Storage.FetchDotNetVersion())
+            .FirstOrDefault(val => string.IsNullOrWhiteSpace(val) is false );
 
         var tests = trx.Results?.UnitTestResults
             .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
@@ -59,6 +65,6 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         if (tests.Count == 0)
             Log.Warning($"No tests found with the Outcome {outcome} in file {trxFile.Name}");
 
-        return tests;
+        return new(framework, tests);
     }
 }
