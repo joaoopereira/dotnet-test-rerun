@@ -267,3 +267,6 @@ FakesAssemblies/
 
 # include .husky/csx
 !.husky/csx
+
+# exclude .idea
+**/.idea
