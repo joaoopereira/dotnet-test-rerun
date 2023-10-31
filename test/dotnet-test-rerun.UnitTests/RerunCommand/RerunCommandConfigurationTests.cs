@@ -51,7 +51,32 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Path.Should().Be("path");
         _configuration.Filter.Should().Be("filter");
         _configuration.Settings.Should().Be("settings");
-        _configuration.TrxLogger.Should().Be("logger");
+        _configuration.Logger.Should().HaveCount(1);
+        _configuration.Logger.ElementAt(0).Should().Be("logger");
+        _configuration.ResultsDirectory.Should().Be("results-directory");
+        _configuration.RerunMaxAttempts.Should().Be(4);
+        _configuration.LogLevel.Should().Be(LogLevel.Debug);
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetValues_WithMultipleLogger_ShouldGetValuesFromInvocationContext()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger --logger trx " +
+                                               "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug");
+        var context = new InvocationContext(result);
+
+        //Act
+        _configuration.GetValues(context);
+
+        //Assert
+        _configuration.Path.Should().Be("path");
+        _configuration.Filter.Should().Be("filter");
+        _configuration.Settings.Should().Be("settings");
+        _configuration.Logger.Should().HaveCount(2);
+        _configuration.Logger.ElementAt(0).Should().Be("logger");
+        _configuration.Logger.ElementAt(1).Should().Be("trx");
         _configuration.ResultsDirectory.Should().Be("results-directory");
         _configuration.RerunMaxAttempts.Should().Be(4);
         _configuration.LogLevel.Should().Be(LogLevel.Debug);
@@ -72,7 +97,8 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Path.Should().Be("path");
         _configuration.Filter.Should().BeNull();
         _configuration.Settings.Should().Be("settings");
-        _configuration.TrxLogger.Should().Be("trx");
+        _configuration.Logger.Should().HaveCount(1);
+        _configuration.Logger.ElementAt(0).Should().Be("trx");
         _configuration.ResultsDirectory.Should().Be(".");
         _configuration.RerunMaxAttempts.Should().Be(3);
         _configuration.LogLevel.Should().Be(LogLevel.Verbose);
