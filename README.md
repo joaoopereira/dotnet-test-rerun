@@ -27,7 +27,7 @@ test-rerun [somepathtodll] [OPTIONS]
 |---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--filter`                | Run tests that match the given expression.                                                                                                      |
 | `--settings, -s`          | The run settings file to use when running tests.                                                                                                |
-| `--logger, -l`            | Specifies a logger for test results. *(default: trx)*                                                                                           |
+| `--logger, -l`            | Specifies a logger for test results. Multiple values are allowed. *(default: trx)*                                                              |
 | `--results-directory, -r` | The directory where the test results are going to be placed. If the specified directory doesn't exist, it's created.                            |
 | `--rerunMaxAttempts`      | Maximum # of attempts. *(default: 3)*                                                                                                           |
 | `--loglevel`              | Log Level. *(default: Verbose)*                                                                                                                 |

@@ -1,6 +1,7 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Text;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 
@@ -13,7 +14,7 @@ public class RerunCommandConfiguration
     public string Path { get; internal set; }
     public string Filter { get; internal set; }
     public string Settings { get; internal set; }
-    public string TrxLogger { get; internal set; }
+    public IEnumerable<string> Logger { get; internal set; }
     public string ResultsDirectory { get; internal set; }
     public int RerunMaxAttempts { get; internal set; }
     public LogLevel LogLevel { get; internal set; }
@@ -55,7 +56,7 @@ public class RerunCommandConfiguration
         IsRequired = false
     };
 
-    private readonly Option<string> LoggerOption = new(new[] { "--logger", "-l" }, getDefaultValue: () => "trx")
+    private readonly Option<IEnumerable<string>> LoggerOption = new(new[] { "--logger", "-l" }, getDefaultValue: () => new[] { "trx" })
     {
         Description = "Specifies a logger for test results.",
         IsRequired = false
@@ -76,7 +77,7 @@ public class RerunCommandConfiguration
     };
 
     private readonly Option<LogLevel> LogLevelOption =
-        new(new[] { "--loglevel" }, parseArgument: Logger.ParseLogLevel, isDefault: true)
+        new(new[] { "--loglevel" }, parseArgument: Logging.Logger.ParseLogLevel, isDefault: true)
         {
             Description = "Log Level",
             IsRequired = false,
@@ -191,7 +192,7 @@ public class RerunCommandConfiguration
         Path = context.ParseResult.GetValueForArgument(PathArgument);
         Filter = context.ParseResult.GetValueForOption(FilterOption)!;
         Settings = context.ParseResult.GetValueForOption(SettingsOption)!;
-        TrxLogger = context.ParseResult.GetValueForOption(LoggerOption)!;
+        Logger = context.ParseResult.GetValueForOption(LoggerOption)!;
         ResultsDirectory = context.ParseResult.GetValueForOption(ResultsDirectoryOption)!;
         RerunMaxAttempts = context.ParseResult.GetValueForOption(RerunMaxAttemptsOption);
         LogLevel = context.ParseResult.GetValueForOption(LogLevelOption);
@@ -216,7 +217,7 @@ public class RerunCommandConfiguration
             string.IsNullOrWhiteSpace(Path) ? string.Empty : $" {Path}",
             AddArguments(Filter, FilterOption),
             AddArguments(Settings, SettingsOption),
-            AddArguments(TrxLogger, LoggerOption),
+            AddArguments(Logger, LoggerOption),
             AddArguments(NoBuild, NoBuildOption),
             AddArguments(NoRestore, NoRestoreOption),
             AddArguments(Blame, BlameOption),
@@ -237,11 +238,28 @@ public class RerunCommandConfiguration
         => value is not null
             ? $" {option.Aliases.First()} \"{value}\""
             : string.Empty;
+    
+    public string AddArguments<T>(T value, Option<IEnumerable<T>> option)
+        => value is not null
+            ? $" {option.Aliases.First()} \"{value}\""
+            : string.Empty;
 
     public string AddArguments<T>(bool value, Option<T> option)
         => value
             ? $" {option.Aliases.First()}"
             : string.Empty;
+    
+    public string AddArguments<T>(IEnumerable<T>? values, Option<IEnumerable<T>> option)
+    {
+        if (values is null)
+            return string.Empty;
+        
+        StringBuilder str = new StringBuilder();
+        foreach (var value in values)
+            str.Append(AddArguments(value, option));
+
+        return str.ToString();
+    } 
 
     public string AppendFailedTests(string failedTests)
         => string.IsNullOrWhiteSpace(OriginalFilter) ? 
