@@ -12,7 +12,7 @@ defaults:
 
 jobs:
   build_and_test:
-    name: 🛠️ Build, 🧪 Test, 📦 Pack & 🚚 Push alpha
+    name: 🛠️ Build and 🧪 Test
     runs-on: ubuntu-latest
     steps:
       - name: checkout
