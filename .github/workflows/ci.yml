@@ -1,39 +1,77 @@
-name: CI
+name: CD
+run-name: CD - ${{ github.event.release.tag_name }}
 
 on:
   workflow_dispatch:
-  pull_request:
-    types: [opened, reopened, edited, synchronize]
-    paths-ignore: ["**.md"]
+  release:
+    types: [published]
 
 defaults:
   run:
     working-directory: src
 
 jobs:
-  build_and_test:
-    name: 🛠️ Build, 🧪 Test, 📦 Pack & 🚚 Push alpha
+  build_test_pack_push:
+    name: 🛠️ Build, 🧪 Test, 📦 Pack & 🚚 Push
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: setup dotnet
-        uses: actions/setup-dotnet@v3
-        with:
-          global-json-file: .config/global.json
+      # - name: setup dotnet
+      #   uses: actions/setup-dotnet@v3
+      #   with:
+      #     global-json-file: .config/global.json
 
-      - name: build and test
-        run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
+      # - name: build and test
+      #   run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
 
-      - name: Coveralls UnitTests
-        uses: coverallsapp/github-action@v2.2.3
-        with:
-          path-to-lcov: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
-          flag-name: UnitTests
+      # - name: Coveralls UnitTests
+      #   uses: coverallsapp/github-action@v2.2.3
+      #   with:
+      #     path-to-lcov: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
+      #     flag-name: UnitTests
 
-      - name: Coveralls IntegrationTests
-        uses: coverallsapp/github-action@v2.2.3
+      # - name: Coveralls IntegrationTests
+      #   uses: coverallsapp/github-action@v2.2.3
+      #   with:
+      #     path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
+      #     flag-name: IntegrationTests
+
+      # - name: pack
+      #   run: dotnet pack --configuration Release --no-build --no-restore
+
+      # - name: push
+      #   run: dotnet nuget push nupkg/dotnet-test-rerun.*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+      #   env:
+      #     NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
+
+  docker:
+    runs-on: ubuntu-latest
+    name: 🐋 Build and Push Docker Image
+    needs: build_test_pack_push
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: Get version
+        uses: kzrnm/get-net-sdk-project-versions-action@v1
+        id: get-version
         with:
-          path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
-          flag-name: IntegrationTests
+          proj-path: src/dotnet-test-rerun.csproj
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          context: src
+          tags: joaoopereira/dotnet-test-rerun:latest, joaoopereira/dotnet-test-rerun:${{steps.get-version.outputs.version}}
