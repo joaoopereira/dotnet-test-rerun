@@ -1,21 +1,23 @@
 # dotnet-test-rerun
 
 # Status
-[![1]][2] [![6]][7] [![3]][4] [![5]][4]
+[![1]][2] [![6]][7] [![3]][4] [![5]][4] [![8]][9]
 
 # Description
 Unfortunately, there isn't a way with plain `dotnet test` to automatically rerun failed tests.\
 This tool is wrapper for the `dotnet test` that automatically reruns any tests with the outcome "Failed" until they pass or a maximum number of attempts has been reached. This is useful, for cases where tests may fail intermittently due to external factors such as network connectivity, database availability, or race conditions.
 
-# :package: Installation
+# :computer: Usage
+## :package: dotnet tool
 ```sh
 dotnet tool install --global dotnet-test-rerun
-```
-
-# :keyboard: Usage
-```sh
 test-rerun [somepathtodll] [OPTIONS]
 ```
+## :whale: docker image
+```sh
+docker run joaoopereira/dotnet-test-rerun [somepathtodll] [OPTIONS]
+```
+
 
 ## :arrow_forward: Arguments
 | argument | description                       |
@@ -40,7 +42,7 @@ test-rerun [somepathtodll] [OPTIONS]
 | `--verbosity, -v`         | Sets the verbosity level of the command. Allowed values are quiet, minimal, normal, detailed, and diagnostic.                                   |
 | `--deleteReports`         | Delete the generated report files.                                                                                                              |
 | `--collect`               | Enables data collector for the test run. Example: --collect "Code Coverage" or --collect "XPlat Code Coverage"                                  |
-| `--mergeCoverageFormat`   | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed.                          |             
+| `--mergeCoverageFormat`   | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed.                          |
 
 
 Note: Sending `/p:` instructions to set property values is also allowed.
@@ -74,6 +76,8 @@ This tool is licensed under GNU General Public License v3.0. See the [LICENSE](/
 [2]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/cd.yml
 [3]: https://img.shields.io/nuget/v/dotnet-test-rerun.svg?label=dotnet-test-rerun
 [4]: https://www.nuget.org/packages/dotnet-test-rerun
-[5]: https://img.shields.io/nuget/dt/dotnet-test-rerun.svg?label=downloads
+[5]: https://img.shields.io/nuget/dt/dotnet-test-rerun.svg?label=nuget-downloads
 [6]: https://coveralls.io/repos/github/joaoopereira/dotnet-test-rerun/badge.svg?branch=main
 [7]: https://coveralls.io/github/joaoopereira/dotnet-test-rerun?branch=main
+[8]: https://img.shields.io/docker/pulls/joaoopereira/dotnet-test-rerun?label=docker-pulls
+[9]: https://hub.docker.com/r/joaoopereira/dotnet-test-rerun
