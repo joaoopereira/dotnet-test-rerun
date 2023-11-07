@@ -2,6 +2,7 @@ name: CD
 run-name: CD - ${{ github.event.release.tag_name }}
 
 on:
+  workflow_dispatch:
   release:
     types: [published]
 
@@ -10,11 +11,27 @@ defaults:
     working-directory: src
 
 jobs:
-  build_test_pack_push:
-    name: 🛠️ Build, 🧪 Test, 📦 Pack & 🚚 Push
+  build:
+    name: 🛠️ Build
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: .config/global.json
+
+      - name: Build
+        run: dotnet build --configuration Release
+
+  test:
+    name: 🧪 Test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: setup dotnet
@@ -22,7 +39,7 @@ jobs:
         with:
           global-json-file: .config/global.json
 
-      - name: build and test
+      - name: test
         run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
 
       - name: Coveralls UnitTests
@@ -37,34 +54,46 @@ jobs:
           path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
           flag-name: IntegrationTests
 
+  nuget:
+    name: 📦 Pack and Push nuget
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          global-json-file: .config/global.json
+
+      - name: Get version
+        uses: kzrnm/get-net-sdk-project-versions-action@v1
+        id: get-version
+        with:
+          proj-path: src/dotnet-test-rerun.csproj
+
       - name: pack
-        run: dotnet pack --configuration Release --no-build --no-restore
+        run: dotnet pack --configuration Release
 
       - name: push
-        run: dotnet nuget push nupkg/dotnet-test-rerun.*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+        run: dotnet nuget push nupkg/dotnet-test-rerun.${{steps.get-version.outputs.version}}.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
         env:
           NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
 
   docker:
     runs-on: ubuntu-latest
     name: 🐋 Build and Push Docker Image
+    needs: test
     steps:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: Generate Docker metadata
-        id: meta
-        uses: docker/metadata-action@v3
+      - name: Get version
+        uses: kzrnm/get-net-sdk-project-versions-action@v1
+        id: get-version
         with:
-          images: |
-            docker.io/${{ github.repository }}
-          tags: |
-            type=ref,event=push
-            type=ref,event=push tag
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}.{{patch}}
-          flavor: |
-            latest=true
+          proj-path: src/dotnet-test-rerun.csproj
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -74,10 +103,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      -
-        name: Build and push
+
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          context: src
+          tags: joaoopereira/dotnet-test-rerun:latest, joaoopereira/dotnet-test-rerun:${{steps.get-version.outputs.version}}
