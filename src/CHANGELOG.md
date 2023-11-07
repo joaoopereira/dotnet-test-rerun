@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.8.0-alpha.0"></a>
+## [1.8.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.8.0-alpha.0) (2023-11-07)
+
+### Features
+
+* allow multiple logger values #95 ([7388973](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/7388973e2d257cf67a098d5d56aae1f4018bbc82))
+
 <a name="1.7.0-alpha.0"></a>
 ## [1.7.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.7.0-alpha.0) (2023-10-25)
 
