@@ -25,7 +25,7 @@ var cmd = serviceProvider.GetService<RerunCommand>();
 
 await new CommandLineBuilder(cmd)
     .UseDefaults()
-    .UseExceptionHandler((exception, context) =>
+    .UseExceptionHandler((exception, _) =>
     {
         if (exception is RerunException
             || (exception is TargetInvocationException

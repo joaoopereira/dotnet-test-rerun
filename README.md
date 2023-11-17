@@ -45,7 +45,9 @@ docker run joaoopereira/dotnet-test-rerun [somepathtodll] [OPTIONS]
 | `--mergeCoverageFormat`   | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed.                          |
 
 
-Note: Sending `/p:` instructions to set property values is also allowed.
+Notes: 
+- Sending `/p:` instructions to set property values is also allowed.
+- Inline run settings are supported
 
 ## 👤 Author & Contributors
 
