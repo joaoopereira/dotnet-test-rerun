@@ -236,5 +236,23 @@ public class RerunCommandConfigurationUnitTests
         //Assert
         _configuration.MergeCoverageFormat.Should().Be(expected);
     }
+    
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithInlineRunSettings()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+                                               "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug " +
+                                               "--configuration release --verbosity minimal -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("results-directory");
+
+        //Assert
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\" -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True");
+    }
 
 }

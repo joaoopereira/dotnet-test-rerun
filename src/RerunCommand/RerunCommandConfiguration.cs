@@ -29,6 +29,7 @@ public class RerunCommandConfiguration
     public LoggerVerbosity? Verbosity { get; internal set; }
     public string Framework { get; internal set; }
     public string pArguments { get; internal set; }
+    public string inlineRunSettings { get; internal set; }
     
     #endregion Properties
 
@@ -207,6 +208,7 @@ public class RerunCommandConfiguration
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
         MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
         pArguments = FetchPArgumentsFromParse(context.ParseResult);
+        inlineRunSettings = FetchInlineRunSettingsFromParse(context.ParseResult);
         
         //Store Original Values
         OriginalFilter = Filter;
@@ -226,7 +228,8 @@ public class RerunCommandConfiguration
             AddArguments(Verbosity, VerbosityOption),
             AddArguments(Collector, CollectorOption),
             string.IsNullOrWhiteSpace(resultsDirectory) ? resultsDirectory : AddArguments(resultsDirectory, ResultsDirectoryOption),
-            GetPArguments());
+            GetPArguments(),
+            inlineRunSettings);
     
     public string GetMergeCoverageArgumentList(string fileNames, string resultsDirectory)
         => string.Concat("merge ",
@@ -280,5 +283,27 @@ public class RerunCommandConfiguration
     
     private string FetchPArgumentsFromParse(ParseResult parseResult)
         => string.Join(' ', parseResult.UnmatchedTokens.Where(p => p.StartsWith("/p:")));
+    
+    private string FetchInlineRunSettingsFromParse(ParseResult parseResult)
+    {
+        StringBuilder inlineRunSettings = new StringBuilder();
+        bool startIsFound = false;
+
+        foreach (var token in parseResult.Tokens)
+        {
+            if (startIsFound)
+                inlineRunSettings.Append($" {token.Value}");
+            
+            if (startIsFound is false &&
+                token.Value.Equals("--"))
+            {
+                startIsFound = true;
+                inlineRunSettings.Append($" {token.Value}");
+            }
+        }
+
+        return inlineRunSettings.ToString();
+    } 
+    
 
 }
