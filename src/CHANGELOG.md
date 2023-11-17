@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.8.0-alpha.1"></a>
+## [1.8.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.8.0-alpha.1) (2023-11-17)
+
+### Features
+
+* add inline runsettings as possibility to run command ([e7cc9f8](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/e7cc9f84b74b5bed7590f5c3115e0e74755613e8))
+
 <a name="1.8.0-alpha.0"></a>
 ## [1.8.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.8.0-alpha.0) (2023-11-07)
 
