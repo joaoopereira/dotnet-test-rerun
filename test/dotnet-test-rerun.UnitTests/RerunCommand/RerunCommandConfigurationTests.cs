@@ -238,7 +238,7 @@ public class RerunCommandConfigurationUnitTests
     }
     
     [Fact]
-    public void RerunCommandConfiguration_GetArguments_WithInlineRunSettings()
+    public void RerunCommandConfiguration_GetArguments_GivenInlineRunSettings()
     {
         //Arrange
         _configuration.Set(Command); 
