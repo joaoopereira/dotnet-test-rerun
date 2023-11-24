@@ -7,6 +7,13 @@ All notable changes to this project will be documented in this file. See [versio
 
 ### Features
 
+* **release:** 1.8.0 ([8121e93](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/8121e93951ba43a393c0407ac2395a2329014900))
+
+<a name="1.8.0"></a>
+## [1.8.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.8.0) (2023-11-24)
+
+### Features
+
 * Add new input inlineRunSettings #95 ([9b7832f](https://github.com/joaoopereira/dotnet-test-rerun/commit/9b7832f7e936b1160a309e33ac856407d3ba7f71))
 * Add inline runsettings as possibility to run command #95 ([2a0774d](https://github.com/joaoopereira/dotnet-test-rerun/commit/2a0774dbd87282f062859092c1117f08586cf7a2))
 * Allow multiple logger values #96 ([7388973](https://github.com/joaoopereira/dotnet-test-rerun/commit/7388973e2d257cf67a098d5d56aae1f4018bbc82))
