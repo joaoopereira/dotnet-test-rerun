@@ -244,7 +244,7 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Set(Command); 
         var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
                                                "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug " +
-                                               "--configuration release --verbosity minimal -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True");
+                                               "--configuration release --verbosity minimal --inlineRunSettings MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True");
         var context = new InvocationContext(result);
         _configuration.GetValues(context);
 

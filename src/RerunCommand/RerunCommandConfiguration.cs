@@ -162,6 +162,13 @@ public class RerunCommandConfiguration
                 "Sets the verbosity level of the command. Possible values: Quiet, Minimal, Normal, Detailed, Diagnostic",
             IsRequired = false,
         };
+    
+    private readonly Option<string[]> InlineRunSettingsOption = new(new[] { "--inlineRunSettings"})
+    {
+        Description = "Specifies a logger for test results.",
+        IsRequired = false,
+        AllowMultipleArgumentsPerToken = true
+    };
 
     #endregion Options
 
@@ -186,6 +193,7 @@ public class RerunCommandConfiguration
         cmd.Add(DeleteReportFilesOption);
         cmd.Add(CollectorOption);
         cmd.Add(MergeCoverageFormatOption);
+        cmd.Add(InlineRunSettingsOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -286,23 +294,17 @@ public class RerunCommandConfiguration
     
     private string FetchInlineRunSettingsFromParse(ParseResult parseResult)
     {
-        StringBuilder inlineRunSettings = new StringBuilder();
-        bool startIsFound = false;
+        var inlineSettings = new StringBuilder();
+        var inlinesettingsOption = parseResult.GetValueForOption(InlineRunSettingsOption);
 
-        foreach (var token in parseResult.Tokens)
+        if (inlinesettingsOption is not null &&
+            inlinesettingsOption.Length > 0)
         {
-            if (startIsFound)
-                inlineRunSettings.Append($" {token.Value}");
-            
-            if (startIsFound is false &&
-                token.Value.Equals("--"))
-            {
-                startIsFound = true;
-                inlineRunSettings.Append($" {token.Value}");
-            }
+            inlineSettings.Append(" -- ");
+            inlineSettings.Append(string.Join(" ", inlinesettingsOption));
         }
 
-        return inlineRunSettings.ToString();
+        return inlineSettings.ToString();
     } 
     
 
