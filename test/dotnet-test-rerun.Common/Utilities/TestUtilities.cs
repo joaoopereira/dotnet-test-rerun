@@ -25,8 +25,8 @@ namespace dotnet_test_rerun.Common.Utilities;
         public static void CopyFixture(string fixtureName, DirectoryInfo target)
         {
             Directory.CreateDirectory(target.FullName);
-            var source = new DirectoryInfo(System.IO.Path.GetFullPath(
-                System.IO.Path.Join(
+            var source = new DirectoryInfo(Path.GetFullPath(
+                Path.Join(
             AppDomain.CurrentDomain.BaseDirectory,
                         "..", "..", "..", "Fixtures", fixtureName)));
             CopyAll(source, target);
