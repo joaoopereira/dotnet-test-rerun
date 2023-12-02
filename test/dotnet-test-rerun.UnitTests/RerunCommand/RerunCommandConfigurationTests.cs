@@ -1,6 +1,7 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Text;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
@@ -253,6 +254,42 @@ public class RerunCommandConfigurationUnitTests
 
         //Assert
         args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\" -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True");
+    }
+    
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithOneEnvironmentValue()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+                                               "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug " +
+                                               "--configuration release --verbosity minimal --environment var=test");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("results-directory");
+
+        //Assert
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" -e \"var=test\" --results-directory \"results-directory\"");
+    }
+    
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithSeveralEnvironmentValues()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+                                               "--results-directory results-directory --rerunMaxAttempts 4 -e var2=test2 --loglevel Debug " +
+                                               "--configuration release --verbosity minimal -e var=test");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("results-directory");
+
+        //Assert
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" -e \"var2=test2\" -e \"var=test\" --results-directory \"results-directory\"");
     }
 
 }

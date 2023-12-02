@@ -28,8 +28,9 @@ public class RerunCommandConfiguration
     public string Configuration { get; internal set; }
     public LoggerVerbosity? Verbosity { get; internal set; }
     public string Framework { get; internal set; }
-    public string pArguments { get; internal set; }
-    public string inlineRunSettings { get; internal set; }
+    public string PArguments { get; internal set; }
+    public string InlineRunSettings { get; internal set; }
+    public IEnumerable<string> EnvironmentVariables { get; internal set; }
     
     #endregion Properties
 
@@ -169,6 +170,13 @@ public class RerunCommandConfiguration
         IsRequired = false,
         AllowMultipleArgumentsPerToken = true
     };
+    
+    private readonly Option<IEnumerable<string>> EnvironmentVariablesOption = new(new[] { "-e", "--environment"})
+    {
+        Description = "Sets the value of an environment variable.",
+        IsRequired = false,
+        AllowMultipleArgumentsPerToken = true
+    };
 
     #endregion Options
 
@@ -194,6 +202,7 @@ public class RerunCommandConfiguration
         cmd.Add(CollectorOption);
         cmd.Add(MergeCoverageFormatOption);
         cmd.Add(InlineRunSettingsOption);
+        cmd.Add(EnvironmentVariablesOption);
     }
 
     public void GetValues(InvocationContext context)
@@ -215,8 +224,9 @@ public class RerunCommandConfiguration
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
         Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
         MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
-        pArguments = FetchPArgumentsFromParse(context.ParseResult);
-        inlineRunSettings = FetchInlineRunSettingsFromParse(context.ParseResult);
+        PArguments = FetchPArgumentsFromParse(context.ParseResult);
+        InlineRunSettings = FetchInlineRunSettingsFromParse(context.ParseResult);
+        EnvironmentVariables = context.ParseResult.GetValueForOption(EnvironmentVariablesOption)!;
         
         //Store Original Values
         OriginalFilter = Filter;
@@ -235,9 +245,10 @@ public class RerunCommandConfiguration
             AddArguments(Framework, FrameworkOption),
             AddArguments(Verbosity, VerbosityOption),
             AddArguments(Collector, CollectorOption),
+            AddArguments(EnvironmentVariables, EnvironmentVariablesOption),
             string.IsNullOrWhiteSpace(resultsDirectory) ? resultsDirectory : AddArguments(resultsDirectory, ResultsDirectoryOption),
             GetPArguments(),
-            inlineRunSettings);
+            InlineRunSettings);
     
     public string GetMergeCoverageArgumentList(string fileNames, string resultsDirectory)
         => string.Concat("merge ",
@@ -287,7 +298,7 @@ public class RerunCommandConfiguration
         };
 
     private string GetPArguments()
-        => string.IsNullOrWhiteSpace(pArguments) ? pArguments : $" {pArguments}";
+        => string.IsNullOrWhiteSpace(PArguments) ? PArguments : $" {PArguments}";
     
     private string FetchPArgumentsFromParse(ParseResult parseResult)
         => string.Join(' ', parseResult.UnmatchedTokens.Where(p => p.StartsWith("/p:")));
