@@ -3,13 +3,13 @@
   "isRoot": true,
   "tools": {
     "versionize": {
-      "version": "1.20.0",
+      "version": "1.21.0",
       "commands": [
         "versionize"
       ]
     },
     "husky": {
-      "version": "0.6.2",
+      "version": "0.6.3",
       "commands": [
         "husky"
       ]
