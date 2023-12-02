@@ -15,13 +15,11 @@ namespace dotnet_test_rerun.IntegrationTests;
 
 public class DotNetTestRerunTests
 {
-    private readonly ITestOutputHelper TestOutputHelper;
     private static string _dir = TestUtilities.GetTmpDirectory();
     private static readonly IFileSystem FileSystem = new FileSystem();
 
     public DotNetTestRerunTests(ITestOutputHelper testOutputHelper)
     {
-        TestOutputHelper = testOutputHelper;
         TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(_dir));
     }
 

@@ -43,6 +43,7 @@ docker run joaoopereira/dotnet-test-rerun [somepathtodll] [OPTIONS]
 | `--deleteReports`         | Delete the generated report files.                                                                                                              |
 | `--collect`               | Enables data collector for the test run. Example: --collect "Code Coverage" or --collect "XPlat Code Coverage"                                  |
 | `--mergeCoverageFormat`   | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed.                          |
+| `--environment, -e`       | Sets the value of an environment variable. Can be set multiple times.                                                                           |
 | `--inlineRunSettings`     | Allow the configuration of inline run settings.                                                                                                 |
 
 
