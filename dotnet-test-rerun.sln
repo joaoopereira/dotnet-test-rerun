@@ -3,18 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-test-rerun", "dotnet-test-rerun.csproj", "{BE2030D3-300E-48FF-B8A8-D4657C197BD9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-test-rerun", "src\dotnet-test-rerun.csproj", "{BE2030D3-300E-48FF-B8A8-D4657C197BD9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AF9948CE-E5C8-4D46-BCC2-B2A8F653BDE4}"
 	ProjectSection(SolutionItems) = preProject
 		Properties\launchSettings.json = Properties\launchSettings.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.UnitTests", "..\test\dotnet-test-rerun.UnitTests\dotnet-test-rerun.UnitTests.csproj", "{A4782FED-8585-4051-AC69-24B9F8A19A04}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.UnitTests", "test\dotnet-test-rerun.UnitTests\dotnet-test-rerun.UnitTests.csproj", "{A4782FED-8585-4051-AC69-24B9F8A19A04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.IntegrationTests", "..\test\dotnet-test-rerun.IntegrationTests\dotnet-test-rerun.IntegrationTests.csproj", "{A0690B80-53ED-4A6C-A496-D1BC64806A4A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.IntegrationTests", "test\dotnet-test-rerun.IntegrationTests\dotnet-test-rerun.IntegrationTests.csproj", "{A0690B80-53ED-4A6C-A496-D1BC64806A4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.Common", "..\test\dotnet-test-rerun.Common\dotnet-test-rerun.Common.csproj", "{B4B424C9-75C5-44B8-A135-25BB620B87C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.Common", "test\dotnet-test-rerun.Common\dotnet-test-rerun.Common.csproj", "{B4B424C9-75C5-44B8-A135-25BB620B87C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
