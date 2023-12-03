@@ -6,10 +6,6 @@ on:
   release:
     types: [published]
 
-defaults:
-  run:
-    working-directory: src
-
 jobs:
   build:
     name: 🛠️ Build
@@ -21,7 +17,7 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          global-json-file: .config/global.json
+          global-json-file: global.json
 
       - name: Build
         run: dotnet build --configuration Release
@@ -37,7 +33,7 @@ jobs:
       - name: setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          global-json-file: .config/global.json
+          global-json-file: global.json
 
       - name: test
         run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
@@ -65,7 +61,7 @@ jobs:
       - name: setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          global-json-file: .config/global.json
+          global-json-file: global.json
 
       - name: Get version
         uses: kzrnm/get-net-sdk-project-versions-action@v1

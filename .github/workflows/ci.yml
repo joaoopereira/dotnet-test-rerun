@@ -6,10 +6,6 @@ on:
     types: [opened, reopened, edited, synchronize]
     paths-ignore: ["**.md"]
 
-defaults:
-  run:
-    working-directory: src
-
 jobs:
   build_and_test:
     name: 🛠️ Build and 🧪 Test
@@ -21,7 +17,7 @@ jobs:
       - name: setup dotnet
         uses: actions/setup-dotnet@v3
         with:
-          global-json-file: .config/global.json
+          global-json-file: global.json
 
       - name: build and test
         run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
