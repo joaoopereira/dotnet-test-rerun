@@ -69,7 +69,7 @@ public class DotNetTestRunnerTests
         var act = () => dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
 
         // Assert
-        await act.Should().ThrowAsync<RerunException>().WithMessage("command:\ndotnet test --results-directory \"resultsDirectory\"");
+        await act.Should().ThrowAsync<RerunException>().WithMessage("command: dotnet test --results-directory \"resultsDirectory\"");
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.Error);
     }
     

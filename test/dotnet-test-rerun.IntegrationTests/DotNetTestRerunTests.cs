@@ -183,11 +183,11 @@ public class DotNetTestRerunTests
         var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitWithMultipleFrameworksExample", dir: testDir);
 
         // Assert
-        output.Should().Contain("Failed!", Exactly.Times(4));
-        output.Should().Contain("Rerun filter: FullyQualifiedName~SimpleTest.SimpleStringCompare",
+        output.Should().MatchRegex("Rerun filter: FullyQualifiedName~(FailingXUnitExample.)*SimpleTest.SimpleStringCompare",
             Exactly.Thrice());        
         output.Should().Contain("Passed:     1",
             Exactly.Once());
+        output.Should().Contain("Failed!", Exactly.Times(4));
         var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
         files.Should().HaveCount(5);
         Environment.ExitCode.Should().Be(1);
