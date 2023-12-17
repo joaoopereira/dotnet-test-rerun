@@ -80,7 +80,7 @@ public class DotNetTestRunner : IDotNetTestRunner
                 ErrorCode = ErrorCode.Error;
                 Log.Verbose(ProcessExecution.GetError());
                 Log.Verbose($"Exit code {ExitCode}.");
-                throw new RerunException($"command:\ndotnet {ProcessStartInfo.Arguments}");
+                throw new RerunException($"command: dotnet {ProcessStartInfo.Arguments}");
             }
         }
         else
