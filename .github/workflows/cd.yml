@@ -73,7 +73,7 @@ jobs:
         run: dotnet pack --configuration Release
 
       - name: push
-        run: dotnet nuget push nupkg/dotnet-test-rerun.${{steps.get-version.outputs.version}}.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+        run: dotnet nuget push src/nupkg/dotnet-test-rerun.${{steps.get-version.outputs.version}}.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
         env:
           NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
 
