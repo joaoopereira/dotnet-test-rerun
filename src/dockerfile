@@ -1,5 +1,5 @@
 # Use the official .NET SDK image from Microsoft as the build environment
-FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 
 # Set the working directory in the container
 WORKDIR /app
@@ -13,7 +13,7 @@ RUN dotnet restore dotnet-test-rerun.csproj /p:DockerBuild=true
 RUN dotnet publish dotnet-test-rerun.csproj /p:DockerBuild=true -c Release -o out
 
 # Build the runtime image
-FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS runtime
 
 # Set the working directory in the runtime container
 WORKDIR /app
