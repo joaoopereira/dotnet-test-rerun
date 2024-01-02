@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using System.Text;
 using System.Text.RegularExpressions;
 using dotnet.test.rerun.Domain;
 using dotnet.test.rerun.Extensions;
@@ -56,9 +57,10 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         var tests = trx.Results?.UnitTestResults
             .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
-            .Select(t => $"FullyQualifiedName~" +
-                         $"{(testClassByTestId.ContainsKey(t.TestId) && t.TestName.Contains(testClassByTestId[t.TestId]) is false ? $"{testClassByTestId[t.TestId]}." : string.Empty)}" +
-                         $"{(t.TestName.IndexOf("(") > 0 ? t.TestName.Substring(0, t.TestName.IndexOf("(")) : t.TestName).TrimEnd()}")
+            .Select(t => new StringBuilder()
+                .Append($"FullyQualifiedName~") 
+                .Append($"{(testClassByTestId.ContainsKey(t.TestId) && t.TestName.Contains(testClassByTestId[t.TestId]) is false ? $"{testClassByTestId[t.TestId]}." : string.Empty)}")
+                .Append(GetTestName(t.TestName)).ToString())
             .Distinct()
             .ToList() ?? new List<string>();
 
@@ -66,5 +68,23 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             Log.Warning($"No tests found with the Outcome {outcome} in file {trxFile.Name}");
 
         return new(framework, tests);
+    }
+
+    private string GetTestName(string testName)
+    {
+        var openParenthesisIndex = testName.IndexOf("(");
+        var closeParenthesisIndex = testName.IndexOf(")");
+        var canRunSpecific = testName.IndexOf(":") > 0;
+        if (openParenthesisIndex == -1)
+            return testName.TrimEnd();
+
+        var testToRerun = new StringBuilder().Append(testName.Substring(0, openParenthesisIndex).TrimEnd());
+        if (canRunSpecific)
+            testToRerun
+                .Append("&DisplayName~")
+                .Append(testName.Substring(openParenthesisIndex + 1, closeParenthesisIndex - openParenthesisIndex - 1))
+                .Replace("\"", "%22");
+
+        return testToRerun.ToString().TrimEnd();
     }
 }

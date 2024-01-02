@@ -53,7 +53,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Filters.ElementAt(0).Key.Should().Be("net6.0");
-        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare | FullyQualifiedName~XUnitExample.UnitTest1.SimpleStringCompare");
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare&DisplayName~number: 1 | FullyQualifiedName~XUnitExample.UnitTest1.SimpleStringCompare | FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare&DisplayName~number: 3 | FullyQualifiedName~XUnitExample.UnitTest1.SimpleNumberCompare&DisplayName~number: 4");
     }
     
     [Fact]
