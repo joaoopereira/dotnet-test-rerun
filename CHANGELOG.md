@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.8.1"></a>
+## [1.8.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.8.1) (2024-01-10)
+
 <a name="1.9.0"></a>
 ## [1.9.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.9.0) (2024-01-10)
 
