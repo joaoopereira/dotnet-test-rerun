@@ -64,7 +64,7 @@ jobs:
           global-json-file: global.json
 
       - name: Get version
-        uses: kzrnm/get-net-sdk-project-versions-action@v1
+        uses: kzrnm/get-net-sdk-project-versions-action@v2
         id: get-version
         with:
           proj-path: src/dotnet-test-rerun.csproj
@@ -86,7 +86,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Get version
-        uses: kzrnm/get-net-sdk-project-versions-action@v1
+        uses: kzrnm/get-net-sdk-project-versions-action@v2
         id: get-version
         with:
           proj-path: src/dotnet-test-rerun.csproj
