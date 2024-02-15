@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.0.0"></a>
+## [2.0.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.0) (2024-02-15)
+
+### Features
+
+* bump target framework to net8.0 ([5db2b5b](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/5db2b5b891575f8b2492b682eb3b0748c86e8e9b))
+
+### Breaking Changes
+
+* bump target framework to net8.0 ([5db2b5b](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/5db2b5b891575f8b2492b682eb3b0748c86e8e9b))
+
 <a name="1.9.0"></a>
 ## [1.9.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.9.0) (2024-01-10)
 
