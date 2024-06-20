@@ -168,6 +168,36 @@ public class DotNetTestRerunTests
         Environment.ExitCode.Should().Be(1);
     }
 
+    [InlineData("normal")]
+    [InlineData("quiet")]
+    [InlineData("minimal")]
+    [InlineData("detailed")]
+    [InlineData("diagnostic")]
+    public async Task DotnetTestRerun_FailingXUnit_WithVerbosity_Fails(string verbosity)
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+        
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
+        
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("FailingXUnitExample", dir: testDir, extraArgs: $"--verbosity {verbosity}");
+
+        // Assert
+        output.Should().NotContain("Passed!");
+        output.Should().Contain("Failed:", Exactly.Times(4));
+        output.Should().Contain("Rerun filter: FullyQualifiedName~FailingXUnitExample.SimpleTest.SimpleStringCompare",
+            Exactly.Thrice());        
+        output.Should().Contain("Passed: 4",
+            Exactly.Once());
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        files.Should().HaveCount(4);
+        Environment.ExitCode.Should().Be(1);
+    }
+
     [Fact]
     public async Task DotnetTestRerun_FailingXUnit_WithMultipleFrameworks_Fails()
     {

@@ -71,7 +71,7 @@ public class DotNetTestRunner : IDotNetTestRunner
                 ErrorCode = ErrorCode.WellKnownError;
                 Log.Warning(ProcessExecution.GetError());
             }
-            else if (HaveFailedTests())
+            else if (HaveFailedTests() || HaveSimpleFailedTests())
             {
                 ErrorCode = ErrorCode.FailedTests;
             }
@@ -102,5 +102,12 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// </summary>
     /// <returns></returns>
     private bool HaveFailedTests() => ExitCode == 1 &&
-                                      (ProcessExecution.GetOutput().Contains("Failed!  - Failed:"));
+                                      ProcessExecution.GetOutput().Contains("Failed!  - Failed:");
+    
+    /// <summary>
+    /// Check if the output of dotnet test have in the last line failed tests
+    /// </summary>
+    /// <returns></returns>
+    private bool HaveSimpleFailedTests() => ExitCode == 1 &&
+                                      ProcessExecution.GetOutput().Contains("Failed:");
 }
