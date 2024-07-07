@@ -131,7 +131,7 @@ namespace dotnet.test.rerun.Logging
         /// </summary>
         /// <param name="msg">message to be escaped</param>
         /// <returns>escaped message</returns>
-        private string EscapeMarkup(string msg) => msg!.Replace("[", "[[").Replace("]", "]]");
+        private string EscapeMarkup(string msg) => msg?.Replace("[", "[[").Replace("]", "]]");
 
         /// <summary>
         /// LogLevel Parser
