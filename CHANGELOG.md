@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.0.1-alpha.0"></a>
+## [2.0.1-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.1-alpha.0) (2024-07-07)
+
+### Features
+
+* refactor in logger ([9bf4b1c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/9bf4b1c95dbf5f2e13e0e5f0eb6fffa515174009))
+
 <a name="2.0.0"></a>
 ## [2.0.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.0) (2024-02-15)
 
