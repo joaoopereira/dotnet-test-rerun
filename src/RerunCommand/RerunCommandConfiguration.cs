@@ -306,16 +306,18 @@ public class RerunCommandConfiguration
     private string FetchInlineRunSettingsFromParse(ParseResult parseResult)
     {
         var inlineSettings = new StringBuilder();
-        var inlinesettingsOption = parseResult.GetValueForOption(InlineRunSettingsOption);
+        var inlineSettingsOption = parseResult.GetValueForOption(InlineRunSettingsOption);
 
-        if (inlinesettingsOption is not null &&
-            inlinesettingsOption.Length > 0)
+        if (inlineSettingsOption is not null &&
+            inlineSettingsOption.Length > 0)
         {
             inlineSettings.Append(" -- ");
-            inlineSettings.Append(string.Join(" ", inlinesettingsOption));
+            inlineSettings.Append(string.Join(" ", inlineSettingsOption));
         }
 
-        return inlineSettings.ToString();
+        return inlineSettings.ToString().Replace("\"", "\\\"");
+        
+            
     } 
     
 
