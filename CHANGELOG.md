@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.0.0"></a>
+## [2.0.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.0) (2024-02-15)
+
+### Features
+
+## What's Changed
+* chore(deps): bump kzrnm/get-net-sdk-project-versions-action from 1 to 2 by @dependabot in https://github.com/joaoopereira/dotnet-test-rerun/pull/134
+* feat: bump target framework to net8.0 by @ricardofslp in https://github.com/joaoopereira/dotnet-test-rerun/pull/133
+
 <a name="1.9.0"></a>
 ## [1.9.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v1.9.0) (2024-01-10)
 
