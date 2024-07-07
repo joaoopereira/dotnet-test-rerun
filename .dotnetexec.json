@@ -4,12 +4,12 @@
 	"commands": {
 	 "bump": [
 	  "cd src",
-	  "dotnet versionize --pre-release alpha --proj-version-bump-logic",
+	  "dotnet versionize --pre-release alpha --find-release-commit-via-message",
 	  "git push --tag origin",
 	  "git push"
 	 ],
 	 "bump:live": [
-	   "dotnet versionize --aggregate-pre-releases --proj-version-bump-logic",
+	   "dotnet versionize --aggregate-pre-releases --find-release-commit-via-message",
 	   "git push --tag origin",
 	   "git push"
 	  ]
