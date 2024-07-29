@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitTestPassOnSecondRunExample", "XUnitNet8\XUnitTestPassOnSecondRunExample.csproj", "{8D518E41-2BF7-459D-AFD4-EB21E8B97D2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitSimpleTestExample", "XUnitNet48\XUnitSimpleTestExample.csproj", "{EB7CE796-99D6-4B02-A13D-F1B5B2752ABC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitSimpleTestExample", "XUnitNet6\XUnitSimpleTestExample.csproj", "{64914E92-8EB6-420D-93B6-D47641D27302}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{8D518E41-2BF7-459D-AFD4-EB21E8B97D2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D518E41-2BF7-459D-AFD4-EB21E8B97D2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D518E41-2BF7-459D-AFD4-EB21E8B97D2C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EB7CE796-99D6-4B02-A13D-F1B5B2752ABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EB7CE796-99D6-4B02-A13D-F1B5B2752ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EB7CE796-99D6-4B02-A13D-F1B5B2752ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EB7CE796-99D6-4B02-A13D-F1B5B2752ABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64914E92-8EB6-420D-93B6-D47641D27302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64914E92-8EB6-420D-93B6-D47641D27302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64914E92-8EB6-420D-93B6-D47641D27302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64914E92-8EB6-420D-93B6-D47641D27302}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
