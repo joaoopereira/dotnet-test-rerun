@@ -8,7 +8,6 @@ public class ProcessExecution : IProcessExecution
     private readonly ILogger Log;
     internal string Output;
     internal string Error;
-    internal int ExitCode;
     
     public ProcessExecution(ILogger logger)
     {
@@ -16,7 +15,13 @@ public class ProcessExecution : IProcessExecution
     }
     
     public Task<Process?> Start(ProcessStartInfo processStartInfo)
-        => Task.Run(() => Process.Start(processStartInfo));
+    {
+        //reset variables for the case of rerun
+        Output = string.Empty;
+        Error = string.Empty;
+
+        return Task.Run(() => Process.Start(processStartInfo));
+    }
 
     public void FetchOutput(Process process)
     {

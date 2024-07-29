@@ -53,6 +53,8 @@ public class DotNetTestRunnerTests
     public async Task Test_GetErrors_UnknownError()
     {
         // Arrange
+        const string errorMessage = "Unexpected error";
+        
         var logger = new Logger();
         var processExecution = Substitute.For<IProcessExecution>();
         var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
@@ -61,7 +63,7 @@ public class DotNetTestRunnerTests
         processExecution.GetOutput()
             .Returns(string.Empty);
         processExecution.GetError()
-            .Returns("Unexpected error");
+            .Returns(errorMessage);
         processExecution.Start(Arg.Any<ProcessStartInfo>())
             .Returns(new Process());
 
@@ -69,7 +71,7 @@ public class DotNetTestRunnerTests
         var act = () => dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
 
         // Assert
-        await act.Should().ThrowAsync<RerunException>().WithMessage("command: dotnet test --results-directory \"resultsDirectory\"");
+        await act.Should().ThrowAsync<RerunException>().WithMessage($"command: dotnet test --results-directory \"resultsDirectory\" exited with code 1. \n\nError message: {errorMessage}");
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.Error);
     }
     

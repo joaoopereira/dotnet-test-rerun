@@ -63,7 +63,7 @@ public class RerunCommand : RootCommand
                     if (testsToRerun.HasTestsToReRun is false)
                     {
                         Environment.ExitCode = 0;
-                        Log.Information($"Rerun attempt {attempt} not needed. All testes Passed.");
+                        Log.Information($"Rerun attempt {attempt} not needed. All tests Passed.");
                         break;
                     }
 
@@ -74,12 +74,6 @@ public class RerunCommand : RootCommand
                     foreach (var tests in testsToRerun.Filters)
                     {
                         Config.Filter = Config.AppendFailedTests(tests.Value.Filter);
-
-                        if (tests.Key != TestFilter.NoFrameworkName)
-                        {
-                            Log.Warning($"Framework: {tests.Key}");
-                            Config.Framework = tests.Key;
-                        }
 
                         Log.Warning($"Rerun filter: {Config.Filter}");
                         await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
