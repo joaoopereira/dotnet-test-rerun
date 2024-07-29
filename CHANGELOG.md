@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.0.2"></a>
+## [2.0.2](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.2) (2024-07-29)
+
+### Bug Fixes
+
+* different .net versions test fixed ([cf37bf1](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/cf37bf1e64ae2cfa65b50dd873d1964a2c368042))
+* fix test for ubuntu agent ([386e0d6](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/386e0d67176716e2a6cd65af279bd3578ce0d246))
+* multiple .net versions issue fixed ([979f78c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/979f78cb64515c516205c98ffd0da499b5a36d96))
+* update test project from net48 to net 6 for ubuntu agent compatibility ([7916185](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/7916185ae1f5c6a58edd49a383c75bc640eb7c69))
+
 <a name="2.0.1"></a>
 ## [2.0.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.1) (2024-07-20)
 
