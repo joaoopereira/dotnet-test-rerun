@@ -8,12 +8,12 @@ public class Tests
     public void SimpleNumberCompare()
     {
         number = 3;
-        Assert.AreEqual(3, number);
+        Assert.That(number, Is.EqualTo(3));
     }
     
     [Test, Order(2)]
     public void SecondSimpleNumberCompare()
     {
-        Assert.AreEqual(2, number);
+        Assert.That(number, Is.EqualTo(2));
     }
 }

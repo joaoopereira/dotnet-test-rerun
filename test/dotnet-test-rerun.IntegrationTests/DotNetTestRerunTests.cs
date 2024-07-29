@@ -171,6 +171,28 @@ public class DotNetTestRerunTests
         Environment.ExitCode.Should().Be(1);
     }
 
+    [Fact]
+    public async Task DotnetTestRerun_FailingXUnit_PassOnSecond()
+    {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("XUnitTestPassOnSecondRunExample", dir: testDir);
+
+        // Assert
+        output.Should().Contain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(1));
+        output.Should().Contain("Rerun filter: FullyQualifiedName~XUnitTestPassOnSecondRunExample.SimpleTest",            Exactly.Once());
+        output.Should().Contain("Failed:     1, Passed:     1", Exactly.Once());
+        output.Should().Contain("Failed:     0, Passed:     1", Exactly.Once());
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        files.Should().HaveCount(2);
+        Environment.ExitCode.Should().Be(0);
+    }
+
     [InlineData("normal")]
     [InlineData("quiet")]
     [InlineData("minimal")]
@@ -219,11 +241,12 @@ public class DotNetTestRerunTests
         output.Should().MatchRegex(
             "Rerun filter: FullyQualifiedName~(FailingXUnitExample.)*SimpleTest.SimpleStringCompare",
             Exactly.Thrice());
-        output.Should().Contain("Passed:     1",
-            Exactly.Once());
+        output.Should().Contain("Passed:     1", Exactly.Times(4));
+        output.Should().Contain("Failed:     1", Exactly.Times(4));
+        output.Should().Contain("Passed!", Exactly.Times(4));
         output.Should().Contain("Failed!", Exactly.Times(4));
         var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
-        files.Should().HaveCount(5);
+        files.Should().HaveCount(8);
         Environment.ExitCode.Should().Be(1);
     }
 
@@ -388,6 +411,37 @@ public class DotNetTestRerunTests
             Exactly.Once());
         output.Should().Contain("Failed:     0, Passed:     1",
             Exactly.Once());
+        Environment.ExitCode.Should().Be(0);
+    }
+    
+    [Fact]
+    public async Task DotnetTestRerun_RunOnSolution_WithDifferentNetVersions_WithNoBuild_Sucess()
+    {
+        Environment.ExitCode = 0;
+        var buildTimeoutInSeconds = TimeSpan.FromSeconds(30);
+        const string testSolution = "XUnitTwoMultipleProjectsWithDifferentNetVersion";
+
+        //build separately, as we are using --no-build, without no build the behaviour is different
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet.exe",
+                Arguments = $"build {_dir}\"{testSolution}\""
+            }
+        };
+        process.Start();
+        process.WaitForExit(buildTimeoutInSeconds);
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage(testSolution, "--no-build");
+
+        // Assert
+        output.Should().Contain("Failed!", Exactly.Once());
+        output.Should().Contain("Passed!", Exactly.Twice());
+        output.Should().Contain("Rerun filter: FullyQualifiedName~XUnitTestPassOnSecondRunExample.SimpleTest.TestDecreaseState", Exactly.Once());
+        output.Should().Contain("Failed:     1, Passed:     1", Exactly.Once());
+        output.Should().Contain("Failed:     0, Passed:     1", Exactly.Twice());
         Environment.ExitCode.Should().Be(0);
     }
 

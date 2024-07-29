@@ -5,7 +5,9 @@
 
 # Description
 Unfortunately, there isn't a way with plain `dotnet test` to automatically rerun failed tests.\
-This tool is wrapper for the `dotnet test` that automatically reruns any tests with the outcome "Failed" until they pass or a maximum number of attempts has been reached. This is useful, for cases where tests may fail intermittently due to external factors such as network connectivity, database availability, or race conditions.
+This tool is wrapper for the `dotnet test` that automatically reruns any tests with the outcome "Failed" until they pass or a maximum number of attempts has been reached. This is useful, for cases where tests may fail intermittently due to external factors such as network connectivity, database availability, or race conditions.\
+Please note that this tool is language-dependent. The output of `dotnet test` may be localized, and if it is not in English, the tool may not function correctly. Currently, only English is supported.
+
 
 # :computer: Usage
 ## :package: dotnet tool
