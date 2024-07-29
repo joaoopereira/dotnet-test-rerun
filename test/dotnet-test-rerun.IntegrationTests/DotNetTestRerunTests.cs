@@ -426,7 +426,7 @@ public class DotNetTestRerunTests
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "dotnet.exe",
+                FileName = "dotnet",
                 Arguments = $"build {_dir}\"{testSolution}\""
             }
         };
