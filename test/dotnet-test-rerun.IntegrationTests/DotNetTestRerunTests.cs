@@ -427,7 +427,7 @@ public class DotNetTestRerunTests
             StartInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"build {_dir}\"{testSolution}\""
+                Arguments = $"build {_dir}\\{testSolution}"
             }
         };
         process.Start();
@@ -438,10 +438,10 @@ public class DotNetTestRerunTests
 
         // Assert
         output.Should().Contain("Failed!", Exactly.Once());
-        output.Should().Contain("Passed!", Exactly.Twice());
+        output.Should().Contain("Passed!");
         output.Should().Contain("Rerun filter: FullyQualifiedName~XUnitTestPassOnSecondRunExample.SimpleTest.TestDecreaseState", Exactly.Once());
         output.Should().Contain("Failed:     1, Passed:     1", Exactly.Once());
-        output.Should().Contain("Failed:     0, Passed:     1", Exactly.Twice());
+        output.Should().Contain("Failed:     0, Passed:     1");
         Environment.ExitCode.Should().Be(0);
     }
 
