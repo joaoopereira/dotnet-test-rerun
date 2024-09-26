@@ -16,7 +16,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     public TestResultsAnalyzer(ILogger logger)
     {
         Log = logger;
-        reportFiles = new ();
+        reportFiles = new();
     }
 
     public TestFilterCollection GetFailedTestsFilter(IFileInfo[] trxFiles)
@@ -27,20 +27,21 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             var failedTests = GetFailedTestsFilter(trxFile);
             allFailedTests.Add(failedTests);
         }
+
         return allFailedTests;
     }
-    
+
     public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
-        => resultsDirectory.Exists ?
-           resultsDirectory.EnumerateFiles("*.trx").Where(file => file.CreationTime >= startSearchTime).ToArray() :
-           Array.Empty<IFileInfo>();
+        => resultsDirectory.Exists
+            ? resultsDirectory.EnumerateFiles("*.trx").Where(file => file.CreationTime >= startSearchTime).ToArray()
+            : Array.Empty<IFileInfo>();
 
     public void AddLastTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
     {
         foreach (var fileInfo in GetTrxFiles(resultsDirectory, startSearchTime))
             reportFiles.Add(fileInfo.FullName);
     }
-    
+
     public HashSet<string> GetReportFiles()
         => reportFiles;
 
@@ -53,14 +54,15 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         Dictionary<string, string> testClassByTestId = new Dictionary<string, string>();
         trx.TestDefinitions?.UnitTests.ForEach(t => testClassByTestId[t.Id] = t.TestMethod.ClassName);
         string? framework = trx.TestDefinitions?.UnitTests.Select(test => test.Storage.FetchDotNetVersion())
-            .FirstOrDefault(val => string.IsNullOrWhiteSpace(val) is false );
+            .FirstOrDefault(val => string.IsNullOrWhiteSpace(val) is false);
 
         var tests = trx.Results?.UnitTestResults
             .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
-            .Select(t => new StringBuilder()
-                .Append($"FullyQualifiedName~") 
-                .Append($"{(testClassByTestId.ContainsKey(t.TestId) && t.TestName.Contains(testClassByTestId[t.TestId]) is false ? $"{testClassByTestId[t.TestId]}." : string.Empty)}")
-                .Append(GetTestName(t.TestName)).ToString())
+            .Select(t => EscapeAll(new StringBuilder()
+                .Append($"FullyQualifiedName~")
+                .Append(
+                    $"{(testClassByTestId.ContainsKey(t.TestId) && t.TestName.Contains(testClassByTestId[t.TestId]) is false ? $"{testClassByTestId[t.TestId]}." : string.Empty)}")
+                .Append(GetTestName(t.TestName)).ToString()))
             .Distinct()
             .ToList() ?? new List<string>();
 
@@ -87,4 +89,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         return testToRerun.ToString().TrimEnd();
     }
+
+    private string EscapeAll(string input)
+        => Regex.Replace(input, @"[()?{}]", match => "\\" + match.Value);
 }
