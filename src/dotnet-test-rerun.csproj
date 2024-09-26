@@ -14,7 +14,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression> GPL-3.0-or-later</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <Version>2.0.2</Version>
+    <Version>2.0.3-alpha.0</Version>
     <PackageProjectUrl>https://github.com/joaoopereira/dotnet-test-rerun</PackageProjectUrl>
     <Description>wrapper of dotnet test command that automatic rerun failed tests</Description>
     <RepositoryUrl>https://github.com/joaoopereira/dotnet-test-rerun</RepositoryUrl>

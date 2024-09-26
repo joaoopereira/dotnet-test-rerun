@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.0.3-alpha.0"></a>
+## [2.0.3-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.3-alpha.0) (2024-09-26)
+
+### Bug Fixes
+
+* handle special characters in test filter ([91475a6](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/91475a64f4bf12217b804a9a0ec99b2d98ccaa48))
+
 <a name="2.0.1-alpha.1"></a>
 ## [2.0.1-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.1-alpha.1) (2024-07-07)
 
