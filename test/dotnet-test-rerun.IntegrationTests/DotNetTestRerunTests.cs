@@ -169,6 +169,22 @@ public class DotNetTestRerunTests
         var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
         files.Should().HaveCount(4);
         Environment.ExitCode.Should().Be(1);
+    }    
+    
+    [Fact]
+    public async Task DotnetTestRerun_FailingXUnit_FailsInAllRetries()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("XUnitExampleFailInAllRetries");
+
+        // Assert
+        output.Should().Contain("Failed!", Exactly.Times(4));
+        output.Should().Contain("Failed:     2, Passed:     0", Exactly.Times(4));
+        Environment.ExitCode.Should().Be(1);
+        IsThereACoverageFile().Should().BeFalse();
     }
 
     [Fact]
