@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="2.1.0-alpha.0"></a>
+## [2.1.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.1.0-alpha.0) (2024-09-28)
+
+### Features
+
+* **#175:** update working directory to current directory where application is running ([a992ab3](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/a992ab342ce0a5c166f3a5c91cad7dbe01b16764))
+
 <a name="2.0.3-alpha.0"></a>
 ## [2.0.3-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.0.3-alpha.0) (2024-09-26)
 
