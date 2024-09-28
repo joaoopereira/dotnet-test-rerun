@@ -20,7 +20,7 @@ public class DotNetTestRunner : IDotNetTestRunner
         ProcessStartInfo = new()
         {
             FileName = "dotnet",
-            WorkingDirectory = "/",
+            WorkingDirectory = Directory.GetCurrentDirectory(),
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true
