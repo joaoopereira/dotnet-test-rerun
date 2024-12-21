@@ -10,7 +10,7 @@ public static class StringExtensions
         Match match = Regex.Match(path, pattern);
         int firstPositionAfterMatch = match.Index + match.Length;
 
-        if (match.Success && 
+        if (match.Success &&  
             (path.IsTheEnd(firstPositionAfterMatch) || 
              path.NextPositionIsCharacter(firstPositionAfterMatch, '\\') ||
              path.NextPositionIsCharacter(firstPositionAfterMatch, '/')))
