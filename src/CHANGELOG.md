@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.1.0-alpha.0"></a>
+## [3.1.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.1.0-alpha.0) (2025-03-12)
+
+### Features
+
+* allow inline run settings ([939eb62](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/939eb62e36075b783eb899f91bfee2e1ddf8f95b))
+
 <a name="2.1.0-alpha.0"></a>
 ## [2.1.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v2.1.0-alpha.0) (2024-09-28)
 
