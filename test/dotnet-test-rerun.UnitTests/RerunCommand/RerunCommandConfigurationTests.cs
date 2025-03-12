@@ -12,8 +12,8 @@ namespace dotnet_test_rerun.UnitTest.RerunCommand;
 
 public class RerunCommandConfigurationUnitTests
 {
-    private readonly RerunCommandConfiguration _configuration = new RerunCommandConfiguration();
-    private Command Command = new Command("test-rerun");
+    private readonly RerunCommandConfiguration _configuration = new ();
+    private Command Command = new ("test-rerun");
 
     [Theory]
     [InlineData("--filter", "Run tests that match the given expression.", false)]

@@ -166,7 +166,7 @@ public class RerunCommandConfiguration
     
     private readonly Option<string[]> InlineRunSettingsOption = new(new[] { "--inlineRunSettings"})
     {
-        Description = "Specifies a logger for test results.",
+        Description = "Specifies the inline run settings.",
         IsRequired = false,
         AllowMultipleArgumentsPerToken = true
     };
@@ -308,17 +308,16 @@ public class RerunCommandConfiguration
         var inlineSettings = new StringBuilder();
         var inlineSettingsOption = parseResult.GetValueForOption(InlineRunSettingsOption);
 
-        if (inlineSettingsOption is not null &&
-            inlineSettingsOption.Length > 0)
+        if ((inlineSettingsOption is not null &&
+            inlineSettingsOption.Length > 0) ||
+            (parseResult.UnparsedTokens is not null &&
+             parseResult.UnparsedTokens.Count > 0))
         {
             inlineSettings.Append(" -- ");
-            inlineSettings.Append(string.Join(" ", inlineSettingsOption));
+            inlineSettings.Append(string.Join(" ", inlineSettingsOption ?? []));
+            inlineSettings.Append(string.Join(" ", parseResult.UnparsedTokens ?? []));
         }
 
         return inlineSettings.ToString().Replace("\"", "\\\"");
-        
-            
     } 
-    
-
 }
