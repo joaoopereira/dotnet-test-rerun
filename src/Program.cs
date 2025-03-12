@@ -25,6 +25,7 @@ var cmd = serviceProvider.GetService<RerunCommand>();
 
 await new CommandLineBuilder(cmd)
     .UseDefaults()
+    .EnableLegacyDoubleDashBehavior()
     .UseExceptionHandler((exception, _) =>
     {
         if (exception is RerunException
