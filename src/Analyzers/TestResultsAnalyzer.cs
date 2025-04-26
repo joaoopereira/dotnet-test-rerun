@@ -1,5 +1,4 @@
 using System.IO.Abstractions;
-using System.Text;
 using System.Text.RegularExpressions;
 using dotnet.test.rerun.Domain;
 using dotnet.test.rerun.Extensions;
@@ -7,6 +6,8 @@ using dotnet.test.rerun.Logging;
 using TrxFileParser;
 
 namespace dotnet.test.rerun.Analyzers;
+
+using TrxFileParser.Models;
 
 public class TestResultsAnalyzer : ITestResultsAnalyzer
 {
@@ -51,43 +52,61 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         var trx = TrxDeserializer.Deserialize(trxFile.FullName);
         reportFiles.Add(trxFile.FullName);
 
-        Dictionary<string, string> testClassByTestId = new Dictionary<string, string>();
-        trx.TestDefinitions?.UnitTests.ForEach(t => testClassByTestId[t.Id] = t.TestMethod.ClassName);
+        var fullMethodNameByTestId = trx.TestDefinitions?.UnitTests
+            .ToDictionary(x => x.Id, x => $"{x.TestMethod.ClassName}.{x.TestMethod.Name}") ?? new();
+
         string? framework = trx.TestDefinitions?.UnitTests.Select(test => test.Storage.FetchDotNetVersion())
             .FirstOrDefault(val => string.IsNullOrWhiteSpace(val) is false);
 
-        var tests = trx.Results?.UnitTestResults
+        var failedTests = trx.Results?.UnitTestResults
             .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
-            .Select(t => EscapeAll(new StringBuilder()
-                .Append($"FullyQualifiedName~")
-                .Append(
-                    $"{(testClassByTestId.ContainsKey(t.TestId) && t.TestName.Contains(testClassByTestId[t.TestId]) is false ? $"{testClassByTestId[t.TestId]}." : string.Empty)}")
-                .Append(GetTestName(t.TestName)).ToString()))
-            .Distinct()
-            .ToList() ?? new List<string>();
+            .ToList() ?? [];
 
-        if (tests.Count == 0)
+        if (failedTests.Count == 0)
             Log.Warning($"No tests found with the Outcome {outcome} in file {trxFile.Name}");
 
-        return new(framework, tests);
+        var filters = failedTests
+            .Select(t => BuildFilters([
+                BuildFullyQualifiedNameFilter(t, fullMethodNameByTestId),
+                BuildDisplayNameFilter(t.TestName)]))
+            .Distinct()
+            .ToList();
+
+        return new(framework, filters);
     }
 
-    private string GetTestName(string testName)
+    private string BuildFilters(string?[] filters)
+        => EscapeAll(
+            string.Join(
+                "&",
+                filters.Where(x => x is not null)));
+
+    private static string BuildFullyQualifiedNameFilter(
+        UnitTestResult testResult,
+        Dictionary<string, string> fullMethodNameByTestId)
+    {
+        var fullyQualifiedName = fullMethodNameByTestId.TryGetValue(testResult.TestId, out var fullMethodName)
+            ? fullMethodName
+            : testResult.TestName;
+
+        return $"FullyQualifiedName~{fullyQualifiedName.Split('(')[0]}";
+    }
+
+    private static string? BuildDisplayNameFilter(string testName)
     {
         var openParenthesisIndex = testName.IndexOf("(");
         var closeParenthesisIndex = testName.IndexOf(")");
         var canRunSpecific = testName.IndexOf(":") > 0;
-        if (openParenthesisIndex == -1)
-            return testName.TrimEnd();
+        if (openParenthesisIndex == -1 || !canRunSpecific)
+        {
+            return null;
+        }
 
-        var testToRerun = new StringBuilder().Append(testName.Substring(0, openParenthesisIndex).TrimEnd());
-        if (canRunSpecific)
-            testToRerun
-                .Append("&DisplayName~")
-                .Append(testName.Substring(openParenthesisIndex + 1, closeParenthesisIndex - openParenthesisIndex - 1))
-                .Replace("\"", "%22");
+        var testParameters = testName
+            .Substring(openParenthesisIndex + 1, closeParenthesisIndex - openParenthesisIndex - 1)
+            .Replace("\"", "%22");
 
-        return testToRerun.ToString().TrimEnd();
+        return $"DisplayName~{testParameters}";
     }
 
     private string EscapeAll(string input)
