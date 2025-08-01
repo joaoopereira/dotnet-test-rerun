@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "bump pre-release",
+            "command": "dotnet execute bump",
+            "type": "shell"
+        },
+        {
+            "label": "bump",
+            "command": "dotnet execute bump:live",
+            "type": "shell"
+        }
+    ]
+}
