@@ -3,5 +3,10 @@
     "version": "9.0.X",
     "rollForward": "latestMinor",
     "allowPrerelease": false
+  },
+  "scripts": {
+    "push-tag": "git push --tag origin && git push",
+    "bump": "dotnet versionize --pre-release alpha --find-release-commit-via-message && dotnet r push-tag",
+    "bump:live": "dotnet versionize --aggregate-pre-releases --find-release-commit-via-message --find-release-commit-via-message && dotnet r push-tag"
   }
 }
