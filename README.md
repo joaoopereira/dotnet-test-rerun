@@ -56,7 +56,7 @@ Notes:
 
 👤 **João Pereira**
 
-- Website: [jo-pereira.com](https://jo-pereira.com)
+- Website: [joaoopereira.com](https://joaoopereiraa.com)
 - Github: [@joaoopereira](https://github.com/joaoopereira)
 
 👥 **Contributors**
