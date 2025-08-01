@@ -3,12 +3,12 @@
     "tasks": [
         {
             "label": "bump pre-release",
-            "command": "dotnet execute bump",
+            "command": "dotnet r bump",
             "type": "shell"
         },
         {
             "label": "bump",
-            "command": "dotnet execute bump:live",
+            "command": "dotnet r bump:live",
             "type": "shell"
         }
     ]

@@ -3,7 +3,7 @@
 ## Pre-Releases
 on the repo root folder run:
 ```sh
-dotnet execute bump
+dotnet r bump
 ```
 
 this will output something like this:
@@ -28,7 +28,7 @@ on github, go to [Releases](https://www.github.com/joaoopereira/dotnet-test-reru
 ## Releases
 on the repo root folder run:
 ```sh
-dotnet execute bump:live
+dotnet r bump:live
 ```
 
 this will output something like this:
