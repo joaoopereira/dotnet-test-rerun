@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.1.0-alpha.1"></a>
+## [3.1.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.1.0-alpha.1) (2025-08-01)
+
+### Bug Fixes
+
+* fixed test name construction: now always uses the real test method name instead of the DisplayName ([6ff8885](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/6ff8885c668b225975252c1206961d94220f4c7d))
+* **dotnet:** add support for dotnet 8 ([a7c3fdd](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/a7c3fdd6a451952a2eb2d22450bf72966bdabcd4))
+
 <a name="3.0.0"></a>
 ## [3.0.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.0.0) (2025-01-22)
 
