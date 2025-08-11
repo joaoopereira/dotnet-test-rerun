@@ -106,4 +106,4 @@ jobs:
           DOCKER_BUILDKIT: 1
           DOCKER_CLI_EXPERIMENTAL: enabled
           VERSION: ${{ steps.get-version.outputs.version }}
-        run: cd src && docker bake bake --push --load --progress plain
+        run: cd src && docker bake --push --load --progress plain
