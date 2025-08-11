@@ -102,8 +102,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          context: src
-          tags: joaoopereira/dotnet-test-rerun:latest, joaoopereira/dotnet-test-rerun:${{steps.get-version.outputs.version}}
+        env:
+          DOCKER_BUILDKIT: 1
+          DOCKER_CLI_EXPERIMENTAL: enabled
+          VERSION: ${{ steps.get-version.outputs.version }}
+        run: cd src && docker bake bake --push --load --progress plain

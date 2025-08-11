@@ -26,7 +26,8 @@
                 "FullStackSpider.visual-nuget",
                 "actboy168.tasks",
                 "esbenp.prettier-vscode",
-                "github.vscode-github-actions"
+                "github.vscode-github-actions",
+                "GitHub.copilot"
             ]
         }
     },

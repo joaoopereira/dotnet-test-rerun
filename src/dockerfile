@@ -1,5 +1,21 @@
-# Use the official .NET SDK image from Microsoft as the build environment
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
+ARG DOTNET_VERSION=8.0 \
+    DOTNET_VERSIONS="8.0 9.0"
+
+FROM ubuntu AS build
+
+ARG DOTNET_VERSIONS
+
+ENV DOTNET_EnableWriteXorExecute=0 \
+    DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+# Install additional .NET SDK versions
+RUN apt update && apt install -y wget libicu-dev && \
+    wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh && \ 
+    chmod +x dotnet-install.sh && \
+    for version in $DOTNET_VERSIONS; do \
+        ./dotnet-install.sh --channel $version; \
+    done && \
+    rm dotnet-install.sh
 
 # Set the working directory in the container
 WORKDIR /app
@@ -8,18 +24,21 @@ WORKDIR /app
 COPY . .
 
 # Restore as distinct layers
-RUN dotnet restore dotnet-test-rerun.csproj /p:DockerBuild=true
-# Build and publish a release
-RUN dotnet publish dotnet-test-rerun.csproj /p:DockerBuild=true -c Release -o out
+RUN /root/.dotnet/dotnet restore dotnet-test-rerun.csproj /p:DockerBuild=true
+
+# Build a release
+RUN /root/.dotnet/dotnet build dotnet-test-rerun.csproj /p:DockerBuild=true -c Release
 
 # Build the runtime image
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS runtime
+
+ARG DOTNET_VERSION
 
 # Set the working directory in the runtime container
 WORKDIR /app
 
 # Copy the published application from the build container to the runtime container
-COPY --from=build /app/out ./
+COPY --from=build /app/bin/Release/net${DOTNET_VERSION}/ ./
 
 # Set the entry point for the application
 ENTRYPOINT ["dotnet", "test-rerun.dll"]
