@@ -102,8 +102,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
+        uses: docker/bake-action@v6     
+        with:
+          workdir: src
+          push: true
         env:
-          DOCKER_BUILDKIT: 1
-          DOCKER_CLI_EXPERIMENTAL: enabled
-          VERSION: ${{ steps.get-version.outputs.version }}
-        run: cd src && docker bake --push --load --progress plain
+          VERSION: ${{ steps.get-version.outputs.version }}   
