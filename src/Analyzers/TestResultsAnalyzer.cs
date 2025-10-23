@@ -89,7 +89,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             ? fullMethodName
             : testResult.TestName;
 
-        return $"FullyQualifiedName~{fullyQualifiedName.Split('(')[0]}";
+        return $"FullyQualifiedName={fullyQualifiedName.Split('(')[0]}";
     }
 
     private static string? BuildDisplayNameFilter(string testName)
