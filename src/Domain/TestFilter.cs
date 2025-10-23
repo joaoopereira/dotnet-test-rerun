@@ -11,7 +11,7 @@ public class TestFilter
 
     public string Framework { get; }
     public List<string> Tests { get; }
-    public string Filter => string.Join(" | ", Tests);
+    public string Filter => string.Join(" | ", Tests.Select(t => $"({t})"));
 
     internal void Merge(TestFilter testFilter)
     {

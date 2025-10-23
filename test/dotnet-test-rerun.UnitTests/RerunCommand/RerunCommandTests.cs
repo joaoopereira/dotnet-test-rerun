@@ -171,7 +171,7 @@ public class RerunCommandTests
 
         // Assert       
         await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
-        config.Filter.Should().Be(filterToRerun);
+        config.Filter.Should().Be("(filterToRerun)");
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
@@ -214,7 +214,7 @@ public class RerunCommandTests
 
         // Assert       
         await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
-        config.Filter.Should().Be(string.Concat("(filter)&(", filterToRerun, ")"));
+        config.Filter.Should().Be("(filter)&((filterToRerun))");
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
