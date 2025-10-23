@@ -8,7 +8,7 @@ using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit.Abstractions;
 
 namespace dotnet_test_rerun.IntegrationTests;
