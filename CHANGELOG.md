@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.2.0-alpha.0"></a>
+## [3.2.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.2.0-alpha.0) (2025-10-24)
+
+### Features
+
+* add comprehensive copilot-instructions.md for repository onboarding ([92269e1](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/92269e139d784784bdfb7fb54f5402465062ac81))
+
+### Bug Fixes
+
+* escape spaces in FullyQualifiedName filter expressions ([9c0ef5e](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/9c0ef5e7ec8bdb3793aa44a753f3c056e63eb48f))
+* update test filter from contains (~) to exact match (=) ([b42da84](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/b42da843edb6b503f22ca5bc09a280b865ea1743))
+
 <a name="3.1.1"></a>
 ## [3.1.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.1.1) (2025-08-11)
 
