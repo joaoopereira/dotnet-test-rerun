@@ -6,8 +6,8 @@ namespace dotnet.test.rerun.DotNetRunner;
 public class ProcessExecution : IProcessExecution
 {
     private readonly ILogger Log;
-    internal string Output;
-    internal string Error;
+    internal string Output = string.Empty;
+    internal string Error = string.Empty;
     
     public ProcessExecution(ILogger logger)
     {

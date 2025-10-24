@@ -11,11 +11,11 @@ public class RerunCommandConfiguration
 {
     #region Properties
 
-    public string Path { get; internal set; }
-    public string Filter { get; internal set; }
-    public string Settings { get; internal set; }
-    public IEnumerable<string> Logger { get; internal set; }
-    public string ResultsDirectory { get; internal set; }
+    public string? Path { get; internal set; }
+    public string? Filter { get; internal set; }
+    public string? Settings { get; internal set; }
+    public IEnumerable<string> Logger { get; internal set; } = Array.Empty<string>();
+    public string ResultsDirectory { get; internal set; } = string.Empty;
     public int RerunMaxAttempts { get; internal set; }
     public LogLevel LogLevel { get; internal set; }
     public bool NoBuild { get; internal set; }
@@ -23,14 +23,14 @@ public class RerunCommandConfiguration
     public int Delay { get; internal set; }
     public bool Blame { get; internal set; }
     public bool DeleteReportFiles { get; internal set; }
-    public string Collector { get; internal set; }
+    public string? Collector { get; internal set; }
     public CoverageFormat? MergeCoverageFormat { get; internal set; }
-    public string Configuration { get; internal set; }
+    public string? Configuration { get; internal set; }
     public LoggerVerbosity? Verbosity { get; internal set; }
-    public string Framework { get; internal set; }
-    public string PArguments { get; internal set; }
-    public string InlineRunSettings { get; internal set; }
-    public IEnumerable<string> EnvironmentVariables { get; internal set; }
+    public string? Framework { get; internal set; }
+    public string PArguments { get; internal set; } = string.Empty;
+    public string InlineRunSettings { get; internal set; } = string.Empty;
+    public IEnumerable<string>? EnvironmentVariables { get; internal set; }
     
     #endregion Properties
 
@@ -180,7 +180,7 @@ public class RerunCommandConfiguration
 
     #endregion Options
 
-    private string OriginalFilter;
+    private string? OriginalFilter;
     
     public void Set(Command cmd)
     {
@@ -257,6 +257,11 @@ public class RerunCommandConfiguration
             $"-r {fileNames}");
     
     public string AddArguments<T>(T value, Option<T> option)
+        => value is not null
+            ? $" {option.Aliases.First()} \"{value}\""
+            : string.Empty;
+    
+    public string AddArguments(string? value, Option<string> option)
         => value is not null
             ? $" {option.Aliases.First()} \"{value}\""
             : string.Empty;
