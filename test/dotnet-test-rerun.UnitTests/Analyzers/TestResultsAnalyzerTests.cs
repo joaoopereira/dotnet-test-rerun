@@ -57,6 +57,20 @@ public class TestResultsAnalyzerTests
     }
     
     [Fact]
+    public void GetFailedTestsFilter_XUnit_TestNameWithSpaces_EscapesSpaces()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithSpaceInTestName.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
+
+        //Assert
+        result.Filters.ElementAt(0).Key.Should().Be("net6.0");
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName=XUnitExample.My\\ Test\\ Class.My\\ Test\\ Method");
+    }
+    
+    [Fact]
     public void GetFailedTestsFilter_NUnit_NoFailedTests_ReturnEmpty()
     {
         //Arrange
@@ -179,7 +193,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(10);
+        result.Should().HaveCount(11);
     }
     
     [Fact]
