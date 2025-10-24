@@ -15,9 +15,29 @@ Please note that this tool is language-dependent. The output of `dotnet test` ma
 dotnet tool install --global dotnet-test-rerun
 test-rerun [somepathtodll] [OPTIONS]
 ```
-## :whale: docker image
+## :whale: Docker
+
+The Docker images support both .NET 8.0 and .NET 9.0 runtimes. By default, the latest version uses .NET 9.0.
+
+### Available Tags
+
+| Tag | .NET Runtime | Description |
+|-----|-------------|-------------|
+| `latest` or `{version}` | .NET 9.0 | Default image with .NET 9.0 runtime |
+| `{version}-net9` or `{version}-dotnet9` | .NET 9.0 | Explicit .NET 9.0 image |
+| `{version}-net8` or `{version}-dotnet8` | .NET 8.0 | .NET 8.0 image |
+
+### Usage
+
 ```sh
+# Run with default .NET 9.0 image
 docker run joaoopereira/dotnet-test-rerun [somepathtodll] [OPTIONS]
+
+# Run with specific .NET version
+docker run joaoopereira/dotnet-test-rerun:1.0.0-net8 [somepathtodll] [OPTIONS]
+
+# Run with latest .NET 9.0
+docker run joaoopereira/dotnet-test-rerun:latest [somepathtodll] [OPTIONS]
 ```
 
 

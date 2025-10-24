@@ -104,7 +104,6 @@ jobs:
       - name: Build and push
         uses: docker/bake-action@v6     
         with:
-          workdir: src
           push: true
         env:
-          VERSION: ${{ steps.get-version.outputs.version }}   
+          VERSION: ${{ steps.get-version.outputs.version }}
