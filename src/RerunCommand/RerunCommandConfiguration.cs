@@ -208,8 +208,8 @@ public class RerunCommandConfiguration
     public void GetValues(InvocationContext context)
     {
         Path = context.ParseResult.GetValueForArgument(PathArgument);
-        Filter = context.ParseResult.GetValueForOption(FilterOption)!;
-        Settings = context.ParseResult.GetValueForOption(SettingsOption)!;
+        Filter = context.ParseResult.GetValueForOption(FilterOption);
+        Settings = context.ParseResult.GetValueForOption(SettingsOption);
         Logger = context.ParseResult.GetValueForOption(LoggerOption)!;
         ResultsDirectory = context.ParseResult.GetValueForOption(ResultsDirectoryOption)!;
         RerunMaxAttempts = context.ParseResult.GetValueForOption(RerunMaxAttemptsOption);
@@ -218,15 +218,15 @@ public class RerunCommandConfiguration
         NoRestore = context.ParseResult.FindResultFor(NoRestoreOption) is not null;
         Delay = context.ParseResult.GetValueForOption(DelayOption) * 1000;
         Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
-        Configuration = context.ParseResult.GetValueForOption(ConfigurationOption)!;
-        Framework = context.ParseResult.GetValueForOption(FrameworkOption)!;
+        Configuration = context.ParseResult.GetValueForOption(ConfigurationOption);
+        Framework = context.ParseResult.GetValueForOption(FrameworkOption);
         Verbosity = context.ParseResult.GetValueForOption(VerbosityOption);
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
-        Collector = context.ParseResult.GetValueForOption(CollectorOption)!;
+        Collector = context.ParseResult.GetValueForOption(CollectorOption);
         MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
         PArguments = FetchPArgumentsFromParse(context.ParseResult);
         InlineRunSettings = FetchInlineRunSettingsFromParse(context.ParseResult);
-        EnvironmentVariables = context.ParseResult.GetValueForOption(EnvironmentVariablesOption)!;
+        EnvironmentVariables = context.ParseResult.GetValueForOption(EnvironmentVariablesOption);
         
         //Store Original Values
         OriginalFilter = Filter;
