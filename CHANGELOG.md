@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.2.0-alpha.1"></a>
+## [3.2.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.2.0-alpha.1) (2025-10-24)
+
+### Features
+
+* add multi-target Dockerfile and docker-bake configuration for .NET 8.0 and 9.0 ([ac7d797](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/ac7d79781a5361ec7ee7efb754194a670220b32f))
+
 <a name="3.2.0-alpha.0"></a>
 ## [3.2.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.2.0-alpha.0) (2025-10-24)
 
