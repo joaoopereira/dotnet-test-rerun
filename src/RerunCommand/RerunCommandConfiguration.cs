@@ -17,6 +17,7 @@ public class RerunCommandConfiguration
     public IEnumerable<string> Logger { get; internal set; } = Array.Empty<string>();
     public string ResultsDirectory { get; internal set; } = string.Empty;
     public int RerunMaxAttempts { get; internal set; }
+    public int RerunMaxFailedTests { get; internal set; }
     public LogLevel LogLevel { get; internal set; }
     public bool NoBuild { get; internal set; }
     public bool NoRestore { get; internal set; }
@@ -75,6 +76,12 @@ public class RerunCommandConfiguration
     private readonly Option<int> RerunMaxAttemptsOption = new(new[] { "--rerunMaxAttempts" }, getDefaultValue: () => 3)
     {
         Description = "Maximum # of attempts.",
+        IsRequired = false
+    };
+
+    private readonly Option<int> RerunMaxFailedTestsOption = new(new[] { "--rerunMaxFailedTests" }, getDefaultValue: () => -1)
+    {
+        Description = "Maximum # of failed tests to rerun. If exceeded, tests will not be rerun.",
         IsRequired = false
     };
 
@@ -190,6 +197,7 @@ public class RerunCommandConfiguration
         cmd.Add(LoggerOption);
         cmd.Add(ResultsDirectoryOption);
         cmd.Add(RerunMaxAttemptsOption);
+        cmd.Add(RerunMaxFailedTestsOption);
         cmd.Add(LogLevelOption);
         cmd.Add(NoBuildOption);
         cmd.Add(NoRestoreOption);
@@ -213,6 +221,7 @@ public class RerunCommandConfiguration
         Logger = context.ParseResult.GetValueForOption(LoggerOption)!;
         ResultsDirectory = context.ParseResult.GetValueForOption(ResultsDirectoryOption)!;
         RerunMaxAttempts = context.ParseResult.GetValueForOption(RerunMaxAttemptsOption);
+        RerunMaxFailedTests = context.ParseResult.GetValueForOption(RerunMaxFailedTestsOption);
         LogLevel = context.ParseResult.GetValueForOption(LogLevelOption);
         NoBuild = context.ParseResult.FindResultFor(NoBuildOption) is not null;
         NoRestore = context.ParseResult.FindResultFor(NoRestoreOption) is not null;

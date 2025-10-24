@@ -370,6 +370,129 @@ public class RerunCommandTests
         await dotNetCoverageRunner.Received(1).Merge(config, directoryInfo.FullName, Arg.Any<DateTime>());
     }
 
+   [Fact]
+    public async Task Run_TestsFailExceedingThreshold_SkipsRerun()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, extraParams: "--rerunMaxFailedTests 2");
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var firstTrxFile = fileSystem.FileInfo.New("First.trx");
+        var testFilterCollection = new TestFilterCollection();
+        // Add 3 failed tests, which exceeds the threshold of 2
+        testFilterCollection.Add(new TestFilter("net6.0", new List<string>() { "test1", "test2", "test3" }));
+        
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new [] { firstTrxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(testFilterCollection);
+
+        // Act
+        await command.Run();
+
+        // Assert
+        // Should only run the initial test, not any reruns
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
+    }
+
+    [Fact]
+    public async Task Run_TestsFailWithinThreshold_RunsRerun()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, extraParams: "--rerunMaxFailedTests 5");
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var firstTrxFile = fileSystem.FileInfo.New("First.trx");
+        var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
+        var testFilterCollection = new TestFilterCollection();
+        // Add 3 failed tests, which is within the threshold of 5
+        testFilterCollection.Add(new TestFilter("net6.0", new List<string>() { "test1", "test2", "test3" }));
+        
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new [] { firstTrxFile }, new [] { secondTrxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+            .Returns(testFilterCollection);
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+            .Returns(new TestFilterCollection());
+
+        // Act
+        await command.Run();
+
+        // Assert
+        // Should run initial test plus one rerun
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+    }
+
+    [Fact]
+    public async Task Run_TestsFailWithThresholdDisabled_RunsRerun()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        // Default value of -1 means no threshold
+        InitialConfigurationSetup(config);
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var firstTrxFile = fileSystem.FileInfo.New("First.trx");
+        var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
+        var testFilterCollection = new TestFilterCollection();
+        // Add 100 failed tests - should still rerun because threshold is disabled
+        var manyTests = Enumerable.Range(1, 100).Select(i => $"test{i}").ToList();
+        testFilterCollection.Add(new TestFilter("net6.0", manyTests));
+        
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new [] { firstTrxFile }, new [] { secondTrxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+            .Returns(testFilterCollection);
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+            .Returns(new TestFilterCollection());
+
+        // Act
+        await command.Run();
+
+        // Assert
+        // Should run initial test plus one rerun even with many failures
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        dotNetTestRunner.Received(2).GetErrorCode();
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
+    }
+
     private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "", string filter = "--filter filter ")
     {
         var command = new Command("test-rerun");

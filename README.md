@@ -54,6 +54,7 @@ docker run joaoopereira/dotnet-test-rerun:latest [somepathtodll] [OPTIONS]
 | `--logger, -l`            | Specifies a logger for test results. Multiple values are allowed. *(default: trx)*                                                              |
 | `--results-directory, -r` | The directory where the test results are going to be placed. If the specified directory doesn't exist, it's created.                            |
 | `--rerunMaxAttempts`      | Maximum # of attempts. *(default: 3)*                                                                                                           |
+| `--rerunMaxFailedTests`   | Maximum # of failed tests to rerun. If exceeded, tests will not be rerun. *(default: -1, no limit)*                                             |
 | `--loglevel`              | Log Level. *(default: Verbose)*                                                                                                                 |
 | `--no-build`              | Do not build the project before testing. Implies --no-restore.                                                                                  |
 | `--no-restore`            | Do not restore the project before building.*                                                                                                    |
