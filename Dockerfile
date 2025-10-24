@@ -24,10 +24,10 @@ WORKDIR /src
 COPY . .
 
 # Restore dependencies for main project only
-RUN dotnet restore src/dotnet-test-rerun.csproj
+RUN dotnet restore src/dotnet-test-rerun.csproj /p:DockerBuild=true
 
 # Build the application
-RUN dotnet build src/dotnet-test-rerun.csproj --configuration Release --no-restore
+RUN dotnet build src/dotnet-test-rerun.csproj --configuration Release --no-restore /p:DockerBuild=true
 
 # Set the target framework based on build arg
 ARG TARGET_DOTNET_VERSION
@@ -38,7 +38,8 @@ RUN dotnet publish src/dotnet-test-rerun.csproj \
     --configuration Release \
     --framework $TARGET_FRAMEWORK \
     --output /app \
-    --no-build
+    --no-build \
+    /p:DockerBuild=true
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/runtime:${TARGET_DOTNET_VERSION}
