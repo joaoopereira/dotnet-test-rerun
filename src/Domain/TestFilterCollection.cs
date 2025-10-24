@@ -8,6 +8,7 @@ public class TestFilterCollection
 
     public bool HasTestsToReRun => filters.Any();
     public Dictionary<string, TestFilter> Filters => filters;
+    public int TotalFailedTests => filters.Values.Sum(f => f.Tests.Count);
 
     internal void Add(TestFilter testFilter)
     {
