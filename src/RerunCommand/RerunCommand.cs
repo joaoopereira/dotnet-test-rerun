@@ -67,6 +67,14 @@ public class RerunCommand : RootCommand
                         break;
                     }
 
+                    // Check if the number of failed tests exceeds the threshold
+                    if (Config.RerunMaxFailedTests > 0 && testsToRerun.TotalFailedTests > Config.RerunMaxFailedTests)
+                    {
+                        Environment.ExitCode = 1;
+                        Log.Error($"Failed tests ({testsToRerun.TotalFailedTests}) exceeded the maximum threshold ({Config.RerunMaxFailedTests}). Skipping rerun.");
+                        break;
+                    }
+
                     Log.Information($"Rerun attempt {attempt}/{Config.RerunMaxAttempts}");
                     Log.Warning($"Found Failed tests: {testsToRerun}");
                     startOfDotnetRun = DateTime.Now;
