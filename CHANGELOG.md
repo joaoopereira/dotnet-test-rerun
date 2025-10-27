@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.2.0"></a>
+## [3.2.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.2.0) (2025-10-27)
+
+### Bug Fixes
+
+* resolve all .NET nullable reference warnings ([c58c1b3](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/c58c1b36310ffbdc80e616caffcc80b781f07f0f))
+
 <a name="3.2.0-alpha.2"></a>
 ## [3.2.0-alpha.2](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.2.0-alpha.2) (2025-10-24)
 
