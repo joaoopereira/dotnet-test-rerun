@@ -1,5 +1,6 @@
 ﻿using dotnet.test.rerun.Logging;
 using FluentAssertions;
+using NSubstitute;
 using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;

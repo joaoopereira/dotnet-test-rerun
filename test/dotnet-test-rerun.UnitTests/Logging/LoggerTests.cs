@@ -167,6 +167,28 @@ public class LoggerTests
         }
 
         [Fact]
+        public void LoggerTests_StatusWithActionAndContextUpdate_ShouldUpdateStatus()
+        {
+            // Arrange
+            var testConsole = new TestConsole();
+            var logger = new Logger(testConsole);
+            var message = "initial message";
+            var updatedMessage = "updated message";
+            var actionCalled = false;
+
+            // Act
+            logger.Status(message, context =>
+            {
+                actionCalled = true;
+                context.Status(updatedMessage);
+            });
+
+            // Assert
+            testConsole.Output.Should().Contain(updatedMessage);
+            actionCalled.Should().BeTrue();
+        }
+
+        [Fact]
         public void Render_Should_Write_Renderable()
         {
             // Arrange

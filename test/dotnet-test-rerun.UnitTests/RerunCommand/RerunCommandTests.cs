@@ -343,6 +343,33 @@ public class RerunCommandTests
         testResultsAnalyzer.Received(2).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
     }
 
+    [Fact]
+    public async Task Run_WithMergeCoverageFormat_ShouldCallMerge()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, "--mergeCoverageFormat cobertura");
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.Success);
+
+        // Act
+        await command.Run();
+
+        // Assert
+        await dotNetCoverageRunner.Received(1).Merge(config, directoryInfo.FullName, Arg.Any<DateTime>());
+    }
+
     private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "", string filter = "--filter filter ")
     {
         var command = new Command("test-rerun");

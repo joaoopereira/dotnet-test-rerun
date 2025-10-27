@@ -273,4 +273,38 @@ public class TestResultsAnalyzerTests
         result.Filters.ElementAt(0).Key.Should().Be("net6.0");
         result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName=NUnitTestExample.Tests.SimpleStringCompare");
     }
+
+    [Fact]
+    public void GetTrxFiles_NonExistentDirectory_ReturnsEmptyArray()
+    {
+        //Arrange
+        var nonExistentDir = FileSystem.DirectoryInfo.New("/tmp/non-existent-directory-12345");
+
+        //Act
+        var result = TestResultsAnalyzer.GetTrxFiles(nonExistentDir, DateTime.MinValue);
+
+        //Assert
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void GetTrxFiles_ExistingDirectoryNoTrxFiles_ReturnsEmptyArray()
+    {
+        //Arrange
+        var tempDir = TestUtilities.GetTmpDirectory();
+        try
+        {
+            var dir = FileSystem.DirectoryInfo.New(tempDir);
+
+            //Act
+            var result = TestResultsAnalyzer.GetTrxFiles(dir, DateTime.MinValue);
+
+            //Assert
+            result.Should().BeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(tempDir, true);
+        }
+    }
 }
