@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.3.0-alpha.0"></a>
+## [3.3.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.3.0-alpha.0) (2025-10-27)
+
+### Features
+
+* add configurable max failures threshold option ([635f63d](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/635f63d9e6150b79885939fa272508bcb80e672e))
+
 <a name="3.2.0"></a>
 ## [3.2.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.2.0) (2025-10-27)
 
