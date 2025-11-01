@@ -1,4 +1,5 @@
-﻿using System.CommandLine.Parsing;
+﻿using System.CommandLine;
+using System.CommandLine.Parsing;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -136,10 +137,11 @@ namespace dotnet.test.rerun.Logging
         /// <summary>
         /// LogLevel Parser
         /// </summary>
-        public static ParseArgument<LogLevel> ParseLogLevel = argResult =>
+        public static Func<ArgumentResult, LogLevel> ParseLogLevel = argResult =>
         {
             var loglevel = LogLevel.Verbose;
             string loglevelStr = "verbose";
+            
             if (argResult.Tokens.Any())
             {
                 loglevelStr = argResult.Tokens[0].Value;
