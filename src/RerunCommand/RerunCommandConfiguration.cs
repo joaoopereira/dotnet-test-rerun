@@ -8,6 +8,8 @@ namespace dotnet.test.rerun.RerunCommand;
 
 public class RerunCommandConfiguration
 {
+    private const string MSBuildPropertyPrefix = "/p:";
+    
     #region Properties
 
     public string? Path { get; internal set; }
@@ -320,13 +322,13 @@ public class RerunCommandConfiguration
         => string.IsNullOrWhiteSpace(PArguments) ? PArguments : $" {PArguments}";
     
     private string FetchPArgumentsFromParse(ParseResult parseResult)
-        => string.Join(' ', parseResult.UnmatchedTokens.Where(p => p.StartsWith("/p:")));
+        => string.Join(' ', parseResult.UnmatchedTokens.Where(p => p.StartsWith(MSBuildPropertyPrefix)));
     
     private string FetchInlineRunSettingsFromParse(ParseResult parseResult)
     {
         var inlineSettings = new StringBuilder();
         var inlineSettingsOption = parseResult.GetValue(InlineRunSettingsOption);
-        var nonPArgumentTokens = parseResult.UnmatchedTokens.Where(p => !p.StartsWith("/p:")).ToList();
+        var nonPArgumentTokens = parseResult.UnmatchedTokens.Where(p => !p.StartsWith(MSBuildPropertyPrefix)).ToList();
 
         if ((inlineSettingsOption is not null &&
             inlineSettingsOption.Length > 0) ||
