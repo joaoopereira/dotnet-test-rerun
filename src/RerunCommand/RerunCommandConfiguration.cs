@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Text;
 using dotnet.test.rerun.Enums;
@@ -9,6 +8,8 @@ namespace dotnet.test.rerun.RerunCommand;
 
 public class RerunCommandConfiguration
 {
+    private const string MSBuildPropertyPrefix = "/p:";
+    
     #region Properties
 
     public string? Path { get; internal set; }
@@ -47,141 +48,147 @@ public class RerunCommandConfiguration
 
     #region Options
 
-    private readonly Option<string> FilterOption = new(new[] { "--filter" })
+    private readonly Option<string> FilterOption = new("--filter")
     {
         Description = "Run tests that match the given expression.",
-        IsRequired = false
+        Required = false
     };
 
-    private readonly Option<string> SettingsOption = new(new[] { "--settings", "-s" })
+    private readonly Option<string> SettingsOption = new("--settings", "-s")
     {
         Description = "The run settings file to use when running tests.",
-        IsRequired = false
+        Required = false
     };
 
-    private readonly Option<IEnumerable<string>> LoggerOption = new(new[] { "--logger", "-l" }, getDefaultValue: () => new[] { "trx" })
+    private readonly Option<IEnumerable<string>> LoggerOption = new("--logger", "-l")
     {
         Description = "Specifies a logger for test results.",
-        IsRequired = false
+        Required = false,
+        DefaultValueFactory = _ => new[] { "trx" }
     };
 
     private readonly Option<string> ResultsDirectoryOption =
-        new(new[] { "--results-directory", "-r" }, getDefaultValue: () => ".")
+        new("--results-directory", "-r")
         {
             Description =
                 "The directory where the test results will be placed.\nThe specified directory will be created if it does not exist.",
-            IsRequired = false
+            Required = false,
+            DefaultValueFactory = _ => "."
         };
 
-    private readonly Option<int> RerunMaxAttemptsOption = new(new[] { "--rerunMaxAttempts" }, getDefaultValue: () => 3)
+    private readonly Option<int> RerunMaxAttemptsOption = new("--rerunMaxAttempts")
     {
         Description = "Maximum # of attempts.",
-        IsRequired = false
+        Required = false,
+        DefaultValueFactory = _ => 3
     };
 
-    private readonly Option<int> RerunMaxFailedTestsOption = new(new[] { "--rerunMaxFailedTests" }, getDefaultValue: () => -1)
+    private readonly Option<int> RerunMaxFailedTestsOption = new("--rerunMaxFailedTests")
     {
         Description = "Maximum # of failed tests to rerun. If exceeded, tests will not be rerun.",
-        IsRequired = false
+        Required = false,
+        DefaultValueFactory = _ => -1
     };
 
     private readonly Option<LogLevel> LogLevelOption =
-        new(new[] { "--loglevel" }, parseArgument: Logging.Logger.ParseLogLevel, isDefault: true)
+        new("--loglevel")
         {
             Description = "Log Level",
-            IsRequired = false,
+            Required = false,
+            CustomParser = Logging.Logger.ParseLogLevel,
+            DefaultValueFactory = _ => LogLevel.Verbose
         };
 
     private readonly Option<string> NoBuildOption =
-        new(new[] { "--no-build" })
+        new("--no-build")
         {
             Description = "Do not build the project before testing. Implies --no-restore.",
-            IsRequired = false,
+            Required = false,
             Arity = ArgumentArity.Zero
         };
 
     private readonly Option<string> NoRestoreOption =
-        new(new[] { "--no-restore" })
+        new("--no-restore")
         {
             Description = "Do not restore the project before building.",
-            IsRequired = false,
+            Required = false,
             Arity = ArgumentArity.Zero
         };
 
     private readonly Option<int> DelayOption =
-        new(new[] { "--delay", "-d" })
+        new("--delay", "-d")
         {
             Description = "Delay between test runs in seconds.",
-            IsRequired = false,
+            Required = false,
         };
 
     private readonly Option<string> BlameOption =
-        new(new[] { "--blame" })
+        new("--blame")
         {
             Description = "Runs the tests in blame mode.",
-            IsRequired = false,
+            Required = false,
             Arity = ArgumentArity.Zero
         };
 
     private readonly Option<string> DeleteReportFilesOption =
-        new(new[] { "--deleteReports" })
+        new("--deleteReports")
         {
             Description = "Delete the report files generated.",
-            IsRequired = false,
+            Required = false,
             Arity = ArgumentArity.Zero
         };
     
     private readonly Option<string> CollectorOption =
-        new(new[] { "--collect" })
+        new("--collect")
         {
             Description =
                 "Enables data collector for the test run.",
-            IsRequired = false
+            Required = false
         };
 
     private readonly Option<CoverageFormat?> MergeCoverageFormatOption =
-        new(new[] { "--mergeCoverageFormat" })
+        new("--mergeCoverageFormat")
         {
             Description =
                 "Output coverage format. Note: requires dotnet coverage tool to be installed.",
-            IsRequired = false
+            Required = false
         };
     
     private readonly Option<string> ConfigurationOption =
-        new(new[] { "-c", "--configuration" })
+        new("-c", "--configuration")
         {
             Description =
                 "Defines the build configuration.",
-            IsRequired = false
+            Required = false
         };
     
     private readonly Option<string> FrameworkOption =
-        new(new[] { "-f", "--framework" })
+        new("-f", "--framework")
         {
             Description =
                 "Defines the target framework to run the tests.",
-            IsRequired = false
+            Required = false
         };
     
     private readonly Option<LoggerVerbosity?> VerbosityOption =
-        new(new[] { "-v", "--verbosity" })
+        new("-v", "--verbosity")
         {
             Description =
                 "Sets the verbosity level of the command. Possible values: Quiet, Minimal, Normal, Detailed, Diagnostic",
-            IsRequired = false,
+            Required = false,
         };
     
-    private readonly Option<string[]> InlineRunSettingsOption = new(new[] { "--inlineRunSettings"})
+    private readonly Option<string[]> InlineRunSettingsOption = new("--inlineRunSettings")
     {
         Description = "Specifies the inline run settings.",
-        IsRequired = false,
+        Required = false,
         AllowMultipleArgumentsPerToken = true
     };
     
-    private readonly Option<IEnumerable<string>> EnvironmentVariablesOption = new(new[] { "-e", "--environment"})
+    private readonly Option<IEnumerable<string>> EnvironmentVariablesOption = new("-e", "--environment")
     {
         Description = "Sets the value of an environment variable.",
-        IsRequired = false,
+        Required = false,
         AllowMultipleArgumentsPerToken = true
     };
 
@@ -213,29 +220,29 @@ public class RerunCommandConfiguration
         cmd.Add(EnvironmentVariablesOption);
     }
 
-    public void GetValues(InvocationContext context)
+    public void GetValues(ParseResult parseResult)
     {
-        Path = context.ParseResult.GetValueForArgument(PathArgument);
-        Filter = context.ParseResult.GetValueForOption(FilterOption);
-        Settings = context.ParseResult.GetValueForOption(SettingsOption);
-        Logger = context.ParseResult.GetValueForOption(LoggerOption)!;
-        ResultsDirectory = context.ParseResult.GetValueForOption(ResultsDirectoryOption)!;
-        RerunMaxAttempts = context.ParseResult.GetValueForOption(RerunMaxAttemptsOption);
-        RerunMaxFailedTests = context.ParseResult.GetValueForOption(RerunMaxFailedTestsOption);
-        LogLevel = context.ParseResult.GetValueForOption(LogLevelOption);
-        NoBuild = context.ParseResult.FindResultFor(NoBuildOption) is not null;
-        NoRestore = context.ParseResult.FindResultFor(NoRestoreOption) is not null;
-        Delay = context.ParseResult.GetValueForOption(DelayOption) * 1000;
-        Blame = context.ParseResult.FindResultFor(BlameOption) is not null;
-        Configuration = context.ParseResult.GetValueForOption(ConfigurationOption);
-        Framework = context.ParseResult.GetValueForOption(FrameworkOption);
-        Verbosity = context.ParseResult.GetValueForOption(VerbosityOption);
-        DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
-        Collector = context.ParseResult.GetValueForOption(CollectorOption);
-        MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
-        PArguments = FetchPArgumentsFromParse(context.ParseResult);
-        InlineRunSettings = FetchInlineRunSettingsFromParse(context.ParseResult);
-        EnvironmentVariables = context.ParseResult.GetValueForOption(EnvironmentVariablesOption);
+        Path = parseResult.GetValue(PathArgument);
+        Filter = parseResult.GetValue(FilterOption);
+        Settings = parseResult.GetValue(SettingsOption);
+        Logger = parseResult.GetValue(LoggerOption)!;
+        ResultsDirectory = parseResult.GetValue(ResultsDirectoryOption)!;
+        RerunMaxAttempts = parseResult.GetValue(RerunMaxAttemptsOption);
+        RerunMaxFailedTests = parseResult.GetValue(RerunMaxFailedTestsOption);
+        LogLevel = parseResult.GetValue(LogLevelOption);
+        NoBuild = parseResult.GetResult(NoBuildOption) is not null;
+        NoRestore = parseResult.GetResult(NoRestoreOption) is not null;
+        Delay = parseResult.GetValue(DelayOption) * 1000;
+        Blame = parseResult.GetResult(BlameOption) is not null;
+        Configuration = parseResult.GetValue(ConfigurationOption);
+        Framework = parseResult.GetValue(FrameworkOption);
+        Verbosity = parseResult.GetValue(VerbosityOption);
+        DeleteReportFiles = parseResult.GetResult(DeleteReportFilesOption) is not null;
+        Collector = parseResult.GetValue(CollectorOption);
+        MergeCoverageFormat = parseResult.GetValue(MergeCoverageFormatOption);
+        PArguments = FetchPArgumentsFromParse(parseResult);
+        InlineRunSettings = FetchInlineRunSettingsFromParse(parseResult);
+        EnvironmentVariables = parseResult.GetValue(EnvironmentVariablesOption);
         
         //Store Original Values
         OriginalFilter = Filter;
@@ -267,22 +274,22 @@ public class RerunCommandConfiguration
     
     public string AddArguments<T>(T value, Option<T> option)
         => value is not null
-            ? $" {option.Aliases.First()} \"{value}\""
+            ? $" {option.Name} \"{value}\""
             : string.Empty;
     
     public string AddArguments(string? value, Option<string> option)
         => value is not null
-            ? $" {option.Aliases.First()} \"{value}\""
+            ? $" {option.Name} \"{value}\""
             : string.Empty;
     
     public string AddArguments<T>(T value, Option<IEnumerable<T>> option)
         => value is not null
-            ? $" {option.Aliases.First()} \"{value}\""
+            ? $" {option.Name} \"{value}\""
             : string.Empty;
 
     public string AddArguments<T>(bool value, Option<T> option)
         => value
-            ? $" {option.Aliases.First()}"
+            ? $" {option.Name}"
             : string.Empty;
     
     public string AddArguments<T>(IEnumerable<T>? values, Option<IEnumerable<T>> option)
@@ -315,21 +322,22 @@ public class RerunCommandConfiguration
         => string.IsNullOrWhiteSpace(PArguments) ? PArguments : $" {PArguments}";
     
     private string FetchPArgumentsFromParse(ParseResult parseResult)
-        => string.Join(' ', parseResult.UnmatchedTokens.Where(p => p.StartsWith("/p:")));
+        => string.Join(' ', parseResult.UnmatchedTokens.Where(p => p.StartsWith(MSBuildPropertyPrefix)));
     
     private string FetchInlineRunSettingsFromParse(ParseResult parseResult)
     {
         var inlineSettings = new StringBuilder();
-        var inlineSettingsOption = parseResult.GetValueForOption(InlineRunSettingsOption);
+        var inlineSettingsOption = parseResult.GetValue(InlineRunSettingsOption);
+        var nonPArgumentTokens = parseResult.UnmatchedTokens.Where(p => !p.StartsWith(MSBuildPropertyPrefix)).ToList();
 
         if ((inlineSettingsOption is not null &&
             inlineSettingsOption.Length > 0) ||
-            (parseResult.UnparsedTokens is not null &&
-             parseResult.UnparsedTokens.Count > 0))
+            (nonPArgumentTokens is not null &&
+             nonPArgumentTokens.Count > 0))
         {
             inlineSettings.Append(" -- ");
             inlineSettings.Append(string.Join(" ", inlineSettingsOption ?? []));
-            inlineSettings.Append(string.Join(" ", parseResult.UnparsedTokens ?? []));
+            inlineSettings.Append(string.Join(" ", nonPArgumentTokens ?? []));
         }
 
         return inlineSettings.ToString().Replace("\"", "\\\"");

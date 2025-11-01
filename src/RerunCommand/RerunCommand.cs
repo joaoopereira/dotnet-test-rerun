@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO.Abstractions;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Domain;
@@ -35,11 +36,13 @@ public class RerunCommand : RootCommand
         // Set Arguments and Options
         config.Set(this);
 
-        this.SetHandler(async (context) =>
+        // Set up action using custom CommandLineAction
+        this.Action = new RerunCommandAction(async parseResult =>
         {
-            Config.GetValues(context);
+            Config.GetValues(parseResult);
             logger.SetLogLevel(Config.LogLevel);
             await Run();
+            return Environment.ExitCode;
         });
     }
 
@@ -123,4 +126,22 @@ public class RerunCommand : RootCommand
 
     private void MergeCoverageResults(IDirectoryInfo resultsDirectory, DateTime startTime)
         => DotNetCoverageRunner.Merge(Config, resultsDirectory.FullName, startTime);
+}
+
+/// <summary>
+/// Custom CommandLineAction for handling asynchronous rerun command execution
+/// </summary>
+internal class RerunCommandAction : AsynchronousCommandLineAction
+{
+    private readonly Func<ParseResult, Task<int>> _handler;
+    
+    public RerunCommandAction(Func<ParseResult, Task<int>> handler)
+    {
+        _handler = handler;
+    }
+    
+    public override Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
+    {
+        return _handler(parseResult);
+    }
 }

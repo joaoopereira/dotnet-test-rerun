@@ -491,11 +491,10 @@ public class DotNetTestRerunTests
         rerunCommandConfiguration.Set(command);
 
         ParseResult result =
-            new Parser(command).Parse(
-                $"{testDir}\\{proj} --rerunMaxAttempts 3 --results-directory {testDir} {extraArgs}");
-        InvocationContext context = new(result);
+            command.Parse(
+                $"{testDir}\\{proj} --rerunMaxAttempts 3 --results-directory {testDir} {extraArgs}", new ParserConfiguration());
 
-        rerunCommandConfiguration.GetValues(context);
+        rerunCommandConfiguration.GetValues(result);
 
         RerunCommand rerunCommand = new RerunCommand(logger,
             rerunCommandConfiguration,
