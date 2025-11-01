@@ -8,6 +8,7 @@ on:
 
 jobs:
   commitlint:
+    if: ${{ ! contains(github.event.pull_request.labels.*.name, 'dependencies') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +25,9 @@ jobs:
 
   build_and_test:
     needs: commitlint
+    if: |
+      always() && 
+      (needs.commitlint.result == 'skipped' || needs.commitlint.result == 'success')
     name: 🛠️ Build and 🧪 Test
     runs-on: ubuntu-latest
     steps:
