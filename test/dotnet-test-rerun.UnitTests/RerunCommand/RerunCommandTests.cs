@@ -62,8 +62,9 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await command.InvokeAsync("path --filter filter --settings settings --logger logger " +
-                                  "--results-directory results-directory --rerunMaxAttempts 2 --loglevel Debug");
+        var parseResult = command.Parse("path --filter filter --settings settings --logger logger " +
+                                  "--results-directory results-directory --rerunMaxAttempts 2 --loglevel Debug", new ParserConfiguration());
+        await parseResult.InvokeAsync(new InvocationConfiguration());
 
         // Assert
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
@@ -497,9 +498,9 @@ public class RerunCommandTests
     {
         var command = new Command("test-rerun");
         configuration.Set(command);
-        var result = new Parser(command).Parse($"path {filter}--settings settings --logger logger " +
-                                               $"--results-directory results-directory --rerunMaxAttempts 2 --loglevel Debug {extraParams}");
-        var context = new InvocationContext(result);
-        configuration.GetValues(context);
+        var result = command.Parse($"path {filter}--settings settings --logger logger " +
+                                               $"--results-directory results-directory --rerunMaxAttempts 2 --loglevel Debug {extraParams}", new ParserConfiguration());
+        
+        configuration.GetValues(result);
     }
 }
