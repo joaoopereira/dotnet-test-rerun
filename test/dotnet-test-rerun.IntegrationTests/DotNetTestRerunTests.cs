@@ -447,6 +447,48 @@ public class DotNetTestRerunTests
     }
     
     [Fact]
+    public async Task DotnetTestRerun_FailingNUnit_ParameterizedTests_OnlyRetriesFailedCase()
+    {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
+        
+        // Clean up any previous counter file
+        var counterFile = Path.Combine(Path.GetTempPath(), "nunit_parameterized_test_run_counter_2_2.txt");
+        if (File.Exists(counterFile))
+        {
+            File.Delete(counterFile);
+        }
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestParameterizedPassOnSecondRunExample", dir: testDir);
+
+        // Assert
+        output.Should().Contain("Passed!");
+        output.Should().Contain("Failed!", Exactly.Times(1));
+        // Verify only the failed test case (2,2) is retried with ~ operator
+        output.Should().Contain(
+            "Rerun filter: FullyQualifiedName~NUnitTestExample.Tests.DataDrivenTest\\(2,2\\)",
+            Exactly.Once());
+        // First run: 1 failed (case 2,2), 4 passed (cases 1,1,3,3,4,4 and RegularTest)
+        output.Should().Contain("Failed:     1, Passed:     4",
+            Exactly.Once());
+        // Second run: 0 failed, 1 passed (only case 2,2 is retried)
+        output.Should().Contain("Failed:     0, Passed:     1",
+            Exactly.Once());
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        files.Should().HaveCount(2);
+        Environment.ExitCode.Should().Be(0);
+        
+        // Clean up the counter file
+        if (File.Exists(counterFile))
+        {
+            File.Delete(counterFile);
+        }
+    }
+    
+    [Fact]
     public async Task DotnetTestRerun_RunOnSolution_WithDifferentNetVersions_WithNoBuild_Sucess()
     {
         Environment.ExitCode = 0;

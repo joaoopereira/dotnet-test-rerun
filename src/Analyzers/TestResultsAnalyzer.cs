@@ -54,6 +54,12 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         var fullMethodNameByTestId = trx.TestDefinitions?.UnitTests
             .ToDictionary(x => x.Id, x => $"{x.TestMethod.ClassName}.{x.TestMethod.Name}") ?? new();
+        
+        var classNameByTestId = trx.TestDefinitions?.UnitTests
+            .ToDictionary(x => x.Id, x => x.TestMethod.ClassName) ?? new();
+        
+        var adapterTypeByTestId = trx.TestDefinitions?.UnitTests
+            .ToDictionary(x => x.Id, x => x.TestMethod.AdapterTypeName) ?? new();
 
         string? framework = trx.TestDefinitions?.UnitTests.Select(test => test.Storage.FetchDotNetVersion())
             .FirstOrDefault(val => string.IsNullOrWhiteSpace(val) is false);
@@ -66,9 +72,19 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             Log.Warning($"No tests found with the Outcome {outcome} in file {trxFile.Name}");
 
         var filters = failedTests
-            .Select(t => BuildFilters([
-                BuildFullyQualifiedNameFilter(t, fullMethodNameByTestId),
-                BuildDisplayNameFilter(t.TestName)]))
+            .Select(t =>
+            {
+                var adapterType = adapterTypeByTestId.TryGetValue(t.TestId, out var adapter) ? adapter : string.Empty;
+                var isNUnit = adapterType.Contains("nunit", StringComparison.OrdinalIgnoreCase);
+                var isMSTest = adapterType.Contains("mstest", StringComparison.OrdinalIgnoreCase);
+                // Only NUnit supports filtering by specific test cases with parameters
+                var useContainsOperator = isNUnit;
+                
+                return BuildFilters([
+                    BuildFullyQualifiedNameFilter(t, fullMethodNameByTestId, useContainsOperator, false, string.Empty),
+                    // MSTest and NUnit don't use DisplayName filters (NUnit uses ~ operator, MSTest doesn't support case-level filtering)
+                    (useContainsOperator || isMSTest) ? null : BuildDisplayNameFilter(t.TestName)]);
+            })
             .Distinct()
             .ToList();
 
@@ -83,12 +99,28 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
     private static string BuildFullyQualifiedNameFilter(
         UnitTestResult testResult,
-        Dictionary<string, string> fullMethodNameByTestId)
+        Dictionary<string, string> fullMethodNameByTestId,
+        bool useContainsOperator,
+        bool isMSTest,
+        string className)
     {
         var fullyQualifiedName = fullMethodNameByTestId.TryGetValue(testResult.TestId, out var fullMethodName)
             ? fullMethodName
             : testResult.TestName;
 
+        // Check if the test has parameters
+        var openParenIndex = fullyQualifiedName.IndexOf('(');
+        var closeParenIndex = fullyQualifiedName.IndexOf(')');
+        var hasParameters = openParenIndex > 0 && closeParenIndex > openParenIndex + 1; // +1 to check for non-empty params
+        
+        // For NUnit with parameterized tests, use the ~ (contains) operator with full test name including parameters
+        if (useContainsOperator && hasParameters)
+        {
+            // Don't escape here - EscapeAll will handle parentheses escaping
+            return $"FullyQualifiedName~{fullyQualifiedName}";
+        }
+        
+        // For other frameworks or non-parameterized tests, use exact match with method name only
         var fqn = fullyQualifiedName.Split('(')[0];
         // Escape spaces in the fully qualified name
         fqn = fqn.Replace(" ", "\\ ");
@@ -99,15 +131,24 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     {
         var openParenthesisIndex = testName.IndexOf("(");
         var closeParenthesisIndex = testName.IndexOf(")");
-        var canRunSpecific = testName.IndexOf(":") > 0;
-        if (openParenthesisIndex == -1 || !canRunSpecific)
+        
+        // Check if there are parameters in the test name
+        if (openParenthesisIndex == -1 || closeParenthesisIndex == -1 || closeParenthesisIndex <= openParenthesisIndex)
         {
             return null;
         }
 
         var testParameters = testName
-            .Substring(openParenthesisIndex + 1, closeParenthesisIndex - openParenthesisIndex - 1)
-            .Replace("\"", "%22");
+            .Substring(openParenthesisIndex + 1, closeParenthesisIndex - openParenthesisIndex - 1);
+        
+        // If there are no parameters, return null
+        if (string.IsNullOrWhiteSpace(testParameters))
+        {
+            return null;
+        }
+
+        // Escape double quotes for filter compatibility
+        testParameters = testParameters.Replace("\"", "%22");
 
         return $"DisplayName~{testParameters}";
     }
