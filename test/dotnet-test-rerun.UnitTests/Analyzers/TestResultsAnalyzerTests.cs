@@ -122,7 +122,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Filters.ElementAt(0).Key.Should().Be("net6.0");
-        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName=NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName=NUnitTestExample.Tests.SimpleNumberCompare");
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName=NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare\\(1,2\\) | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare\\(3,2\\) | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare\\(4,2\\)");
     }
     
     [Fact]
@@ -256,7 +256,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Filters.ElementAt(0).Key.Should().Be("net6.0");
-        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName=NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName=NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName=NUnitTestExample.Tests.SimpleNumberCompare");
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName=NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName=NUnitTestExample.Tests.SimpleStringCompare | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare\\(1,2\\) | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare\\(3,2\\) | FullyQualifiedName~NUnitTestExample.Tests.SimpleNumberCompare\\(4,2\\)");
     }
     
     [Fact]
