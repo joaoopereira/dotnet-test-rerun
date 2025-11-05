@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.3.0-alpha.1"></a>
+## [3.3.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.3.0-alpha.1) (2025-11-05)
+
+### Features
+
+* support NUnit parameterized test filtering with test case precision ([9ffcaa8](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/9ffcaa84a2a53efc4c16861b658fc305e438435a))
+
 <a name="3.3.0-alpha.0"></a>
 ## [3.3.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.3.0-alpha.0) (2025-10-27)
 
