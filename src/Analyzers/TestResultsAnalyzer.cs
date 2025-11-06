@@ -116,8 +116,11 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         // For NUnit with parameterized tests, use the ~ (contains) operator with full test name including parameters
         if (useContainsOperator && hasParameters)
         {
-            // Don't escape here - EscapeAll will handle parentheses escaping
-            return $"FullyQualifiedName~{fullyQualifiedName}";
+            // Remove quotes from string parameters to avoid command-line parsing issues
+            // NUnit test names with string parameters include quotes: MethodName("param1","param2")
+            // The ~ operator matches substrings, so MethodName(param1,param2) will still match
+            var filterValue = fullyQualifiedName.Replace("\"", "");
+            return $"FullyQualifiedName~{filterValue}";
         }
         
         // For other frameworks or non-parameterized tests, use exact match with method name only
