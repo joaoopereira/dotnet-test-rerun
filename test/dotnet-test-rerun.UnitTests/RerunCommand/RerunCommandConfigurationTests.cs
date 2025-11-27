@@ -23,6 +23,7 @@ public class RerunCommandConfigurationUnitTests
         "The directory where the test results will be placed.\nThe specified directory will be created if it does not exist.",
         false)]
     [InlineData("--rerunMaxAttempts", "Maximum # of attempts.", false)]
+    [InlineData("--rerunMaxFailedTests", "Maximum # of failed tests to rerun. If exceeded, tests will not be rerun.", false)]
     [InlineData("--loglevel", "Log Level", false)]
     public void RerunCommandConfiguration_Set_ShouldConfigureOptions(string optionName, string description, bool isRequired)
     {
@@ -42,7 +43,7 @@ public class RerunCommandConfigurationUnitTests
         //Arrange
         _configuration.Set(Command); 
         var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
-                                               "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug");
+                                               "--results-directory results-directory --rerunMaxAttempts 4 --rerunMaxFailedTests 10 --loglevel Debug");
         var context = new InvocationContext(result);
 
         //Act
@@ -56,6 +57,7 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Logger.ElementAt(0).Should().Be("logger");
         _configuration.ResultsDirectory.Should().Be("results-directory");
         _configuration.RerunMaxAttempts.Should().Be(4);
+        _configuration.RerunMaxFailedTests.Should().Be(10);
         _configuration.LogLevel.Should().Be(LogLevel.Debug);
     }
 
@@ -102,6 +104,7 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Logger.ElementAt(0).Should().Be("trx");
         _configuration.ResultsDirectory.Should().Be(".");
         _configuration.RerunMaxAttempts.Should().Be(3);
+        _configuration.RerunMaxFailedTests.Should().Be(-1);
         _configuration.LogLevel.Should().Be(LogLevel.Verbose);
         _configuration.NoBuild.Should().BeFalse();
         _configuration.NoRestore.Should().BeFalse();
