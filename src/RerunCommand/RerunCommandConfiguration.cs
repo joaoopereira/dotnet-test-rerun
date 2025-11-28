@@ -29,7 +29,7 @@ public class RerunCommandConfiguration
     public string? Configuration { get; internal set; }
     public LoggerVerbosity? Verbosity { get; internal set; }
     public string? Framework { get; internal set; }
-    public string PArguments { get; internal set; } = string.Empty;
+    public string ExtraArguments { get; internal set; } = string.Empty;
     public string InlineRunSettings { get; internal set; } = string.Empty;
     public IEnumerable<string>? EnvironmentVariables { get; internal set; }
     
@@ -233,7 +233,7 @@ public class RerunCommandConfiguration
         DeleteReportFiles = context.ParseResult.FindResultFor(DeleteReportFilesOption) is not null;
         Collector = context.ParseResult.GetValueForOption(CollectorOption);
         MergeCoverageFormat = context.ParseResult.GetValueForOption(MergeCoverageFormatOption);
-        PArguments = FetchPArgumentsFromParse(context.ParseResult);
+        ExtraArguments = FetchExtraArgumentsFromParse(context.ParseResult);
         InlineRunSettings = FetchInlineRunSettingsFromParse(context.ParseResult);
         EnvironmentVariables = context.ParseResult.GetValueForOption(EnvironmentVariablesOption);
         
@@ -256,7 +256,7 @@ public class RerunCommandConfiguration
             AddArguments(Collector, CollectorOption),
             AddArguments(EnvironmentVariables, EnvironmentVariablesOption),
             string.IsNullOrWhiteSpace(resultsDirectory) ? resultsDirectory : AddArguments(resultsDirectory, ResultsDirectoryOption),
-            GetPArguments(),
+            GetExtraArguments(),
             InlineRunSettings);
     
     public string GetMergeCoverageArgumentList(string fileNames, string resultsDirectory)
@@ -311,11 +311,23 @@ public class RerunCommandConfiguration
             _ => throw new ArgumentOutOfRangeException(nameof(MergeCoverageFormat), MergeCoverageFormat, null)
         };
 
-    private string GetPArguments()
-        => string.IsNullOrWhiteSpace(PArguments) ? PArguments : $" {PArguments}";
+    private string GetExtraArguments()
+        => string.IsNullOrWhiteSpace(ExtraArguments) ? ExtraArguments : $" {ExtraArguments}";
     
-    private string FetchPArgumentsFromParse(ParseResult parseResult)
-        => string.Join(' ', parseResult.UnmatchedTokens.Where(p => p.StartsWith("/p:")));
+    private string FetchExtraArgumentsFromParse(ParseResult parseResult)
+        => string.Join(' ', parseResult.UnmatchedTokens.Where(IsMsBuildArgument));
+    
+    private static bool IsMsBuildArgument(string token)
+        => token.StartsWith("/p:") || 
+           token.StartsWith("-p:") || 
+           token.StartsWith("/m:") || 
+           token.StartsWith("-m:") ||
+           token.StartsWith("/maxCpuCount:") ||
+           token.StartsWith("-maxCpuCount:") ||
+           token.StartsWith("--maxCpuCount:") ||
+           token.StartsWith("/property:") ||
+           token.StartsWith("-property:") ||
+           token.StartsWith("--property:");
     
     private string FetchInlineRunSettingsFromParse(ParseResult parseResult)
     {

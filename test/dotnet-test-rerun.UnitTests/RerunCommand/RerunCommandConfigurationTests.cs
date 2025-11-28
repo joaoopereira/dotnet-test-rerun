@@ -161,6 +161,43 @@ public class RerunCommandConfigurationUnitTests
         args.Should().Be("test path --logger \"trx\" /p:MyCustomProperty=123");
     }
     
+    [Theory]
+    [InlineData("-maxCpuCount:3", "-maxCpuCount:3")]
+    [InlineData("-m:3", "-m:3")]
+    [InlineData("/maxCpuCount:3", "/maxCpuCount:3")]
+    [InlineData("/m:3", "/m:3")]
+    [InlineData("--maxCpuCount:3", "--maxCpuCount:3")]
+    public void RerunCommandConfiguration_GetArguments_WithMsBuildMaxCpuCount(string input, string expected)
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse($"path {input}");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+        
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be($"test path --logger \"trx\" {expected}");
+    }
+    
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithMultipleMsBuildArguments()
+    {
+        //Arrange
+        _configuration.Set(Command); 
+        var result = new Parser(Command).Parse("path /p:MyCustomProperty=123 -m:3");
+        var context = new InvocationContext(result);
+        _configuration.GetValues(context);
+        
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be("test path --logger \"trx\" /p:MyCustomProperty=123 -m:3");
+    }
+    
     [Fact]
     public void RerunCommandConfiguration_InvalidVerbosity()
     {

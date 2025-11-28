@@ -71,7 +71,9 @@ docker run joaoopereira/dotnet-test-rerun:latest [somepathtodll] [OPTIONS]
 
 
 Notes: 
-- Sending `/p:` instructions to set property values is also allowed.
+- MSBuild arguments can also be passed through, including:
+  - `/p:` or `-p:` or `--property:` for setting property values (e.g., `/p:MyProperty=123`)
+  - `-m:` or `/m:` or `-maxCpuCount:` or `/maxCpuCount:` or `--maxCpuCount:` for limiting parallel build processes (e.g., `-m:3`)
 
 ## 👤 Author & Contributors
 
