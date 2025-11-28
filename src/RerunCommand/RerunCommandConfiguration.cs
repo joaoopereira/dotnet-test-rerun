@@ -317,17 +317,14 @@ public class RerunCommandConfiguration
     private string FetchExtraArgumentsFromParse(ParseResult parseResult)
         => string.Join(' ', parseResult.UnmatchedTokens.Where(IsMsBuildArgument));
     
+    private static readonly string[] MsBuildArgumentPrefixes = 
+    [
+        "/p:", "-p:", "--property:", "/property:", "-property:",
+        "/m:", "-m:", "/maxCpuCount:", "-maxCpuCount:", "--maxCpuCount:"
+    ];
+    
     private static bool IsMsBuildArgument(string token)
-        => token.StartsWith("/p:") || 
-           token.StartsWith("-p:") || 
-           token.StartsWith("/m:") || 
-           token.StartsWith("-m:") ||
-           token.StartsWith("/maxCpuCount:") ||
-           token.StartsWith("-maxCpuCount:") ||
-           token.StartsWith("--maxCpuCount:") ||
-           token.StartsWith("/property:") ||
-           token.StartsWith("-property:") ||
-           token.StartsWith("--property:");
+        => MsBuildArgumentPrefixes.Any(prefix => token.StartsWith(prefix));
     
     private string FetchInlineRunSettingsFromParse(ParseResult parseResult)
     {
