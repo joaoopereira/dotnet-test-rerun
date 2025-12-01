@@ -2,7 +2,7 @@
 using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Logging;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.Analyzers;

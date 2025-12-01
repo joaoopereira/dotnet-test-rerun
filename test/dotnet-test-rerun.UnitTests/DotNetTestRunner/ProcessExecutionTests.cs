@@ -1,6 +1,6 @@
 ﻿using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
-using FluentAssertions;
+using AwesomeAssertions;
 using System.Diagnostics;
 using Xunit;
 
