@@ -14,7 +14,7 @@ public class RerunCommandConfiguration
     public string? Path { get; internal set; }
     public string? Filter { get; internal set; }
     public string? Settings { get; internal set; }
-    public IEnumerable<string> Logger { get; internal set; } = Array.Empty<string>();
+    public IEnumerable<string> Logger { get; internal set; } = [];
     public string ResultsDirectory { get; internal set; } = string.Empty;
     public int RerunMaxAttempts { get; internal set; }
     public int RerunMaxFailedTests { get; internal set; }
