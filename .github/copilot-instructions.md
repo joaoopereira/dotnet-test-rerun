@@ -299,7 +299,7 @@ Both commands use the `versionize` tool and automatically update CHANGELOG.md an
 ### Test Execution Time
 - Unit tests: Fast (~1s for 159 tests)
 - Integration tests: Slow (~3m14s for 27 tests)
-- Full test suite: ~3-4 minutes total (186 tests)
+- Full test suite: ~3-4 minutes (186 total tests)
 - This is normal - integration tests build and run actual test projects
 
 ### Language Limitation
