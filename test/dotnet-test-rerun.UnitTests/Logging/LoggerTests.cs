@@ -7,6 +7,7 @@ using StatusContext = dotnet.test.rerun.Logging.StatusContext;
 
 namespace dotnet_test_rerun.UnitTest.Logging;
 
+[Collection("Sequential")]
 public class LoggerTests
 {
         [Theory]
