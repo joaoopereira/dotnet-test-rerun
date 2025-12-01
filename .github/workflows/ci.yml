@@ -44,13 +44,13 @@ jobs:
         run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
 
       - name: Coveralls UnitTests
-        uses: coverallsapp/github-action@v2.3.6
+        uses: coverallsapp/github-action@v2.3.7
         with:
           path-to-lcov: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
           flag-name: UnitTests
 
       - name: Coveralls IntegrationTests
-        uses: coverallsapp/github-action@v2.3.6
+        uses: coverallsapp/github-action@v2.3.7
         with:
           path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
           flag-name: IntegrationTests
