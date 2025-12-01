@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.3.0"></a>
+## [3.3.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.3.0) (2025-12-01)
+
 <a name="3.3.0-alpha.0"></a>
 ## [3.3.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.3.0-alpha.0) (2025-10-27)
 
