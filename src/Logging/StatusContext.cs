@@ -21,13 +21,9 @@ public class StatusContext
     /// </summary>
     /// <param name="status">The status.</param>
     /// <returns></returns>
-    /// <exception cref="System.ArgumentNullException">context</exception>
     public StatusContext Status(string status)
     {
-        if (context == null)
-        {
-            throw new ArgumentNullException("context");
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.Status = status;
         return this;
