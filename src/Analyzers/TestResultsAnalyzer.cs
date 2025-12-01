@@ -35,7 +35,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
         => resultsDirectory.Exists
             ? resultsDirectory.EnumerateFiles("*.trx").Where(file => file.CreationTime >= startSearchTime).ToArray()
-            : Array.Empty<IFileInfo>();
+            : [];
 
     public void AddLastTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
     {
