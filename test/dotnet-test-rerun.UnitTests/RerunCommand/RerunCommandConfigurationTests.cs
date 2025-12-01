@@ -5,7 +5,7 @@ using System.Text;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.RerunCommand;

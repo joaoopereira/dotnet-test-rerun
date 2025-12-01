@@ -1,6 +1,6 @@
 ﻿using dotnet.test.rerun;
 using dotnet.test.rerun.RerunCommand;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.Exceptions;

@@ -8,7 +8,7 @@ using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
-using FluentAssertions;
+using AwesomeAssertions;
 using NSubstitute;
 using Xunit;
 

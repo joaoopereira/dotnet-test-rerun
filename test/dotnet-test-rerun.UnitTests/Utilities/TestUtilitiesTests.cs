@@ -1,5 +1,5 @@
 using dotnet_test_rerun.Common.Utilities;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.Utilities;
