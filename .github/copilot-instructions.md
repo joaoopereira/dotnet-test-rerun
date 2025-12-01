@@ -34,7 +34,7 @@
    ```
    - Takes ~13-14 seconds
    - Builds for both net8.0 and net9.0 target frameworks
-   - Produces 30 warnings (CS8618, CS8603) - these are EXPECTED and non-blocking
+   - Should complete with 0 warnings and 0 errors
    - Output: `src/bin/Release/net{8.0|9.0}/test-rerun.dll`
    - Can use `dotnet build` without configuration (defaults to Debug)
 
@@ -52,9 +52,9 @@
 dotnet test --configuration Release
 ```
 - Takes ~3-4 minutes total
-- Runs both UnitTests (136 tests, ~421ms) and IntegrationTests (25 tests, ~3m14s)
+- Runs both UnitTests (159 tests, ~1s) and IntegrationTests (27 tests, ~3m14s)
 - Integration tests are SLOW - this is normal
-- All tests should pass (161 total)
+- All tests should pass (186 total)
 
 **Run with coverage** (used in CI):
 ```bash
@@ -72,7 +72,7 @@ dotnet test test/dotnet-test-rerun.UnitTests/dotnet-test-rerun.UnitTests.csproj
 ### Build Behavior Notes
 
 - `dotnet build` automatically runs restore if needed
-- Build warnings (CS8618, CS8603) about nullable references are expected and can be ignored
+- The build should complete with no warnings or errors
 - The build system uses Husky for git hooks (automatically installed on restore)
 - Do NOT use `dotnet build --no-restore` on first build or after clean
 - The `--no-restore` flag is safe only after an explicit `dotnet restore`
@@ -128,8 +128,8 @@ src/
 
 ### Test Projects
 - **dotnet-test-rerun.Common**: Shared test utilities
-- **dotnet-test-rerun.UnitTests**: 136 fast unit tests (~421ms)
-- **dotnet-test-rerun.IntegrationTests**: 25 integration tests (~3m14s)
+- **dotnet-test-rerun.UnitTests**: 159 fast unit tests (~1s)
+- **dotnet-test-rerun.IntegrationTests**: 27 integration tests (~3m14s)
   - Contains test fixtures in `Fixtures/` for NUnit, XUnit, and MSTest examples
 
 ### Key Configuration Files
@@ -285,10 +285,9 @@ Both commands use the `versionize` tool and automatically update CHANGELOG.md an
 
 ## Important Notes
 
-### Build Warnings
-- 30 warnings about nullable reference types (CS8618, CS8603) are EXPECTED
-- These warnings are in `RerunCommandConfiguration.cs`, `ProcessExecution.cs`, and `Logger.cs`
-- Do NOT attempt to "fix" these warnings without understanding the implications
+### Build Behavior
+- The build should complete cleanly with no warnings or errors
+- If warnings appear, they should be investigated and fixed
 
 ### Husky Integration
 - Husky is automatically installed during first restore/build
@@ -298,9 +297,9 @@ Both commands use the `versionize` tool and automatically update CHANGELOG.md an
 - When `DockerBuild=true` is set, Husky is skipped
 
 ### Test Execution Time
-- Unit tests: Fast (~421ms for 136 tests)
-- Integration tests: Slow (~3m14s for 25 tests)
-- Full test suite: ~3-4 minutes total
+- Unit tests: Fast (~1s for 159 tests)
+- Integration tests: Slow (~3m14s for 27 tests)
+- Full test suite: ~3-4 minutes total (186 tests)
 - This is normal - integration tests build and run actual test projects
 
 ### Language Limitation
