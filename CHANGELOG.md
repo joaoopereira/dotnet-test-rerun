@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.4.0-alpha.0"></a>
+## [3.4.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.4.0-alpha.0) (2025-12-01)
+
+### Features
+
+* add support for MSBuild maxCpuCount argument ([08cbac7](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/08cbac71c4403434e5bae59a10cac277d0a598d7))
+
 <a name="3.3.0"></a>
 ## [3.3.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.3.0) (2025-12-01)
 
