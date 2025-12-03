@@ -32,6 +32,9 @@ public class RerunCommand : RootCommand
         FileSystem = fileSystem;
         TestResultsAnalyzer = testResultsAnalyzer;
 
+        // Allow unmatched tokens (e.g., MSBuild arguments) to pass through
+        TreatUnmatchedTokensAsErrors = false;
+
         // Set Arguments and Options
         config.Set(this);
 
