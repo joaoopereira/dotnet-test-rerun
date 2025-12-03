@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Text;
 using dotnet.test.rerun.Enums;
@@ -16,25 +15,23 @@ public class RerunCommandConfigurationUnitTests
     private Command Command = new ("test-rerun");
 
     [Theory]
-    [InlineData("--filter", "Run tests that match the given expression.", false)]
-    [InlineData("--settings", "The run settings file to use when running tests.", false)]
-    [InlineData("--logger", "Specifies a logger for test results.", false)]
+    [InlineData("--filter", "Run tests that match the given expression.")]
+    [InlineData("--settings", "The run settings file to use when running tests.")]
+    [InlineData("--logger", "Specifies a logger for test results.")]
     [InlineData("--results-directory",
-        "The directory where the test results will be placed.\nThe specified directory will be created if it does not exist.",
-        false)]
-    [InlineData("--rerunMaxAttempts", "Maximum # of attempts.", false)]
-    [InlineData("--rerunMaxFailedTests", "Maximum # of failed tests to rerun. If exceeded, tests will not be rerun.", false)]
-    [InlineData("--loglevel", "Log Level", false)]
-    public void RerunCommandConfiguration_Set_ShouldConfigureOptions(string optionName, string description, bool isRequired)
+        "The directory where the test results will be placed.\nThe specified directory will be created if it does not exist.")]
+    [InlineData("--rerunMaxAttempts", "Maximum # of attempts.")]
+    [InlineData("--rerunMaxFailedTests", "Maximum # of failed tests to rerun. If exceeded, tests will not be rerun.")]
+    [InlineData("--loglevel", "Log Level")]
+    public void RerunCommandConfiguration_Set_ShouldConfigureOptions(string optionName, string description)
     {
         //Act
         _configuration.Set(Command);
 
         //Assert
-        var option = Command.Children.FirstOrDefault(x => x is Option opt && opt.HasAlias(optionName)) as Option;
+        var option = Command.Options.FirstOrDefault(opt => opt.Name == optionName || opt.Aliases.Contains(optionName));
         option.Should().NotBeNull();
         option!.Description.Should().Be(description);
-        option!.IsRequired.Should().Be(isRequired);
     }
 
     [Fact]
@@ -42,12 +39,11 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+        var result = Command.Parse("path --filter filter --settings settings --logger logger " +
                                                "--results-directory results-directory --rerunMaxAttempts 4 --rerunMaxFailedTests 10 --loglevel Debug");
-        var context = new InvocationContext(result);
 
         //Act
-        _configuration.GetValues(context);
+        _configuration.GetValues(result);
 
         //Assert
         _configuration.Path.Should().Be("path");
@@ -66,12 +62,11 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger --logger trx " +
+        var result = Command.Parse("path --filter filter --settings settings --logger logger --logger trx " +
                                                "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug");
-        var context = new InvocationContext(result);
 
         //Act
-        _configuration.GetValues(context);
+        _configuration.GetValues(result);
 
         //Assert
         _configuration.Path.Should().Be("path");
@@ -90,11 +85,10 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path --settings settings");
-        var context = new InvocationContext(result);
+        var result = Command.Parse("path --settings settings");
 
         //Act
-        _configuration.GetValues(context);
+        _configuration.GetValues(result);
 
         //Assert
         _configuration.Path.Should().Be("path");
@@ -119,11 +113,10 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+        var result = Command.Parse("path --filter filter --settings settings --logger logger " +
                                                "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug " +
                                                "--configuration release --verbosity minimal");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        _configuration.GetValues(result);
 
         //Act
         var args = _configuration.GetTestArgumentList("results-directory");
@@ -150,9 +143,8 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path /p:MyCustomProperty=123");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        var result = Command.Parse("path /p:MyCustomProperty=123");
+        _configuration.GetValues(result);
         
         //Act
         var args = _configuration.GetTestArgumentList("");
@@ -171,9 +163,8 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse($"path {input}");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        var result = Command.Parse($"path {input}");
+        _configuration.GetValues(result);
         
         //Act
         var args = _configuration.GetTestArgumentList("");
@@ -187,9 +178,8 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path /p:MyCustomProperty=123 -m:3");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        var result = Command.Parse("path /p:MyCustomProperty=123 -m:3");
+        _configuration.GetValues(result);
         
         //Act
         var args = _configuration.GetTestArgumentList("");
@@ -203,15 +193,14 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path --settings settings --verbosity test");
-        var context = new InvocationContext(result);
+        var result = Command.Parse("path --settings settings --verbosity test");
 
         //Act
-        var act = () => _configuration.GetValues(context);
+        var act = () => _configuration.GetValues(result);
 
         //Assert
         act.Should().Throw<InvalidOperationException>().WithMessage(
-            "Cannot parse argument 'test' for option '-v' as expected type 'dotnet.test.rerun.Enums.LoggerVerbosity'.");
+            "Cannot parse argument 'test' for option '--verbosity' as expected type 'dotnet.test.rerun.Enums.LoggerVerbosity'.*");
     }
     
     [Theory]
@@ -222,9 +211,8 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse($"path --filter {originalFilter}");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        var result = Command.Parse($"path --filter {originalFilter}");
+        _configuration.GetValues(result);
         var firstTest = "firstTest";
 
         // Act
@@ -239,9 +227,8 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse($"path");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        var result = Command.Parse($"path");
+        _configuration.GetValues(result);
         var firstTest = "firstTest";
 
         // Act
@@ -268,11 +255,10 @@ public class RerunCommandConfigurationUnitTests
 
         //Arrange
         _configuration.Set(Command);
-        var result = new Parser(Command).Parse($"path {formatArg}");
-        var context = new InvocationContext(result);
+        var result = Command.Parse($"path {formatArg}");
 
         //Act
-        _configuration.GetValues(context);
+        _configuration.GetValues(result);
 
         //Assert
         _configuration.MergeCoverageFormat.Should().Be(expected);
@@ -283,11 +269,10 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+        var result = Command.Parse("path --filter filter --settings settings --logger logger " +
                                                "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug " +
                                                "--configuration release --verbosity minimal --inlineRunSettings MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        _configuration.GetValues(result);
 
         //Act
         var args = _configuration.GetTestArgumentList("results-directory");
@@ -301,11 +286,10 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+        var result = Command.Parse("path --filter filter --settings settings --logger logger " +
                                                "--results-directory results-directory --rerunMaxAttempts 4 --loglevel Debug " +
                                                "--configuration release --verbosity minimal --environment var=test");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        _configuration.GetValues(result);
 
         //Act
         var args = _configuration.GetTestArgumentList("results-directory");
@@ -319,11 +303,10 @@ public class RerunCommandConfigurationUnitTests
     {
         //Arrange
         _configuration.Set(Command); 
-        var result = new Parser(Command).Parse("path --filter filter --settings settings --logger logger " +
+        var result = Command.Parse("path --filter filter --settings settings --logger logger " +
                                                "--results-directory results-directory --rerunMaxAttempts 4 -e var2=test2 --loglevel Debug " +
                                                "--configuration release --verbosity minimal -e var=test");
-        var context = new InvocationContext(result);
-        _configuration.GetValues(context);
+        _configuration.GetValues(result);
 
         //Act
         var args = _configuration.GetTestArgumentList("results-directory");

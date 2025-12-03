@@ -136,7 +136,7 @@ namespace dotnet.test.rerun.Logging
         /// <summary>
         /// LogLevel Parser
         /// </summary>
-        public static ParseArgument<LogLevel> ParseLogLevel = argResult =>
+        public static Func<ArgumentResult, LogLevel> ParseLogLevel = argResult =>
         {
             var loglevel = LogLevel.Verbose;
             string loglevelStr = "verbose";

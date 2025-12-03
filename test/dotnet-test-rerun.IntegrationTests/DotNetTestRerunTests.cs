@@ -1,5 +1,4 @@
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO.Abstractions;
@@ -586,12 +585,10 @@ public class DotNetTestRerunTests
         RerunCommandConfiguration rerunCommandConfiguration = new RerunCommandConfiguration();
         rerunCommandConfiguration.Set(command);
 
-        ParseResult result =
-            new Parser(command).Parse(
+        ParseResult result = command.Parse(
                 $"{testDir}\\{proj} --rerunMaxAttempts 3 --results-directory {testDir} {extraArgs}");
-        InvocationContext context = new(result);
 
-        rerunCommandConfiguration.GetValues(context);
+        rerunCommandConfiguration.GetValues(result);
 
         RerunCommand rerunCommand = new RerunCommand(logger,
             rerunCommandConfiguration,

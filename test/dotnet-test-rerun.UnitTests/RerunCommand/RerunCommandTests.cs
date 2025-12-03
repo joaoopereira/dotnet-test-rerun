@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.IO.Abstractions;
 using dotnet.test.rerun.Analyzers;
@@ -62,8 +61,9 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
 
         // Act
-        await command.InvokeAsync("path --filter filter --settings settings --logger logger " +
+        var parseResult = command.Parse("path --filter filter --settings settings --logger logger " +
                                   "--results-directory results-directory --rerunMaxAttempts 2 --loglevel Debug");
+        await parseResult.InvokeAsync();
 
         // Assert
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
@@ -535,7 +535,8 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await command.InvokeAsync($"path --no-build {msbuildArg} --results-directory results-directory --loglevel Debug");
+        var parseResult = command.Parse($"path --no-build {msbuildArg} --results-directory results-directory --loglevel Debug");
+        var result = await parseResult.InvokeAsync();
 
         // Assert
         result.Should().Be(0);
@@ -561,7 +562,8 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await command.InvokeAsync("path --no-build /p:MyProperty=Value -m:3 --results-directory results-directory --loglevel Debug");
+        var parseResult = command.Parse("path --no-build /p:MyProperty=Value -m:3 --results-directory results-directory --loglevel Debug");
+        var result = await parseResult.InvokeAsync();
 
         // Assert
         result.Should().Be(0);
@@ -574,9 +576,8 @@ public class RerunCommandTests
     {
         var command = new Command("test-rerun");
         configuration.Set(command);
-        var result = new Parser(command).Parse($"path {filter}--settings settings --logger logger " +
+        var result = command.Parse($"path {filter}--settings settings --logger logger " +
                                                $"--results-directory results-directory --rerunMaxAttempts 2 --loglevel Debug {extraParams}");
-        var context = new InvocationContext(result);
-        configuration.GetValues(context);
+        configuration.GetValues(result);
     }
 }
