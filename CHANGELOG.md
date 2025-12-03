@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="3.4.0-alpha.2"></a>
+## [3.4.0-alpha.2](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.4.0-alpha.2) (2025-12-03)
+
+### Bug Fixes
+
+* allow unmatched tokens to pass through in RerunCommand ([45aae87](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/45aae87c248c2cd421d42fb4507cc720c2496907))
+
 <a name="3.4.0-alpha.1"></a>
 ## [3.4.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.4.0-alpha.1) (2025-12-01)
 
