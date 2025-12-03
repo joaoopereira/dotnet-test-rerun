@@ -1,5 +1,5 @@
-﻿using System.CommandLine.Builder;
-using System.CommandLine.Parsing;
+﻿using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO.Abstractions;
 using System.Reflection;
 using dotnet.test.rerun.Analyzers;
@@ -23,26 +23,28 @@ var serviceProvider = new ServiceCollection()
 var Log = serviceProvider.GetRequiredService<ILogger>();
 var cmd = serviceProvider.GetService<RerunCommand>();
 
-await new CommandLineBuilder(cmd)
-    .UseDefaults()
-    .EnableLegacyDoubleDashBehavior()
-    .UseExceptionHandler((exception, _) =>
+// Parse and invoke with custom exception handling
+try
+{
+    var parseResult = cmd!.Parse(args);
+    var result = await parseResult.InvokeAsync();
+    Environment.ExitCode = result;
+}
+catch (Exception exception)
+{
+    if (exception is RerunException
+        || (exception is TargetInvocationException
+        && exception.InnerException is RerunException))
     {
-        if (exception is RerunException
-            || (exception is TargetInvocationException
-            && exception.InnerException is RerunException))
-        {
-            Log.Error(exception.Message);
-            Log.Debug(exception.StackTrace ?? string.Empty);
-        }
-        else
-        {
-            Log.Exception(exception);
-        }
-        
-        Environment.ExitCode = 1;
-    })
-    .Build()
-    .InvokeAsync(args);
+        Log.Error(exception.Message);
+        Log.Debug(exception.StackTrace ?? string.Empty);
+    }
+    else
+    {
+        Log.Exception(exception);
+    }
+    
+    Environment.ExitCode = 1;
+}
 
 return Environment.ExitCode;

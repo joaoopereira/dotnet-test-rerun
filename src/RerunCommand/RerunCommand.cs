@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.IO.Abstractions;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Domain;
@@ -38,15 +39,16 @@ public class RerunCommand : RootCommand
         // Set Arguments and Options
         config.Set(this);
 
-        this.SetHandler(async (context) =>
+        this.SetAction(async (parseResult, cancellationToken) =>
         {
-            Config.GetValues(context);
+            Config.GetValues(parseResult);
             logger.SetLogLevel(Config.LogLevel);
-            await Run();
+            await Run(cancellationToken);
+            return Environment.ExitCode;
         });
     }
 
-    public async Task Run()
+    public async Task Run(CancellationToken cancellationToken = default)
     {
         var startOfProcess = DateTime.Now;
         var startOfDotnetRun = DateTime.Now;
