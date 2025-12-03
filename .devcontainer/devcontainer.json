@@ -31,5 +31,5 @@
             ]
         }
     },
-    "postCreateCommand": "dotnet tool restore && dotnet build"
+    "postCreateCommand": "dotnet tool restore && dotnet build && echo \"alias 'test-rerun=/workspaces/dotnet-test-rerun/src/bin/Debug/net9.0/test-rerun'\" >> /home/$USER/.bashrc"
 }
