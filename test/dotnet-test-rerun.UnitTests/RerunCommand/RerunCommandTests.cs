@@ -493,6 +493,83 @@ public class RerunCommandTests
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
 
+    [Fact]
+    public void RerunCommand_ShouldAllowUnmatchedTokens()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        
+        // Act
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+
+        // Assert
+        command.TreatUnmatchedTokensAsErrors.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("-m:3")]
+    [InlineData("-maxCpuCount:3")]
+    [InlineData("/m:3")]
+    [InlineData("/maxCpuCount:3")]
+    [InlineData("--maxCpuCount:3")]
+    public async Task InvokeCommand_WithMsBuildArguments_ShouldPassThrough(string msbuildArg)
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New("results-directory");
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await command.InvokeAsync($"path --no-build {msbuildArg} --results-directory results-directory --loglevel Debug");
+
+        // Assert
+        result.Should().Be(0);
+        config.ExtraArguments.Should().Contain(msbuildArg);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+    }
+
+    [Fact]
+    public async Task InvokeCommand_WithMultipleMsBuildArguments_ShouldPassAllThrough()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New("results-directory");
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await command.InvokeAsync("path --no-build /p:MyProperty=Value -m:3 --results-directory results-directory --loglevel Debug");
+
+        // Assert
+        result.Should().Be(0);
+        config.ExtraArguments.Should().Contain("/p:MyProperty=Value");
+        config.ExtraArguments.Should().Contain("-m:3");
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+    }
+
     private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "", string filter = "--filter filter ")
     {
         var command = new Command("test-rerun");
