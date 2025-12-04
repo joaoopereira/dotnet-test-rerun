@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="4.0.0-alpha.0"></a>
+## [4.0.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.0.0-alpha.0) (2025-12-04)
+
+### Features
+
+* add .NET 10 support while maintaining .NET 8 and 9 compatibility ([b1e457a](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/b1e457afa347a206316320df089a6fdd7ae1cd8c))
+
+### Breaking Changes
+
+* upgrade to System.CommandLine 2.0.0 ([d0f341a](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/d0f341af7898301205bccc098fe498463ddf0599))
+
 <a name="3.4.0"></a>
 ## [3.4.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v3.4.0) (2025-12-04)
 
