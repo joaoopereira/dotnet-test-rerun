@@ -1,0 +1,48 @@
+# Jekyll configuration for dotnet-test-rerun documentation
+title: dotnet-test-rerun
+description: Automatically rerun failed dotnet tests until they pass or reach max attempts
+baseurl: "/dotnet-test-rerun"
+url: "https://joaoopereira.github.io"
+
+# Theme
+theme: jekyll-theme-cayman
+# remote_theme: pages-themes/cayman@v0.2.0
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Navigation
+nav_links:
+  - title: Home
+    url: /
+  - title: Installation
+    url: /installation
+  - title: Usage
+    url: /usage
+  - title: Configuration
+    url: /configuration
+  - title: Examples
+    url: /examples
+  - title: Docker
+    url: /docker
+  - title: Contributing
+    url: /contributing
+
+# Repository info
+github:
+  repository_url: https://github.com/joaoopereira/dotnet-test-rerun
+  owner_name: joaoopereira
+  owner_url: https://github.com/joaoopereira
+
+# Exclude from build
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/

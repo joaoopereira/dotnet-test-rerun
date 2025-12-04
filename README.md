@@ -1,106 +1,292 @@
-# dotnet-test-rerun
+<div align="center">
 
-# Status
-[![1]][2] [![6]][7] [![3]][4] [![5]][4] [![8]][9]
+# 🔄 dotnet-test-rerun
 
-# Description
-Unfortunately, there isn't a way with plain `dotnet test` to automatically rerun failed tests.\
-This tool is wrapper for the `dotnet test` that automatically reruns any tests with the outcome "Failed" until they pass or a maximum number of attempts has been reached. This is useful, for cases where tests may fail intermittently due to external factors such as network connectivity, database availability, or race conditions.\
-Please note that this tool is language-dependent. The output of `dotnet test` may be localized, and if it is not in English, the tool may not function correctly. Currently, only English is supported.
+### Automatically rerun failed .NET tests until they pass
 
+[![Build Status][1]][2]
+[![Coverage Status][6]][7]
+[![NuGet Version][3]][4]
+[![NuGet Downloads][5]][4]
+[![Docker Pulls][8]][9]
 
-# :computer: Usage
-## :package: dotnet tool
-```sh
+[📖 Documentation](https://joaoopereira.github.io/dotnet-test-rerun/) • [💬 Discussions](https://github.com/joaoopereira/dotnet-test-rerun/discussions) • [🐛 Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
+
+</div>
+
+---
+
+## 🎯 Why dotnet-test-rerun?
+
+Ever had tests fail intermittently due to network issues, timing problems, or external service hiccups? **dotnet-test-rerun** solves this by automatically rerunning failed tests, making your test suites more resilient and your CI/CD pipelines more reliable.
+
+### ✨ Key Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔄 **Smart Retry** | Automatically reruns only failed tests with configurable attempts |
+| 🎯 **Selective Execution** | Targets specific tests with filters instead of rerunning everything |
+| 📊 **Multiple Loggers** | Supports trx, junit, console, and custom test loggers |
+| 🐳 **Docker Ready** | Pre-built images for .NET 8.0, 9.0, and 10.0 |
+| ⚙️ **Highly Configurable** | Extensive options for filtering, delays, and test execution |
+| 📈 **Code Coverage** | Collect and merge coverage reports across retry attempts |
+| ⚡ **Performance First** | Efficient execution by targeting only failed tests |
+| 🔧 **CI/CD Optimized** | Built-in support for GitHub Actions, Azure DevOps, GitLab CI |
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+# Install as a global .NET tool
 dotnet tool install --global dotnet-test-rerun
-test-rerun [somepathtodll] [OPTIONS]
-```
-## :whale: Docker
-
-The Docker images support .NET 8.0, .NET 9.0, and .NET 10.0 runtimes. By default, the latest version uses .NET 10.0.
-
-### Available Tags
-
-| Tag | .NET Runtime | Description |
-|-----|-------------|-------------|
-| `latest` or `{version}` | .NET 10.0 | Default image with .NET 10.0 runtime |
-| `{version}-net10` or `{version}-dotnet10` | .NET 10.0 | Explicit .NET 10.0 image |
-| `{version}-net9` or `{version}-dotnet9` | .NET 9.0 | .NET 9.0 image |
-| `{version}-net8` or `{version}-dotnet8` | .NET 8.0 | .NET 8.0 image |
-
-### Usage
-
-```sh
-# Run with default .NET 10.0 image
-docker run joaoopereira/dotnet-test-rerun [somepathtodll] [OPTIONS]
-
-# Run with specific .NET version
-docker run joaoopereira/dotnet-test-rerun:1.0.0-net8 [somepathtodll] [OPTIONS]
-docker run joaoopereira/dotnet-test-rerun:1.0.0-net9 [somepathtodll] [OPTIONS]
-
-# Run with latest .NET 10.0
-docker run joaoopereira/dotnet-test-rerun:latest [somepathtodll] [OPTIONS]
 ```
 
+### Basic Usage
 
-## :arrow_forward: Arguments
-| argument | description                       |
-| -------- | --------------------------------- |
-| `path`   | Path to a test project .dll file. |
+```bash
+# Run tests with automatic retry (default: 3 attempts)
+test-rerun path/to/test.dll
 
-## :arrow_forward: Options
-| option                    | description                                                                                                                                     |
-|---------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--filter`                | Run tests that match the given expression.                                                                                                      |
-| `--settings, -s`          | The run settings file to use when running tests.                                                                                                |
-| `--logger, -l`            | Specifies a logger for test results. Multiple values are allowed. *(default: trx)*                                                              |
-| `--results-directory, -r` | The directory where the test results are going to be placed. If the specified directory doesn't exist, it's created.                            |
-| `--rerunMaxAttempts`      | Maximum # of attempts. *(default: 3)*                                                                                                           |
-| `--rerunMaxFailedTests`   | Maximum # of failed tests to rerun. If exceeded, tests will not be rerun. *(default: -1, no limit)*                                             |
-| `--loglevel`              | Log Level. *(default: Verbose)*                                                                                                                 |
-| `--no-build`              | Do not build the project before testing. Implies --no-restore.                                                                                  |
-| `--no-restore`            | Do not restore the project before building.*                                                                                                    |
-| `--delay, -d`             | Delay between test runs in seconds.                                                                                                             |
-| `--blame`                 | Run the tests in blame mode.                                                                                                                    |
-| `--configuration, -c`     | Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project. |
-| `--framework, -f`         | Defines the target framework.                                                                                                                   |
-| `--verbosity, -v`         | Sets the verbosity level of the command. Allowed values are quiet, minimal, normal, detailed, and diagnostic.                                   |
-| `--deleteReports`         | Delete the generated report files.                                                                                                              |
-| `--collect`               | Enables data collector for the test run. Example: --collect "Code Coverage" or --collect "XPlat Code Coverage"                                  |
-| `--mergeCoverageFormat`   | Output coverage format. Possible values: Coverage, Cobertura or Xml. It requires dotnet coverage tool to be installed.                          |
-| `--environment, -e`       | Sets the value of an environment variable. Can be set multiple times.                                                                           |
-| `--inlineRunSettings, --` | Allow the configuration of inline run settings.                                                                                                 |
+# Customize retry attempts
+test-rerun path/to/test.dll --rerunMaxAttempts 5
 
+# Add delay between retries (useful for external dependencies)
+test-rerun path/to/test.dll --rerunMaxAttempts 5 --delay 10
+```
 
-Notes: 
-- MSBuild arguments can also be passed through, including:
-  - `/p:` or `-p:` or `--property:` for setting property values (e.g., `/p:MyProperty=123`)
-  - `-m:` or `/m:` or `-maxCpuCount:` or `/maxCpuCount:` or `--maxCpuCount:` for limiting parallel build processes (e.g., `-m:3`)
+### Docker Usage
 
-## 👤 Author & Contributors
+```bash
+# Use the latest version
+docker run joaoopereira/dotnet-test-rerun:latest path/to/test.dll --rerunMaxAttempts 3
 
-👤 **João Pereira**
+# Or specify a .NET version
+docker run joaoopereira/dotnet-test-rerun:4.0.0-net8 path/to/test.dll
+```
 
-- Website: [joaoopereira.com](https://joaoopereiraa.com)
-- Github: [@joaoopereira](https://github.com/joaoopereira)
+---
 
-👥 **Contributors**
+## 📚 Common Use Cases
+
+<details>
+<summary><b>🌐 Integration Tests with External Services</b></summary>
+
+```bash
+test-rerun IntegrationTests.dll \
+  --filter "Category=Integration" \
+  --rerunMaxAttempts 5 \
+  --delay 10 \
+  --rerunMaxFailedTests 15
+```
+
+Perfect for tests that interact with databases, APIs, or microservices that may have transient failures.
+
+</details>
+
+<details>
+<summary><b>🚀 CI/CD Pipeline Integration</b></summary>
+
+```yaml
+# GitHub Actions example
+- name: Run Tests with Retry
+  run: |
+    test-rerun tests/**/*.dll \
+      --configuration Release \
+      --rerunMaxAttempts 3 \
+      --logger "trx;LogFileName=results.trx" \
+      --results-directory ./TestResults
+```
+
+Make your CI/CD pipelines more resilient to intermittent failures.
+
+</details>
+
+<details>
+<summary><b>📊 Code Coverage Collection</b></summary>
+
+```bash
+test-rerun MyTests.dll \
+  --collect "XPlat Code Coverage" \
+  --mergeCoverageFormat Cobertura \
+  --rerunMaxAttempts 3
+```
+
+Collect and merge coverage reports even when tests need multiple attempts to pass.
+
+</details>
+
+<details>
+<summary><b>🎭 UI/Selenium Tests</b></summary>
+
+```bash
+test-rerun UITests.dll \
+  --filter "Category=UI" \
+  --rerunMaxAttempts 10 \
+  --delay 3 \
+  --blame
+```
+
+Handle flaky UI tests with generous retry attempts and blame mode for debugging.
+
+</details>
+
+---
+
+## 📦 Installation Options
+
+<table>
+<tr>
+<td width="50%">
+
+### Global Tool (Recommended)
+
+```bash
+dotnet tool install --global dotnet-test-rerun
+test-rerun --help
+```
+
+✅ Available system-wide  
+✅ Easy to update  
+✅ Simple command
+
+</td>
+<td width="50%">
+
+### Docker
+
+```bash
+docker pull joaoopereira/dotnet-test-rerun:latest
+docker run joaoopereira/dotnet-test-rerun:latest
+```
+
+✅ No installation needed  
+✅ Multiple .NET versions  
+✅ Isolated environment
+
+</td>
+</tr>
+</table>
+
+**Other options:** [Local Tool](https://joaoopereira.github.io/dotnet-test-rerun/installation#method-2-local-tool) • [NuGet Package](https://joaoopereira.github.io/dotnet-test-rerun/installation#method-4-nuget-package-reference)
+
+---
+
+## 🎛️ Configuration Options
+
+### Core Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--rerunMaxAttempts` | `3` | Maximum number of retry attempts |
+| `--rerunMaxFailedTests` | `-1` | Maximum failed tests to rerun (no limit) |
+| `--delay, -d` | - | Delay between retries in seconds |
+| `--filter` | - | Run tests matching the expression |
+| `--deleteReports` | `false` | Clean up report files after execution |
+
+### Test Execution
+
+| Option | Description |
+|--------|-------------|
+| `--configuration, -c` | Build configuration (Debug/Release) |
+| `--framework, -f` | Target framework to test |
+| `--no-build` | Skip building before testing |
+| `--blame` | Enable blame mode for diagnostics |
+| `--collect` | Enable data collectors (e.g., code coverage) |
+
+### Logging & Output
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--logger, -l` | `trx` | Test result logger (trx, junit, console) |
+| `--results-directory, -r` | - | Output directory for test results |
+| `--loglevel` | `Verbose` | Tool log level |
+| `--verbosity, -v` | - | dotnet test verbosity level |
+
+📘 **[View All Options](https://joaoopereira.github.io/dotnet-test-rerun/usage)** • **[Configuration Guide](https://joaoopereira.github.io/dotnet-test-rerun/configuration)** • **[Examples](https://joaoopereira.github.io/dotnet-test-rerun/examples)**
+
+---
+
+## 🐳 Docker Images
+
+| Tag Pattern | .NET Runtime | Use Case |
+|------------|--------------|----------|
+| `latest`, `{version}` | .NET 10.0 | Latest stable release |
+| `{version}-net10` | .NET 10.0 | Explicit .NET 10.0 |
+| `{version}-net9` | .NET 9.0 | .NET 9.0 projects |
+| `{version}-net8` | .NET 8.0 | .NET 8.0 projects (LTS) |
+
+**Example:**
+```bash
+docker run joaoopereira/dotnet-test-rerun:4.0.0-net8 tests/MyTests.dll --rerunMaxAttempts 3
+```
+
+🐳 **[Docker Hub Repository](https://hub.docker.com/r/joaoopereira/dotnet-test-rerun)** • **[Docker Guide](https://joaoopereira.github.io/dotnet-test-rerun/docker)**
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! We appreciate:
+
+- 🐛 Bug reports and fixes
+- ✨ New features and enhancements
+- 📖 Documentation improvements
+- 💡 Ideas and suggestions
+
+**Get Started:**
+1. Check the [Contributing Guide](https://joaoopereira.github.io/dotnet-test-rerun/contributing)
+2. Browse [Open Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
+3. Join [Discussions](https://github.com/joaoopereira/dotnet-test-rerun/discussions)
+
+---
+
+## 👥 Community
+
+<div align="center">
+
+### Author
+
+**João Pereira**  
+[🌐 Website](https://joaoopereira.com) • [💼 GitHub](https://github.com/joaoopereira)
+
+### Contributors
 
 [![Contributors](https://contrib.rocks/image?repo=joaoopereira/dotnet-test-rerun)](https://github.com/joaoopereira/dotnet-test-rerun/graphs/contributors)
 
-## :handshake: Contributing
+### Show Your Support
 
-Contributions, issues and feature requests are welcome!\
-Feel free to check the [issues page](https://github.com/joaoopereira/dotnet-test-rerun/issues).
+⭐ **Star this project** if it helped you!  
+🐦 **Share** with your network  
+💬 **Discuss** your use cases
 
-## Show your support
+</div>
 
-Give a :star: if this project helped you!
+---
 
-## :memo: License
+## 📄 License
 
-Copyright © 2023 [João Pereira](https://github.com/joaoopereira).\
-This tool is licensed under GNU General Public License v3.0. See the [LICENSE](/LICENSE) file for details.
+Copyright © 2023-2024 [João Pereira](https://github.com/joaoopereira)
+
+This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## ⚠️ Language Support
+
+**Important:** This tool currently supports **English only**. The output of `dotnet test` may be localized, and if it is not in English, the tool may not function correctly.
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the .NET community**
+
+[Documentation](https://joaoopereira.github.io/dotnet-test-rerun/) • [NuGet](https://www.nuget.org/packages/dotnet-test-rerun) • [Docker Hub](https://hub.docker.com/r/joaoopereira/dotnet-test-rerun)
+
+</div>
 
 [1]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/cd.yml/badge.svg
 [2]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/cd.yml
