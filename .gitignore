@@ -270,3 +270,12 @@ FakesAssemblies/
 
 # exclude .idea
 **/.idea
+
+# Jekyll build artifacts
+docs/_site/
+docs/.sass-cache/
+docs/.jekyll-cache/
+docs/.jekyll-metadata
+docs/Gemfile.lock
+docs/vendor/
+docs/.bundle/
