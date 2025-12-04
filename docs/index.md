@@ -1,6 +1,9 @@
 ---
 layout: default
 title: Home
+nav_order: 1
+description: "dotnet-test-rerun is a powerful wrapper for dotnet test that automatically reruns failed tests"
+permalink: /
 ---
 
 # 🔄 dotnet-test-rerun
