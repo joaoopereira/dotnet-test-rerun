@@ -4,9 +4,8 @@ description: Automatically rerun failed dotnet tests until they pass or reach ma
 baseurl: "/dotnet-test-rerun"
 url: "https://joaoopereira.github.io"
 
-# Theme
-theme: jekyll-theme-cayman
-# remote_theme: pages-themes/cayman@v0.2.0
+# Theme - Just the Docs for better documentation layout and dark mode
+remote_theme: just-the-docs/just-the-docs@v0.10.0
 
 # Build settings
 markdown: kramdown
@@ -14,22 +13,41 @@ plugins:
   - jekyll-feed
   - jekyll-seo-tag
 
-# Navigation
-nav_links:
-  - title: Home
-    url: /
-  - title: Installation
-    url: /installation
-  - title: Usage
-    url: /usage
-  - title: Configuration
-    url: /configuration
-  - title: Examples
-    url: /examples
-  - title: Docker
-    url: /docker
-  - title: Contributing
-    url: /contributing
+# Just the Docs theme configuration
+# Color scheme - dark mode
+color_scheme: dark
+
+# Enable search
+search_enabled: true
+search:
+  heading_level: 2
+  previews: 3
+  preview_words_before: 5
+  preview_words_after: 10
+  tokenizer_separator: /[\s/]+/
+  rel_url: true
+  button: false
+
+# Enable back to top button
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Footer content
+footer_content: "Copyright &copy; 2023-2024 João Pereira. Distributed under the GNU General Public License v3.0."
+
+# Aux links for the upper right navigation
+aux_links:
+  "View on GitHub":
+    - "https://github.com/joaoopereira/dotnet-test-rerun"
+
+# Makes Aux links open in a new tab
+aux_links_new_tab: true
+
+# Enable copy code button
+enable_copy_code_button: true
+
+# Navigation structure (Just the Docs uses front matter for navigation)
+# Pages will be ordered by nav_order in their front matter
 
 # Repository info
 github:

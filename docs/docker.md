@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Docker
+nav_order: 6
 ---
 
 # Docker Guide
