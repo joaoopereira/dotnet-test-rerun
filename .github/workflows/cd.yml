@@ -8,8 +8,14 @@ on:
 
 jobs:
   build:
-    name: 🛠️ Build
+    name: 🛠️ Build (.NET ${{ matrix.dotnet-version }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet-version: ['8.0.x', '9.0.x', '10.0.x']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -17,16 +23,22 @@ jobs:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
         with:
-          global-json-file: global.json
+          dotnet-version: ${{ matrix.dotnet-version }}
           cache: false
 
       - name: Build
         run: dotnet build --configuration Release
 
   test:
-    name: 🧪 Test
+    name: 🧪 Test (.NET ${{ matrix.dotnet-version }})
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet-version: ['8.0.x', '9.0.x', '10.0.x']
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -34,7 +46,7 @@ jobs:
       - name: setup dotnet
         uses: actions/setup-dotnet@v5
         with:
-          global-json-file: global.json
+          dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: test
         run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release
@@ -43,18 +55,20 @@ jobs:
         uses: coverallsapp/github-action@v2.3.7
         with:
           path-to-lcov: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
-          flag-name: UnitTests
+          flag-name: UnitTests-${{ matrix.dotnet-version }}
 
       - name: Coveralls IntegrationTests
         uses: coverallsapp/github-action@v2.3.7
         with:
           path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
-          flag-name: IntegrationTests
+          flag-name: IntegrationTests-${{ matrix.dotnet-version }}
 
   nuget:
     name: 📦 Pack and Push nuget
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -62,7 +76,7 @@ jobs:
       - name: setup dotnet
         uses: actions/setup-dotnet@v5
         with:
-          global-json-file: global.json
+          dotnet-version: '10.0.x'
 
       - name: Get version
         uses: kzrnm/get-net-sdk-project-versions-action@v3
@@ -82,6 +96,8 @@ jobs:
     runs-on: ubuntu-latest
     name: 🐋 Build and Push Docker Image
     needs: test
+    permissions:
+      contents: read
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -102,8 +118,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/bake-action@v6     
+        uses: docker/bake-action@v6
         with:
           push: true
         env:
           VERSION: ${{ steps.get-version.outputs.version }}
+
