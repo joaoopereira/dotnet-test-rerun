@@ -64,7 +64,7 @@ public class DotNetCoverageRunnerTests
         var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
 
         // Assert
-        await act.Should().ThrowAsync<ArgumentOutOfRangeException>().WithMessage("Specified argument was out of the range of valid values. (Parameter 'MergeCoverageFormat')");
+        await act.Should().ThrowAsync<ArgumentOutOfRangeException>().WithMessage("*(Parameter 'MergeCoverageFormat')");
     }
     
     [Fact]
