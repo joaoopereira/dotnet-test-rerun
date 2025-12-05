@@ -28,8 +28,12 @@ jobs:
     if: |
       always() && 
       (needs.commitlint.result == 'skipped' || needs.commitlint.result == 'success')
-    name: 🛠️ Build and 🧪 Test
+    name: 🛠️ Build and 🧪 Test (.NET ${{ matrix.dotnet-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dotnet-version: ['8.0.x', '9.0.x', '10.0.x']
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -37,7 +41,7 @@ jobs:
       - name: setup dotnet
         uses: actions/setup-dotnet@v5
         with:
-          global-json-file: global.json
+          dotnet-version: ${{ matrix.dotnet-version }}
           cache: false
 
       - name: build and test
@@ -47,10 +51,10 @@ jobs:
         uses: coverallsapp/github-action@v2.3.7
         with:
           path-to-lcov: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
-          flag-name: UnitTests
+          flag-name: UnitTests-${{ matrix.dotnet-version }}
 
       - name: Coveralls IntegrationTests
         uses: coverallsapp/github-action@v2.3.7
         with:
           path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
-          flag-name: IntegrationTests
+          flag-name: IntegrationTests-${{ matrix.dotnet-version }}
