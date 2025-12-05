@@ -14,14 +14,14 @@ Docker images are available for multiple .NET runtime versions:
 
 | Tag | .NET Runtime | Description |
 |-----|-------------|-------------|
-| `latest` | .NET 10.0 | Latest version with .NET 10.0 runtime |
-| `{version}` | .NET 10.0 | Specific version with .NET 10.0 runtime |
-| `{version}-net10` | .NET 10.0 | Explicit .NET 10.0 image |
-| `{version}-dotnet10` | .NET 10.0 | Explicit .NET 10.0 image (alternative tag) |
+| `latest` | .NET 9.0 | Latest stable version with .NET 9.0 runtime |
+| `{version}` | .NET 9.0 | Specific stable version with .NET 9.0 runtime |
 | `{version}-net9` | .NET 9.0 | .NET 9.0 image |
 | `{version}-dotnet9` | .NET 9.0 | .NET 9.0 image (alternative tag) |
 | `{version}-net8` | .NET 8.0 | .NET 8.0 image |
 | `{version}-dotnet8` | .NET 8.0 | .NET 8.0 image (alternative tag) |
+| `4.x.x-net10` ⚠️ | .NET 10.0 | .NET 10.0 image (v4 alpha only) |
+| `4.x.x-dotnet10` ⚠️ | .NET 10.0 | .NET 10.0 image (v4 alpha only, alternative tag) |
 
 ## Docker Hub
 
@@ -32,11 +32,11 @@ Images are hosted on Docker Hub: [joaoopereira/dotnet-test-rerun](https://hub.do
 ### Pull the Image
 
 ```bash
-# Latest version (NET 10.0)
+# Latest stable version (NET 9.0)
 docker pull joaoopereira/dotnet-test-rerun:latest
 
 # Specific version and runtime
-docker pull joaoopereira/dotnet-test-rerun:4.0.0-net8
+docker pull joaoopereira/dotnet-test-rerun:3.4.0-net8
 ```
 
 ### Run Tests
@@ -61,7 +61,7 @@ docker run -v ${PWD}:/work -w /work `
 
 ```bash
 docker run -v $(pwd):/work -w /work \
-  joaoopereira/dotnet-test-rerun:4.0.0-net8 \
+  joaoopereira/dotnet-test-rerun:3.4.0-net8 \
   tests/bin/Release/net8.0/MyTests.dll \
   --rerunMaxAttempts 3
 ```
@@ -70,16 +70,18 @@ docker run -v $(pwd):/work -w /work \
 
 ```bash
 docker run -v $(pwd):/work -w /work \
-  joaoopereira/dotnet-test-rerun:4.0.0-net9 \
+  joaoopereira/dotnet-test-rerun:latest \
   tests/bin/Release/net9.0/MyTests.dll \
   --rerunMaxAttempts 3
 ```
 
-### .NET 10.0
+### .NET 10.0 ⚠️ Alpha
+
+> **Note:** .NET 10.0 support is only available in v4.x which is currently in alpha.
 
 ```bash
 docker run -v $(pwd):/work -w /work \
-  joaoopereira/dotnet-test-rerun:latest \
+  joaoopereira/dotnet-test-rerun:4.0.0-alpha.0-net10 \
   tests/bin/Release/net10.0/MyTests.dll \
   --rerunMaxAttempts 3
 ```

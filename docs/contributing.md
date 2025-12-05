@@ -22,7 +22,7 @@ Thank you for your interest in contributing to dotnet-test-rerun! This guide wil
 
 ### Prerequisites
 
-- .NET SDK 8.0, 9.0, or 10.0
+- .NET SDK 8.0 or 9.0 (or 10.0 for v4 alpha development)
 - Git
 - A code editor (Visual Studio, VS Code, Rider, etc.)
 
