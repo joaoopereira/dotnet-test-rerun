@@ -10,6 +10,8 @@ jobs:
   build:
     name: 🛠️ Build (.NET ${{ matrix.dotnet-version }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -31,6 +33,8 @@ jobs:
     name: 🧪 Test (.NET ${{ matrix.dotnet-version }})
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -63,6 +67,8 @@ jobs:
     name: 📦 Pack and Push nuget
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
     steps:
       - name: checkout
         uses: actions/checkout@v6
@@ -90,6 +96,8 @@ jobs:
     runs-on: ubuntu-latest
     name: 🐋 Build and Push Docker Image
     needs: test
+    permissions:
+      contents: read
     steps:
       - name: checkout
         uses: actions/checkout@v6
