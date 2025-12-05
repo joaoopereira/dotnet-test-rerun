@@ -26,7 +26,7 @@ jobs:
   build_and_test:
     needs: commitlint
     if: |
-      always() && 
+      always() &&
       (needs.commitlint.result == 'skipped' || needs.commitlint.result == 'success')
     name: 🛠️ Build and 🧪 Test (.NET ${{ matrix.dotnet-version }})
     runs-on: ubuntu-latest
