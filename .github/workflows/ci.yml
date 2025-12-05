@@ -30,6 +30,8 @@ jobs:
       (needs.commitlint.result == 'skipped' || needs.commitlint.result == 'success')
     name: 🛠️ Build and 🧪 Test (.NET ${{ matrix.dotnet-version }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
