@@ -71,7 +71,7 @@ public class DotNetTestRunner : IDotNetTestRunner
                 ErrorCode = ErrorCode.WellKnownError;
                 Log.Warning(ProcessExecution.GetError());
             }
-            else if (HaveFailedTests() || HaveSimpleFailedTests())
+            else if (HaveFailedTests() || HaveSimpleFailedTests() || HaveTestHostCrash())
             {
                 ErrorCode = ErrorCode.FailedTests;
             }
@@ -110,4 +110,12 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// <returns></returns>
     private bool HaveSimpleFailedTests() => ExitCode == 1 &&
                                       ProcessExecution.GetOutput().Contains("Failed:");
+    
+    /// <summary>
+    /// Check if the test host process crashed during test execution
+    /// </summary>
+    /// <returns></returns>
+    private bool HaveTestHostCrash() => ExitCode == 1 &&
+                                       (ProcessExecution.GetOutput().Contains("Test host process crashed") ||
+                                        ProcessExecution.GetOutput().Contains("Test Run Aborted"));
 }
