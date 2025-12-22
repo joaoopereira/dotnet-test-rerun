@@ -68,8 +68,33 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
             .ToList() ?? [];
 
+        // Check if the test run was aborted (e.g., test host crash)
+        var wasAborted = trx.ResultSummary?.Outcome != null &&
+                        !trx.ResultSummary.Outcome.Equals("Completed", StringComparison.OrdinalIgnoreCase) &&
+                        !trx.ResultSummary.Outcome.Equals("Failed", StringComparison.OrdinalIgnoreCase);
+
         if (failedTests.Count == 0)
-            Log.Warning($"No tests found with the Outcome {outcome} in file {trxFile.Name}");
+        {
+            if (wasAborted)
+            {
+                Log.Warning($"Test run was aborted in file {trxFile.Name}. Will retry all tests from this assembly.");
+                // When test run is aborted with no failed tests, rerun all tests from all classes
+                var allClassNames = trx.TestDefinitions?.UnitTests
+                    .Select(t => t.TestMethod.ClassName)
+                    .Distinct()
+                    .ToList() ?? [];
+                
+                var abortedFilters = allClassNames
+                    .Select(className => $"FullyQualifiedName~{EscapeAll(className)}")
+                    .ToList();
+                
+                return new(framework, abortedFilters);
+            }
+            else
+            {
+                Log.Warning($"No tests found with the Outcome {outcome} in file {trxFile.Name}");
+            }
+        }
 
         var filters = failedTests
             .Select(t =>

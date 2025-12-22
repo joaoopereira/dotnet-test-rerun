@@ -120,4 +120,50 @@ public class DotNetTestRunnerTests
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.FailedTests);
     }
+    
+    [Fact]
+    public async Task Test_TestHostCrash_TreatedAsFailedTests()
+    {
+        // Arrange
+        var logger = new Logger();
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
+        processExecution.End(Arg.Any<Process>())
+            .Returns(1);
+        processExecution.GetOutput()
+            .Returns("Test host process crashed\nTest Run Aborted.");
+        processExecution.GetError()
+            .Returns(string.Empty);
+        processExecution.Start(Arg.Any<ProcessStartInfo>())
+            .Returns(new Process());
+
+        // Act
+        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+
+        // Assert
+        dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.FailedTests);
+    }
+    
+    [Fact]
+    public async Task Test_TestRunAborted_TreatedAsFailedTests()
+    {
+        // Arrange
+        var logger = new Logger();
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
+        processExecution.End(Arg.Any<Process>())
+            .Returns(1);
+        processExecution.GetOutput()
+            .Returns("The active test run was aborted. Reason: Test host process crashed");
+        processExecution.GetError()
+            .Returns(string.Empty);
+        processExecution.Start(Arg.Any<ProcessStartInfo>())
+            .Returns(new Process());
+
+        // Act
+        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+
+        // Assert
+        dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.FailedTests);
+    }
 }

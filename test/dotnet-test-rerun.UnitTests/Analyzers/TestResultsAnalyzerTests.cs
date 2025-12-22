@@ -193,7 +193,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(11);
+        result.Should().HaveCount(12);
     }
     
     [Fact]
@@ -306,5 +306,21 @@ public class TestResultsAnalyzerTests
         {
             Directory.Delete(tempDir, true);
         }
+    }
+    
+    [Fact]
+    public void GetFailedTestsFilter_XUnit_AbortedRun_ReturnsAllClassFilters()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithAbortedRun.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
+
+        //Assert
+        result.Filters.Should().HaveCount(1);
+        result.Filters.ElementAt(0).Key.Should().Be("net6.0");
+        // Should filter to rerun all tests in XUnitExample.SimpleTest class
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~XUnitExample.SimpleTest");
     }
 }
