@@ -29,7 +29,7 @@ permalink: /
 - 🔄 **Automatic Retry**: Automatically reruns failed tests with configurable retry attempts
 - 🎯 **Selective Rerun**: Only reruns failed tests, not the entire test suite
 - 📊 **Test Reporting**: Supports standard dotnet test loggers (trx, junit, etc.)
-- 🐳 **Docker Support**: Available as Docker images for .NET 8.0 and 9.0 (.NET 10.0 in v4 alpha)
+- 🐳 **Docker Support**: Available as Docker images for .NET 8.0, 9.0, and 10.0
 - 📦 **Global Tool**: Easy installation as a dotnet global tool
 - 🔧 **Highly Configurable**: Extensive options for filtering, logging, and test execution
 - 📈 **Code Coverage**: Support for code coverage collection and merging

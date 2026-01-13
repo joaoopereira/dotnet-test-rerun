@@ -10,7 +10,7 @@ dotnet-test-rerun can be installed in multiple ways depending on your needs and 
 
 ## Prerequisites
 
-- .NET SDK 8.0 or 9.0 (.NET 10.0 requires v4 alpha)
+- .NET SDK 8.0, 9.0, or 10.0
 - A .NET test project (compatible with `dotnet test`)
 
 ## Method 1: Global Tool (Recommended)
@@ -151,7 +151,7 @@ If you get errors about .NET SDK versions:
    dotnet --list-sdks
    ```
 
-2. Ensure you have .NET 8.0 or 9.0 installed (.NET 10.0 requires v4 alpha)
+2. Ensure you have .NET 8.0, 9.0, or 10.0 installed
 
 3. Update your .NET SDK if necessary from [dotnet.microsoft.com](https://dotnet.microsoft.com/download)
 

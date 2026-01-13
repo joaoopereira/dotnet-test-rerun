@@ -27,7 +27,7 @@ Ever had tests fail intermittently due to network issues, timing problems, or ex
 | 🔄 **Smart Retry** | Automatically reruns only failed tests with configurable attempts |
 | 🎯 **Selective Execution** | Targets specific tests with filters instead of rerunning everything |
 | 📊 **Multiple Loggers** | Supports trx, junit, console, and custom test loggers |
-| 🐳 **Docker Ready** | Pre-built images for .NET 8.0 and 9.0 (.NET 10.0 in v4 alpha) |
+| 🐳 **Docker Ready** | Pre-built images for .NET 8.0, 9.0, and 10.0 |
 | ⚙️ **Highly Configurable** | Extensive options for filtering, delays, and test execution |
 | 📈 **Code Coverage** | Collect and merge coverage reports across retry attempts |
 | ⚡ **Performance First** | Efficient execution by targeting only failed tests |
@@ -60,11 +60,11 @@ test-rerun path/to/test.dll --rerunMaxAttempts 5 --delay 10
 ### Docker Usage
 
 ```bash
-# Use the latest stable version (.NET 9.0)
+# Use the latest stable version (.NET 10.0)
 docker run joaoopereira/dotnet-test-rerun:latest path/to/test.dll --rerunMaxAttempts 3
 
 # Or specify a .NET version
-docker run joaoopereira/dotnet-test-rerun:3.4.0-net8 path/to/test.dll
+docker run joaoopereira/dotnet-test-rerun:4.0.0-net8 path/to/test.dll
 ```
 
 ---
@@ -213,14 +213,14 @@ docker run joaoopereira/dotnet-test-rerun:latest
 
 | Tag Pattern | .NET Runtime | Use Case |
 |------------|--------------|----------|
-| `latest`, `{version}` | .NET 9.0 | Latest stable release |
+| `latest`, `{version}` | .NET 10.0 | Latest stable release |
+| `{version}-net10` | .NET 10.0 | Explicit .NET 10.0 |
 | `{version}-net9` | .NET 9.0 | .NET 9.0 projects |
 | `{version}-net8` | .NET 8.0 | .NET 8.0 projects (LTS) |
-| `4.x.x-net10` ⚠️ | .NET 10.0 | .NET 10.0 (v4 alpha only) |
 
 **Example:**
 ```bash
-docker run joaoopereira/dotnet-test-rerun:3.4.0-net8 tests/MyTests.dll --rerunMaxAttempts 3
+docker run joaoopereira/dotnet-test-rerun:4.0.0-net8 tests/MyTests.dll --rerunMaxAttempts 3
 ```
 
 🐳 **[Docker Hub Repository](https://hub.docker.com/r/joaoopereira/dotnet-test-rerun)** • **[Docker Guide](https://joaoopereira.github.io/dotnet-test-rerun/docker)**
