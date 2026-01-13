@@ -352,7 +352,6 @@ Contributors don't need to worry about releases, but should follow semantic vers
 
 ## Getting Help
 
-- 💬 [GitHub Discussions](https://github.com/joaoopereira/dotnet-test-rerun/discussions) - Ask questions, share ideas
 - 🐛 [GitHub Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues) - Report bugs, request features
 - 📧 Contact maintainers via GitHub
 

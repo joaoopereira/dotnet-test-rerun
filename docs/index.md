@@ -84,7 +84,6 @@ Unfortunately, there isn't a built-in way with plain `dotnet test` to automatica
 ## Support
 
 - 🐛 [Report Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
-- 💬 [Discussions](https://github.com/joaoopereira/dotnet-test-rerun/discussions)
 - 📖 [GitHub Repository](https://github.com/joaoopereira/dotnet-test-rerun)
 
 ## License

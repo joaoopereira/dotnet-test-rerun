@@ -10,7 +10,7 @@
 [![NuGet Downloads][5]][4]
 [![Docker Pulls][8]][9]
 
-[📖 Documentation](https://joaoopereira.github.io/dotnet-test-rerun/) • [💬 Discussions](https://github.com/joaoopereira/dotnet-test-rerun/discussions) • [🐛 Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
+[📖 Documentation](https://joaoopereira.github.io/dotnet-test-rerun/) • [🐛 Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
 
 </div>
 
@@ -239,7 +239,6 @@ Contributions are welcome! We appreciate:
 **Get Started:**
 1. Check the [Contributing Guide](https://joaoopereira.github.io/dotnet-test-rerun/contributing)
 2. Browse [Open Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
-3. Join [Discussions](https://github.com/joaoopereira/dotnet-test-rerun/discussions)
 
 ---
 
