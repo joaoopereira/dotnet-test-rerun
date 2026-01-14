@@ -166,4 +166,30 @@ public class DotNetTestRunnerTests
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.FailedTests);
     }
+    
+    [Fact]
+    public async Task GetLastTestOutput_ReturnsConsoleOutput()
+    {
+        // Arrange
+        var logger = new Logger();
+        var processExecution = Substitute.For<IProcessExecution>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processExecution);
+        const string expectedOutput = "Test host process crashed\nThe test running when the crash occurred:\nTests1.TestClass.TestMethod";
+        
+        processExecution.End(Arg.Any<Process>())
+            .Returns(1);
+        processExecution.GetOutput()
+            .Returns(expectedOutput);
+        processExecution.GetError()
+            .Returns(string.Empty);
+        processExecution.Start(Arg.Any<ProcessStartInfo>())
+            .Returns(new Process());
+
+        // Act
+        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+        var output = dotNetTestRunner.GetLastTestOutput();
+
+        // Assert
+        output.Should().Be(expectedOutput);
+    }
 }

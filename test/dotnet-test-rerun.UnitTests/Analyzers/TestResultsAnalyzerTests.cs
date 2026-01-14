@@ -193,7 +193,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(12);
+        result.Should().HaveCount(13);
     }
     
     [Fact]
@@ -322,5 +322,60 @@ public class TestResultsAnalyzerTests
         result.Filters.ElementAt(0).Key.Should().Be("net6.0");
         // Should filter to rerun all tests in XUnitExample.SimpleTest class
         result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~XUnitExample.SimpleTest");
+    }
+    
+    [Fact]
+    public void GetFailedTestsFilter_XUnit_TestHostCrash_WithConsoleOutput_ReturnsSpecificTest()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithTestHostCrash.trx").OrderBy(f => f.Name).LastOrDefault();
+        var consoleOutput = @"The active test run was aborted. Reason: Test host process crashed
+Test Run Aborted.
+
+The active Test Run was aborted because the host process exited unexpectedly.
+The test running when the crash occurred: 
+Tests1.TestClass.TestMethod2";
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!}, consoleOutput);
+
+        //Assert
+        result.Filters.Should().HaveCount(1);
+        result.Filters.ElementAt(0).Key.Should().Be("net8.0");
+        // Should filter to rerun only the crashed test
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~Tests1.TestClass.TestMethod2");
+    }
+    
+    [Fact]
+    public void GetFailedTestsFilter_XUnit_TestHostCrash_WithoutConsoleOutput_ReturnsAllClasses()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithTestHostCrash.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!}, null);
+
+        //Assert
+        result.Filters.Should().HaveCount(1);
+        result.Filters.ElementAt(0).Key.Should().Be("net8.0");
+        // Should filter to rerun all tests in the class (fallback behavior)
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~Tests1.TestClass");
+    }
+    
+    [Fact]
+    public void GetFailedTestsFilter_XUnit_TestHostCrash_WithInvalidConsoleOutput_ReturnsAllClasses()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithTestHostCrash.trx").OrderBy(f => f.Name).LastOrDefault();
+        var consoleOutput = "Some output that doesn't contain crash information";
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!}, consoleOutput);
+
+        //Assert
+        result.Filters.Should().HaveCount(1);
+        result.Filters.ElementAt(0).Key.Should().Be("net8.0");
+        // Should filter to rerun all tests in the class (fallback behavior)
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~Tests1.TestClass");
     }
 }
