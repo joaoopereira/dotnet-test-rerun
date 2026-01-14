@@ -64,7 +64,8 @@ public class RerunCommand : RootCommand
 
                 if (trxFiles.Length > 0)
                 {
-                    var testsToRerun = TestResultsAnalyzer.GetFailedTestsFilter(trxFiles);
+                    var consoleOutput = DotNetTestRunner.GetLastTestOutput();
+                    var testsToRerun = TestResultsAnalyzer.GetFailedTestsFilter(trxFiles, consoleOutput);
                     if (testsToRerun.HasTestsToReRun is false)
                     {
                         Environment.ExitCode = 0;
