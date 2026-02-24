@@ -252,9 +252,17 @@ public class RerunCommandConfiguration
             : string.Empty;
     
     public string AddArguments(string? value, Option<string> option)
-        => value is not null
-            ? $" {GetOptionName(option)} \"{value}\""
-            : string.Empty;
+    {
+        if (value is null)
+            return string.Empty;
+
+        // Use single quotes for --filter to prevent shell interpretation of special characters
+        // Single quotes treat everything literally, avoiding issues with pipes, parentheses, and quotes
+        if (option.Name == "--filter")
+            return $" {GetOptionName(option)} '{value}'";
+
+        return $" {GetOptionName(option)} \"{value}\"";
+    }
     
     public string AddArguments<T>(T value, Option<IEnumerable<T>> option)
         => value is not null
