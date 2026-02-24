@@ -193,7 +193,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(12);
+        result.Should().HaveCount(13);
     }
     
     [Fact]
@@ -322,5 +322,21 @@ public class TestResultsAnalyzerTests
         result.Filters.ElementAt(0).Key.Should().Be("net6.0");
         // Should filter to rerun all tests in XUnitExample.SimpleTest class
         result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~XUnitExample.SimpleTest");
+    }
+
+    [Fact]
+    public void GetFailedTestsFilter_NUnit_FailedTestWithStringParameters_EscapesQuotes()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithStringParameters.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
+
+        //Assert
+        result.Filters.Should().HaveCount(1);
+        result.Filters.ElementAt(0).Key.Should().Be("NoFramework");
+        // The filter should escape the quotes in the string parameter
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~Tests.Addresses.TestAddress\\(\\\"20a Manor Gardens NE10 8UZ\\\"\\)");
     }
 }
