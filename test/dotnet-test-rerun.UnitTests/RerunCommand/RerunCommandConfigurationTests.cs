@@ -122,7 +122,7 @@ public class RerunCommandConfigurationUnitTests
         var args = _configuration.GetTestArgumentList("results-directory");
 
         //Assert
-        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\"");
+        args.Should().Be("test path --filter 'filter' --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\"");
     }
 
     [Fact]
