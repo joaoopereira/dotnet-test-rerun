@@ -6,6 +6,8 @@ namespace dotnet.test.rerun.Analyzers;
 public interface ITestResultsAnalyzer
 {
     TestFilterCollection GetFailedTestsFilter(IFileInfo[] trxFiles);
+    
+    TestFilterCollection GetFailedTestsFilter(IFileInfo[] trxFiles, string? consoleOutput);
 
     IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime);
 

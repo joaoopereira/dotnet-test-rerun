@@ -88,6 +88,8 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(Array.Empty<IFileInfo>());
 
@@ -120,9 +122,13 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { trxFile });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile), Arg.Any<string?>())
             .Returns(new TestFilterCollection());
 
         // Act
@@ -132,7 +138,7 @@ public class RerunCommandTests
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile));
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile), Arg.Any<string?>());
     }
 
     [Fact]
@@ -159,11 +165,13 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile), Arg.Any<string?>())
             .Returns(testFilterCollection);
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile), Arg.Any<string?>())
             .Returns(new TestFilterCollection());
 
         // Act
@@ -174,8 +182,8 @@ public class RerunCommandTests
         config.Filter.Should().Be(filterToRerun);
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile), Arg.Any<string?>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile), Arg.Any<string?>());
     }
 
     [Fact]
@@ -202,11 +210,13 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile), Arg.Any<string?>())
             .Returns(testFilterCollection);
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile), Arg.Any<string?>())
             .Returns(new TestFilterCollection());
 
         // Act
@@ -217,8 +227,8 @@ public class RerunCommandTests
         config.Filter.Should().Be(string.Concat("(filter)&(", filterToRerun, ")"));
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile), Arg.Any<string?>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile), Arg.Any<string?>());
     }
 
     [Fact]
@@ -244,9 +254,11 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile, secondTrxFile }, Array.Empty<IFileInfo>());
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile), Arg.Any<string?>())
             .Returns(testFilterCollection);
 
         // Act
@@ -256,7 +268,7 @@ public class RerunCommandTests
         await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile));
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile), Arg.Any<string?>());
     }
 
     [Fact]
@@ -282,11 +294,13 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new []{ firstTrxFile },new [] { secondTrxFile });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile), Arg.Any<string?>())
             .Returns(testFilterCollection);
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile), Arg.Any<string?>())
             .Returns(new TestFilterCollection());
         testResultsAnalyzer.GetReportFiles()
             .Returns(new HashSet<string>() {firstTrxFile.FullName, secondTrxFile.FullName});
@@ -298,8 +312,8 @@ public class RerunCommandTests
         await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile), Arg.Any<string?>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile), Arg.Any<string?>());
         testResultsAnalyzer.Received().GetReportFiles();
         firstTrxFile.Exists.Should().BeFalse();
         secondTrxFile.Exists.Should().BeFalse();
@@ -328,9 +342,11 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new [] {firstTrxFile},new [] {secondTrxFile});
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>(), Arg.Any<string?>())
             .Returns(testFilterCollection);
 
         // Act
@@ -340,7 +356,7 @@ public class RerunCommandTests
         await dotNetTestRunner.Received(3).Test(config, directoryInfo.FullName);
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
-        testResultsAnalyzer.Received(2).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
+        testResultsAnalyzer.Received(2).GetFailedTestsFilter(Arg.Any<IFileInfo[]>(), Arg.Any<string?>());
     }
 
     [Fact]
@@ -362,6 +378,8 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.Success);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
 
         // Act
         await command.Run();
@@ -393,9 +411,11 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new [] { firstTrxFile });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>(), Arg.Any<string?>())
             .Returns(testFilterCollection);
 
         // Act
@@ -406,7 +426,7 @@ public class RerunCommandTests
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
-        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
+        testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>(), Arg.Any<string?>());
     }
 
     [Fact]
@@ -433,11 +453,13 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new [] { firstTrxFile }, new [] { secondTrxFile });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile), Arg.Any<string?>())
             .Returns(testFilterCollection);
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile), Arg.Any<string?>())
             .Returns(new TestFilterCollection());
 
         // Act
@@ -476,11 +498,13 @@ public class RerunCommandTests
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        dotNetTestRunner.GetLastTestOutput()
+            .Returns(string.Empty);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new [] { firstTrxFile }, new [] { secondTrxFile });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile), Arg.Any<string?>())
             .Returns(testFilterCollection);
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile), Arg.Any<string?>())
             .Returns(new TestFilterCollection());
 
         // Act

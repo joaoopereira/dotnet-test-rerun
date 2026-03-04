@@ -39,6 +39,9 @@ public class DotNetTestRunner : IDotNetTestRunner
 
     public ErrorCode GetErrorCode()
         => ErrorCode;
+    
+    public string GetLastTestOutput()
+        => ProcessExecution.GetOutput();
 
     /// <summary>
     /// Runs dotnet test with the specified arguments.

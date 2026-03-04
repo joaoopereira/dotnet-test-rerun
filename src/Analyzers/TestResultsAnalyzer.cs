@@ -31,6 +31,18 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         return allFailedTests;
     }
+    
+    public TestFilterCollection GetFailedTestsFilter(IFileInfo[] trxFiles, string? consoleOutput)
+    {
+        var allFailedTests = new TestFilterCollection();
+        foreach (var trxFile in trxFiles)
+        {
+            var failedTests = GetFailedTestsFilter(trxFile, consoleOutput);
+            allFailedTests.Add(failedTests);
+        }
+
+        return allFailedTests;
+    }
 
     public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
         => resultsDirectory.Exists
@@ -47,6 +59,9 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         => reportFiles;
 
     private TestFilter GetFailedTestsFilter(IFileInfo trxFile)
+        => GetFailedTestsFilter(trxFile, null);
+
+    private TestFilter GetFailedTestsFilter(IFileInfo trxFile, string? consoleOutput)
     {
         const string outcome = "Failed";
         var trx = TrxDeserializer.Deserialize(trxFile.FullName);
@@ -77,18 +92,31 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         {
             if (wasAborted)
             {
-                Log.Warning($"Test run was aborted in file {trxFile.Name}. Will retry all tests from this assembly.");
-                // When test run is aborted with no failed tests, rerun all tests from all classes
-                var allClassNames = trx.TestDefinitions?.UnitTests
-                    .Select(t => t.TestMethod.ClassName)
-                    .Distinct()
-                    .ToList() ?? [];
+                // Try to extract the crashed test name from console output
+                var crashedTestName = ExtractCrashedTestName(consoleOutput);
                 
-                var abortedFilters = allClassNames
-                    .Select(className => $"FullyQualifiedName~{EscapeAll(className)}")
-                    .ToList();
-                
-                return new(framework, abortedFilters);
+                if (!string.IsNullOrEmpty(crashedTestName))
+                {
+                    Log.Warning($"Test run was aborted in file {trxFile.Name}. Test '{crashedTestName}' was running when crash occurred.");
+                    // Return filter for the specific crashed test
+                    var escapedTestName = EscapeAll(crashedTestName);
+                    return new(framework, [$"FullyQualifiedName~{escapedTestName}"]);
+                }
+                else
+                {
+                    Log.Warning($"Test run was aborted in file {trxFile.Name}. Will retry all tests from this assembly.");
+                    // When test run is aborted with no failed tests, rerun all tests from all classes
+                    var allClassNames = trx.TestDefinitions?.UnitTests
+                        .Select(t => t.TestMethod.ClassName)
+                        .Distinct()
+                        .ToList() ?? [];
+                    
+                    var abortedFilters = allClassNames
+                        .Select(className => $"FullyQualifiedName~{EscapeAll(className)}")
+                        .ToList();
+                    
+                    return new(framework, abortedFilters);
+                }
             }
             else
             {
@@ -183,4 +211,52 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
     private string EscapeAll(string input)
         => Regex.Replace(input, @"[()?{}]", match => "\\" + match.Value);
+    
+    /// <summary>
+    /// Extracts the test name that was running when a crash occurred from console output.
+    /// Looks for patterns like "The test running when the crash occurred: [TestName]"
+    /// </summary>
+    /// <param name="consoleOutput">The console output from the test run</param>
+    /// <returns>The fully qualified test name, or null if not found</returns>
+    private static string? ExtractCrashedTestName(string? consoleOutput)
+    {
+        if (string.IsNullOrEmpty(consoleOutput))
+            return null;
+        
+        // Look for the pattern: "The test running when the crash occurred: [TestName]"
+        // The test name is typically on the next line after this message
+        var lines = consoleOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        
+        for (int i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i].Trim();
+            
+            // Check for the crash message
+            if (line.Contains("The test running when the crash occurred", StringComparison.OrdinalIgnoreCase) ||
+                line.Contains("The test running when crash occurred", StringComparison.OrdinalIgnoreCase))
+            {
+                // The test name might be on the same line after a colon, or on the next line
+                var colonIndex = line.IndexOf(':');
+                if (colonIndex >= 0 && colonIndex < line.Length - 1)
+                {
+                    var testName = line.Substring(colonIndex + 1).Trim();
+                    if (!string.IsNullOrEmpty(testName))
+                        return testName;
+                }
+                
+                // Check the next line(s) for the test name
+                for (int j = i + 1; j < lines.Length && j < i + 5; j++)
+                {
+                    var nextLine = lines[j].Trim();
+                    // Test names typically contain dots (namespace.class.method)
+                    if (!string.IsNullOrEmpty(nextLine) && nextLine.Contains('.'))
+                    {
+                        return nextLine;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
 }

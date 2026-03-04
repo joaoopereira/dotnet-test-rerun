@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="4.1.0-alpha.1"></a>
+## [4.1.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.1.0-alpha.1) (2026-01-14)
+
+### Features
+
+* detect test host crashes and extract crashed test names ([dc8edbf](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/dc8edbf94befa0b9870e05b205175c1b03d95dc5))
+
 <a name="4.1.0-alpha.0"></a>
 ## [4.1.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.1.0-alpha.0) (2026-01-13)
 
