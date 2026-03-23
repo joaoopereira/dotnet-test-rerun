@@ -45,7 +45,14 @@ public class ProcessExecution : IProcessExecution
 
     public async Task<int> End(Process process)
     {
-        await process.WaitForExitAsync();
+        int waitForExitSeconds = 5;
+        while(!process.HasExited)
+        {
+            Log.Debug($"Process still running... Waiting for {waitForExitSeconds} seconds before checking again.");
+            await Task.Delay(TimeSpan.FromSeconds(waitForExitSeconds));
+        }
+
+        Log.Debug($"Process has exited with code {process.ExitCode}");
         return process.ExitCode;
     }
 
