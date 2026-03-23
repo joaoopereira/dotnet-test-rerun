@@ -13,7 +13,7 @@ public class RerunCommandConfiguration
     public string? Path { get; internal set; }
     public string? Filter { get; internal set; }
     public string? Settings { get; internal set; }
-    public IEnumerable<string> Logger { get; internal set; } = [];
+    public IEnumerable<string> Logger { get; internal set; } = new string[0];
     public string ResultsDirectory { get; internal set; } = string.Empty;
     public int RerunMaxAttempts { get; internal set; }
     public int RerunMaxFailedTests { get; internal set; }
@@ -299,10 +299,11 @@ public class RerunCommandConfiguration
         => string.Join(' ', parseResult.UnmatchedTokens.Where(IsMsBuildArgument));
     
     private static readonly string[] MsBuildArgumentPrefixes = 
-    [
+    new string[]
+    {
         "/p:", "-p:", "--property:", "/property:", "-property:",
         "/m:", "-m:", "/maxCpuCount:", "-maxCpuCount:", "--maxCpuCount:"
-    ];
+    };
     
     private static bool IsMsBuildArgument(string token)
         => MsBuildArgumentPrefixes.Any(prefix => token.StartsWith(prefix));
@@ -320,7 +321,7 @@ public class RerunCommandConfiguration
             unmatchedNonMsBuildTokens.Count > 0)
         {
             inlineSettings.Append(" -- ");
-            inlineSettings.Append(string.Join(" ", inlineSettingsOption ?? []));
+            inlineSettings.Append(string.Join(" ", inlineSettingsOption ?? new string[0]));
             if (unmatchedNonMsBuildTokens.Count > 0)
             {
                 inlineSettings.Append(' ');

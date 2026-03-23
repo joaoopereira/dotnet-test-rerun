@@ -35,7 +35,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
         => resultsDirectory.Exists
             ? resultsDirectory.EnumerateFiles("*.trx").Where(file => file.CreationTime >= startSearchTime).ToArray()
-            : [];
+            : new IFileInfo[0];
 
     public void AddLastTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
     {
@@ -54,10 +54,10 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         var fullMethodNameByTestId = trx.TestDefinitions?.UnitTests
             .ToDictionary(x => x.Id, x => $"{x.TestMethod.ClassName}.{x.TestMethod.Name}") ?? new();
-        
+
         var classNameByTestId = trx.TestDefinitions?.UnitTests
             .ToDictionary(x => x.Id, x => x.TestMethod.ClassName) ?? new();
-        
+
         var adapterTypeByTestId = trx.TestDefinitions?.UnitTests
             .ToDictionary(x => x.Id, x => x.TestMethod.AdapterTypeName) ?? new();
 
@@ -66,7 +66,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         var failedTests = trx.Results?.UnitTestResults
             .Where(t => t.Outcome.Equals(outcome, StringComparison.InvariantCultureIgnoreCase))
-            .ToList() ?? [];
+            .ToList() ?? new List<UnitTestResult>();
 
         // Check if the test run was aborted (e.g., test host crash)
         var wasAborted = trx.ResultSummary?.Outcome != null &&
@@ -82,12 +82,12 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
                 var allClassNames = trx.TestDefinitions?.UnitTests
                     .Select(t => t.TestMethod.ClassName)
                     .Distinct()
-                    .ToList() ?? [];
-                
+                    .ToList() ?? new List<string>();
+
                 var abortedFilters = allClassNames
                     .Select(className => $"FullyQualifiedName~{EscapeAll(className)}")
                     .ToList();
-                
+
                 return new(framework, abortedFilters);
             }
             else
@@ -104,11 +104,11 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
                 var isMSTest = adapterType.Contains("mstest", StringComparison.OrdinalIgnoreCase);
                 // Only NUnit supports filtering by specific test cases with parameters
                 var useContainsOperator = isNUnit;
-                
-                return BuildFilters([
+
+                return BuildFilters(new string[] {
                     BuildFullyQualifiedNameFilter(t, fullMethodNameByTestId, useContainsOperator, false, string.Empty),
                     // MSTest and NUnit don't use DisplayName filters (NUnit uses ~ operator, MSTest doesn't support case-level filtering)
-                    (useContainsOperator || isMSTest) ? null : BuildDisplayNameFilter(t.TestName)]);
+                    (useContainsOperator || isMSTest) ? null : BuildDisplayNameFilter(t.TestName)});
             })
             .Distinct()
             .ToList();
@@ -137,7 +137,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         var openParenIndex = fullyQualifiedName.IndexOf('(');
         var closeParenIndex = fullyQualifiedName.IndexOf(')');
         var hasParameters = openParenIndex > 0 && closeParenIndex > openParenIndex + 1; // +1 to check for non-empty params
-        
+
         // For NUnit with parameterized tests, use the ~ (contains) operator with full test name including parameters
         if (useContainsOperator && hasParameters)
         {
@@ -147,7 +147,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             var filterValue = fullyQualifiedName.Replace("\"", "");
             return $"FullyQualifiedName~{filterValue}";
         }
-        
+
         // For other frameworks or non-parameterized tests, use exact match with method name only
         var fqn = fullyQualifiedName.Split('(')[0];
         // Escape spaces in the fully qualified name
@@ -159,7 +159,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     {
         var openParenthesisIndex = testName.IndexOf("(");
         var closeParenthesisIndex = testName.IndexOf(")");
-        
+
         // Check if there are parameters in the test name
         if (openParenthesisIndex == -1 || closeParenthesisIndex == -1 || closeParenthesisIndex <= openParenthesisIndex)
         {
@@ -168,7 +168,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
 
         var testParameters = testName
             .Substring(openParenthesisIndex + 1, closeParenthesisIndex - openParenthesisIndex - 1);
-        
+
         // If there are no parameters, return null
         if (string.IsNullOrWhiteSpace(testParameters))
         {
