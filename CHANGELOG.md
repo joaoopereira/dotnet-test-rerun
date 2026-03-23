@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="4.1.0-alpha.1"></a>
+## [4.1.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.1.0-alpha.1) (2026-03-23)
+
+### Features
+
+* support dotnet 6.0 ([fb30d6d](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/fb30d6d66dba692e22711425784bb550e4a4ff51))
+
+### Bug Fixes
+
+* replace WaitForExitAsync with polling mechanism for process exit ([8d3b86c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/8d3b86c3357ef204094f927a729bb0c65628fcf1))
+
 <a name="4.1.0-alpha.0"></a>
 ## [4.1.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.1.0-alpha.0) (2026-01-13)
 
