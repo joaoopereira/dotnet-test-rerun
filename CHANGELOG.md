@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="4.1.0"></a>
+## [4.1.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.1.0) (2026-03-24)
+
 <a name="4.1.0-alpha.2"></a>
 ## [4.1.0-alpha.2](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.1.0-alpha.2) (2026-03-23)
 
