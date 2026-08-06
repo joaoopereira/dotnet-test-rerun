@@ -243,15 +243,15 @@ The tool returns different exit codes based on execution results:
 
 3. **Limit Reruns with `--rerunFailedThreshold`**: Skip reruns entirely when a large percentage of tests fail, since this usually signals a broader issue rather than isolated flaky tests
 
-3. **Use Filters**: Target specific flaky tests with `--filter` to avoid rerunning all tests unnecessarily
+4. **Use Filters**: Target specific flaky tests with `--filter` to avoid rerunning all tests unnecessarily
 
-4. **CI/CD Integration**: Use `--deleteReports` in CI/CD to keep artifacts clean
+5. **CI/CD Integration**: Use `--deleteReports` in CI/CD to keep artifacts clean
 
-5. **Code Coverage**: When collecting coverage, use `--mergeCoverageFormat` to get a single consolidated report
+6. **Code Coverage**: When collecting coverage, use `--mergeCoverageFormat` to get a single consolidated report
 
-6. **Blame Mode**: Use `--blame` when debugging intermittent failures to identify which tests are problematic
+7. **Blame Mode**: Use `--blame` when debugging intermittent failures to identify which tests are problematic
 
-7. **Log Levels**: Use `--loglevel Minimal` in CI/CD for cleaner logs, and `Verbose` or `Debug` when troubleshooting
+8. **Log Levels**: Use `--loglevel Minimal` in CI/CD for cleaner logs, and `Verbose` or `Debug` when troubleshooting
 
 ## Next Steps
 
