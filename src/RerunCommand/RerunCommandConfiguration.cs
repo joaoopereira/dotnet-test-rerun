@@ -17,6 +17,7 @@ public class RerunCommandConfiguration
     public string ResultsDirectory { get; internal set; } = string.Empty;
     public int RerunMaxAttempts { get; internal set; }
     public int RerunMaxFailedTests { get; internal set; }
+    public double RerunFailedThreshold { get; internal set; }
     public LogLevel LogLevel { get; internal set; }
     public bool NoBuild { get; internal set; }
     public bool NoRestore { get; internal set; }
@@ -77,6 +78,12 @@ public class RerunCommandConfiguration
     private readonly Option<int> RerunMaxFailedTestsOption = new("--rerunMaxFailedTests")
     {
         Description = "Maximum # of failed tests to rerun. If exceeded, tests will not be rerun.",
+        DefaultValueFactory = _ => -1
+    };
+
+    private readonly Option<double> RerunFailedThresholdOption = new("--rerunFailedThreshold")
+    {
+        Description = "Maximum percentage of failed tests allowed to trigger a rerun. If exceeded, tests will not be rerun.",
         DefaultValueFactory = _ => -1
     };
 
@@ -166,6 +173,7 @@ public class RerunCommandConfiguration
         cmd.Options.Add(ResultsDirectoryOption);
         cmd.Options.Add(RerunMaxAttemptsOption);
         cmd.Options.Add(RerunMaxFailedTestsOption);
+        cmd.Options.Add(RerunFailedThresholdOption);
         cmd.Options.Add(LogLevelOption);
         cmd.Options.Add(NoBuildOption);
         cmd.Options.Add(NoRestoreOption);
@@ -190,6 +198,7 @@ public class RerunCommandConfiguration
         ResultsDirectory = parseResult.GetValue(ResultsDirectoryOption)!;
         RerunMaxAttempts = parseResult.GetValue(RerunMaxAttemptsOption);
         RerunMaxFailedTests = parseResult.GetValue(RerunMaxFailedTestsOption);
+        RerunFailedThreshold = parseResult.GetValue(RerunFailedThresholdOption);
         LogLevel = parseResult.GetValue(LogLevelOption);
         NoBuild = parseResult.GetValue(NoBuildOption);
         NoRestore = parseResult.GetValue(NoRestoreOption);

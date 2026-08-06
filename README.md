@@ -182,6 +182,7 @@ docker run joaoopereira/dotnet-test-rerun:latest
 |--------|---------|-------------|
 | `--rerunMaxAttempts` | `3` | Maximum number of retry attempts |
 | `--rerunMaxFailedTests` | `-1` | Maximum failed tests to rerun (no limit) |
+| `--rerunFailedThreshold` | `-1` | Max % of failed tests allowed to trigger a rerun (no limit) |
 | `--delay, -d` | - | Delay between retries in seconds |
 | `--filter` | - | Run tests matching the expression |
 | `--deleteReports` | `false` | Clean up report files after execution |
