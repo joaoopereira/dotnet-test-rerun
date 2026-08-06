@@ -25,8 +25,9 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         var allFailedTests = new TestFilterCollection();
         foreach (var trxFile in trxFiles)
         {
-            var failedTests = GetFailedTestsFilter(trxFile);
+            var (failedTests, totalTests) = GetFailedTestsFilter(trxFile);
             allFailedTests.Add(failedTests);
+            allFailedTests.TotalTests += totalTests;
         }
 
         return allFailedTests;
@@ -46,11 +47,12 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
     public HashSet<string> GetReportFiles()
         => reportFiles;
 
-    private TestFilter GetFailedTestsFilter(IFileInfo trxFile)
+    private (TestFilter Filter, int TotalTests) GetFailedTestsFilter(IFileInfo trxFile)
     {
         const string outcome = "Failed";
         var trx = TrxDeserializer.Deserialize(trxFile.FullName);
         reportFiles.Add(trxFile.FullName);
+        var totalTests = trx.ResultSummary?.Counters?.Total ?? 0;
 
         var fullMethodNameByTestId = trx.TestDefinitions?.UnitTests
             .ToDictionary(x => x.Id, x => $"{x.TestMethod.ClassName}.{x.TestMethod.Name}") ?? new();
@@ -88,7 +90,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
                     .Select(className => $"FullyQualifiedName~{EscapeAll(className)}")
                     .ToList();
 
-                return new(framework, abortedFilters);
+                return (new TestFilter(framework, abortedFilters), totalTests);
             }
             else
             {
@@ -113,7 +115,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             .Distinct()
             .ToList();
 
-        return new(framework, filters);
+        return (new TestFilter(framework, filters), totalTests);
     }
 
     private string BuildFilters(string?[] filters)
