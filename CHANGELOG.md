@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="4.2.0-alpha.0"></a>
+## [4.2.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.2.0-alpha.0) (2026-08-06)
+
+### Features
+
+* add --logPassedTests option to log passed tests during execution ([9547fd5](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/9547fd54ed632c6908889c6a3eda2338a2380582))
+* **rerun:** add rerunFailedThreshold support ([71f3437](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/71f3437f4a53a67f5b293c132310b7da69b4519d))
+
 <a name="4.1.0"></a>
 ## [4.1.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.1.0) (2026-03-24)
 
