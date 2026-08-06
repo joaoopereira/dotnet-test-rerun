@@ -24,6 +24,7 @@ public class RerunCommandConfigurationUnitTests
     [InlineData("--rerunMaxFailedTests", "Maximum # of failed tests to rerun. If exceeded, tests will not be rerun.")]
     [InlineData("--rerunFailedThreshold", "Maximum percentage of failed tests allowed to trigger a rerun. If exceeded, tests will not be rerun.")]
     [InlineData("--loglevel", "Log Level")]
+    [InlineData("--logPassedTests", "Logs each passed test as it completes during execution. This can produce a lot of output.")]
     public void RerunCommandConfiguration_Set_ShouldConfigureOptions(string optionName, string description)
     {
         //Act
@@ -109,6 +110,21 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Verbosity.Should().BeNull();
         _configuration.Configuration.Should().BeNull();
         _configuration.MergeCoverageFormat.Should().BeNull();
+        _configuration.LogPassedTests.Should().BeFalse();
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetValues_LogPassedTests_ShouldBeTrueWhenPassed()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path --logPassedTests");
+
+        //Act
+        _configuration.GetValues(result);
+
+        //Assert
+        _configuration.LogPassedTests.Should().BeTrue();
     }
 
     [Fact]
@@ -126,6 +142,36 @@ public class RerunCommandConfigurationUnitTests
 
         //Assert
         args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\"");
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithLogPassedTests_ShouldAppendConsoleLogger()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path --logPassedTests");
+        _configuration.GetValues(result);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be("test path --logger \"trx\" --logger \"console;verbosity=detailed\"");
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithoutLogPassedTests_ShouldNotAppendConsoleLogger()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path");
+        _configuration.GetValues(result);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be("test path --logger \"trx\"");
     }
 
     [Fact]
