@@ -22,6 +22,7 @@ public class RerunCommandConfigurationUnitTests
         "The directory where the test results will be placed.\nThe specified directory will be created if it does not exist.")]
     [InlineData("--rerunMaxAttempts", "Maximum # of attempts.")]
     [InlineData("--rerunMaxFailedTests", "Maximum # of failed tests to rerun. If exceeded, tests will not be rerun.")]
+    [InlineData("--rerunFailedThreshold", "Maximum percentage of failed tests allowed to trigger a rerun. If exceeded, tests will not be rerun.")]
     [InlineData("--loglevel", "Log Level")]
     public void RerunCommandConfiguration_Set_ShouldConfigureOptions(string optionName, string description)
     {
@@ -40,7 +41,7 @@ public class RerunCommandConfigurationUnitTests
         //Arrange
         _configuration.Set(Command); 
         var result = Command.Parse("path --filter filter --settings settings --logger logger " +
-                                               "--results-directory results-directory --rerunMaxAttempts 4 --rerunMaxFailedTests 10 --loglevel Debug");
+                                               "--results-directory results-directory --rerunMaxAttempts 4 --rerunMaxFailedTests 10 --rerunFailedThreshold 20 --loglevel Debug");
 
         //Act
         _configuration.GetValues(result);
@@ -54,6 +55,7 @@ public class RerunCommandConfigurationUnitTests
         _configuration.ResultsDirectory.Should().Be("results-directory");
         _configuration.RerunMaxAttempts.Should().Be(4);
         _configuration.RerunMaxFailedTests.Should().Be(10);
+        _configuration.RerunFailedThreshold.Should().Be(20);
         _configuration.LogLevel.Should().Be(LogLevel.Debug);
     }
 
@@ -99,6 +101,7 @@ public class RerunCommandConfigurationUnitTests
         _configuration.ResultsDirectory.Should().Be(".");
         _configuration.RerunMaxAttempts.Should().Be(3);
         _configuration.RerunMaxFailedTests.Should().Be(-1);
+        _configuration.RerunFailedThreshold.Should().Be(-1);
         _configuration.LogLevel.Should().Be(LogLevel.Verbose);
         _configuration.NoBuild.Should().BeFalse();
         _configuration.NoRestore.Should().BeFalse();

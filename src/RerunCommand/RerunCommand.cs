@@ -80,6 +80,18 @@ public class RerunCommand : RootCommand
                         break;
                     }
 
+                    // Check if the percentage of failed tests exceeds the threshold
+                    if (Config.RerunFailedThreshold >= 0 && testsToRerun.TotalTests > 0)
+                    {
+                        var failedPercentage = testsToRerun.TotalFailedTests * 100d / testsToRerun.TotalTests;
+                        if (failedPercentage > Config.RerunFailedThreshold)
+                        {
+                            Environment.ExitCode = 1;
+                            Log.Error($"Failed tests percentage ({failedPercentage:0.##}%) exceeded the maximum threshold ({Config.RerunFailedThreshold}%). Skipping rerun.");
+                            break;
+                        }
+                    }
+
                     Log.Information($"Rerun attempt {attempt}/{Config.RerunMaxAttempts}");
                     Log.Warning($"Found Failed tests: {testsToRerun}");
                     startOfDotnetRun = DateTime.Now;

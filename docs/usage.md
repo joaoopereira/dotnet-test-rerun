@@ -49,6 +49,13 @@ test-rerun <path> [OPTIONS]
 - Default: `-1` (no limit)
 - Example: `test-rerun test.dll --rerunMaxFailedTests 10`
 
+**`--rerunFailedThreshold <percentage>`**
+- Maximum percentage of failed tests allowed to trigger a rerun
+- Calculated as the percentage of failed tests out of the total tests executed in the initial run
+- If exceeded, no tests will be rerun, since a high failure rate usually indicates a broader issue (infrastructure, environment, widespread regression) rather than isolated flaky tests
+- Default: `-1` (no limit)
+- Example: `test-rerun test.dll --rerunFailedThreshold 20` (skips reruns when more than 20% of tests fail)
+
 **`--delay, -d <seconds>`**
 - Delay between test runs in seconds
 - Useful for allowing external resources to recover
@@ -233,6 +240,8 @@ The tool returns different exit codes based on execution results:
 1. **Use `--delay` for External Dependencies**: Add delays when tests depend on external services that may need time to recover
 
 2. **Limit Reruns with `--rerunMaxFailedTests`**: In large test suites, limit how many failed tests will be rerun to avoid excessive execution time
+
+3. **Limit Reruns with `--rerunFailedThreshold`**: Skip reruns entirely when a large percentage of tests fail, since this usually signals a broader issue rather than isolated flaky tests
 
 3. **Use Filters**: Target specific flaky tests with `--filter` to avoid rerunning all tests unnecessarily
 

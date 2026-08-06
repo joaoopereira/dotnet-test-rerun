@@ -102,6 +102,25 @@ This is useful to:
 - Medium test suites (100-500 tests): 10-20
 - Large test suites (> 500 tests): 20-50
 
+### Maximum Failed Tests Percentage Threshold
+
+Skip reruns entirely when the percentage of failed tests exceeds a threshold:
+
+```bash
+# Don't rerun if more than 20% of tests fail
+test-rerun test.dll --rerunFailedThreshold 20
+```
+
+The failure percentage is calculated from the total number of tests executed and the number of failed tests in the initial run. This is useful to:
+- Avoid unnecessary reruns when failures are caused by a broader issue (infrastructure, environment, widespread regressions)
+- Reduce pipeline execution time in large failure scenarios
+- Give more control over the rerun strategy alongside `--rerunMaxFailedTests`
+
+**Recommended Values:**
+- Strict environments (fail fast on systemic issues): 10-20%
+- Balanced environments: 20-30%
+- Lenient environments (tolerate more failures before skipping reruns): 30-50%
+
 ### Retry Delay
 
 Add delays between retry attempts to allow external resources to recover:
@@ -297,6 +316,7 @@ test-rerun MyProject.Tests.dll \
   --filter "Category=Integration|Category=EndToEnd" \
   --rerunMaxAttempts 5 \
   --rerunMaxFailedTests 15 \
+  --rerunFailedThreshold 20 \
   --delay 3 \
   --logger "trx;LogFileName=test-results.trx" \
   --logger "console;verbosity=minimal" \
@@ -317,7 +337,7 @@ test-rerun MyProject.Tests.dll \
 
 2. **Use Filters Wisely**: Only rerun tests that are known to be flaky; use filters to target them
 
-3. **Set Failure Limits**: Always set `--rerunMaxFailedTests` to prevent excessive reruns
+3. **Set Failure Limits**: Always set `--rerunMaxFailedTests` and/or `--rerunFailedThreshold` to prevent excessive reruns
 
 4. **Add Delays for External Dependencies**: Use `--delay` when tests depend on external services
 
