@@ -92,6 +92,12 @@ test-rerun <path> [OPTIONS]
 - Useful for CI/CD pipelines
 - Example: `test-rerun test.dll --deleteReports`
 
+**`--logPassedTests`**
+- Log each passed test as it completes during execution
+- Opt-in flag; can produce a lot of output on large test suites
+- Useful for monitoring progress of long-running suites, identifying the last executed test if the process hangs, or investigating flaky tests
+- Example: `test-rerun test.dll --logPassedTests`
+
 ### Build Configuration
 
 **`--configuration, -c <config>`**

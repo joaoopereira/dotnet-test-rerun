@@ -32,6 +32,7 @@ public class RerunCommandConfiguration
     public string ExtraArguments { get; internal set; } = string.Empty;
     public string InlineRunSettings { get; internal set; } = string.Empty;
     public IEnumerable<string>? EnvironmentVariables { get; internal set; }
+    public bool LogPassedTests { get; internal set; }
     
     #endregion Properties
 
@@ -160,9 +161,21 @@ public class RerunCommandConfiguration
         AllowMultipleArgumentsPerToken = true
     };
 
+    private readonly Option<bool> LogPassedTestsOption = new("--logPassedTests")
+    {
+        Description = "Logs each passed test as it completes during execution. This can produce a lot of output.",
+        Arity = ArgumentArity.Zero
+    };
+
     #endregion Options
 
     private string? OriginalFilter;
+
+    /// <summary>
+    /// Extra logger value added to the dotnet test invocation when --logPassedTests is set,
+    /// so passed tests are printed to the console as they complete during execution.
+    /// </summary>
+    private const string PassedTestsLoggerValue = "console;verbosity=detailed";
     
     public void Set(Command cmd)
     {
@@ -187,6 +200,7 @@ public class RerunCommandConfiguration
         cmd.Options.Add(MergeCoverageFormatOption);
         cmd.Options.Add(InlineRunSettingsOption);
         cmd.Options.Add(EnvironmentVariablesOption);
+        cmd.Options.Add(LogPassedTestsOption);
     }
 
     public void GetValues(ParseResult parseResult)
@@ -213,6 +227,7 @@ public class RerunCommandConfiguration
         ExtraArguments = FetchExtraArgumentsFromParse(parseResult);
         InlineRunSettings = FetchInlineRunSettingsFromParse(parseResult);
         EnvironmentVariables = parseResult.GetValue(EnvironmentVariablesOption);
+        LogPassedTests = parseResult.GetValue(LogPassedTestsOption);
         
         //Store Original Values
         OriginalFilter = Filter;
@@ -224,6 +239,7 @@ public class RerunCommandConfiguration
             AddArguments(Filter, FilterOption),
             AddArguments(Settings, SettingsOption),
             AddArguments(Logger, LoggerOption),
+            LogPassedTests ? AddArguments(PassedTestsLoggerValue, LoggerOption) : string.Empty,
             AddArguments(NoBuild, NoBuildOption),
             AddArguments(NoRestore, NoRestoreOption),
             AddArguments(Blame, BlameOption),
