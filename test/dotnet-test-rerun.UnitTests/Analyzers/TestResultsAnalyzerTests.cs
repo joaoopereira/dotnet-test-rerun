@@ -127,6 +127,24 @@ public class TestResultsAnalyzerTests
     }
     
     [Fact]
+    public void GetFailedTestsFilter_NUnit_FailedTestWithStringParameter_KeepsQuotesEscaped()
+    {
+        //Arrange
+        var trxFile = ResultsDirectory.EnumerateFiles("NUnitTrxFileWithStringParameterFailedTest.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile!});
+
+        //Assert
+        result.Filters.ElementAt(0).Key.Should().Be("net6.0");
+        // The quotes surrounding the string parameter must be preserved (percent-encoded as %22 so they survive
+        // the "dotnet test" command line, which forwards --filter to MSBuild's VSTestTestCaseFilter property
+        // and cannot handle raw quote characters) so the filter matches the actual FullyQualifiedName, which
+        // includes the quotes around the string parameter.
+        result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~Tests.Addresses.TestAddress\\(%2220a Manor Gardens NE10 8UZ%22\\)");
+    }
+    
+    [Fact]
     public void GetFailedTestsFilter_MsTest_NoFailedTests_ReturnEmpty()
     {
         //Arrange
@@ -194,7 +212,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(12);
+        result.Should().HaveCount(13);
     }
     
     [Fact]
