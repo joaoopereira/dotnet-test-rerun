@@ -216,6 +216,16 @@ Common logger formats:
 - `html` - HTML report (requires additional package)
 - `console` - Console output
 
+### Logging Passed Tests
+
+By default, `dotnet-test-rerun` only surfaces failures and summary information. To see each test logged as soon as it passes (useful for monitoring long-running suites, spotting the last test executed before a hang or crash, or confirming a flaky test eventually passed), enable the opt-in `--logPassedTests` flag:
+
+```bash
+test-rerun test.dll --logPassedTests
+```
+
+This appends a `console;verbosity=detailed` logger to the underlying `dotnet test` invocation, in addition to any loggers already configured. Because this can produce a lot of output, it is disabled by default.
+
 ## Code Coverage Configuration
 
 ### Basic Coverage Collection
