@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="4.2.1-alpha.0"></a>
+## [4.2.1-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.2.1-alpha.0) (2026-08-07)
+
+### Bug Fixes
+
+* **analyzer:** percent-encode quotes in NUnit parameterized test filters ([d6fb46f](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/d6fb46f2e8283373588ff355b48988c8dffad1e3))
+
 <a name="4.2.0"></a>
 ## [4.2.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.2.0) (2026-08-07)
 
