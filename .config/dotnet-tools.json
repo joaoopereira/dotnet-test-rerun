@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "versionize": {
-      "version": "2.5.0",
+      "version": "2.6.0",
       "commands": [
         "versionize"
       ]
