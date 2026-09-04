@@ -98,6 +98,12 @@ test-rerun <path> [OPTIONS]
 - Useful for monitoring progress of long-running suites, identifying the last executed test if the process hangs, or investigating flaky tests
 - Example: `test-rerun test.dll --logPassedTests`
 
+**`--logTestResults`**
+- Logs the result (passed/failed) of each individual test, independently of the `dotnet test` verbosity
+- Reads the generated trx report after each run (including reruns), so it does not depend on `--verbosity` or `--logPassedTests`
+- Failed tests also print the error message and stack trace
+- Example: `test-rerun test.dll --logTestResults`
+
 ### Build Configuration
 
 **`--configuration, -c <config>`**

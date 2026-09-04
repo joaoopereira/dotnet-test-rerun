@@ -25,6 +25,7 @@ public class RerunCommandConfigurationUnitTests
     [InlineData("--rerunFailedThreshold", "Maximum percentage of failed tests allowed to trigger a rerun. If exceeded, tests will not be rerun.")]
     [InlineData("--loglevel", "Log Level")]
     [InlineData("--logPassedTests", "Logs each passed test as it completes during execution. This can produce a lot of output.")]
+    [InlineData("--logTestResults", "Logs the result (passed/failed) of each individual test, independently of the dotnet test verbosity.")]
     public void RerunCommandConfiguration_Set_ShouldConfigureOptions(string optionName, string description)
     {
         //Act
@@ -111,6 +112,7 @@ public class RerunCommandConfigurationUnitTests
         _configuration.Configuration.Should().BeNull();
         _configuration.MergeCoverageFormat.Should().BeNull();
         _configuration.LogPassedTests.Should().BeFalse();
+        _configuration.LogTestResults.Should().BeFalse();
     }
 
     [Fact]
@@ -125,6 +127,20 @@ public class RerunCommandConfigurationUnitTests
 
         //Assert
         _configuration.LogPassedTests.Should().BeTrue();
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetValues_LogTestResults_ShouldBeTrueWhenPassed()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path --logTestResults");
+
+        //Act
+        _configuration.GetValues(result);
+
+        //Assert
+        _configuration.LogTestResults.Should().BeTrue();
     }
 
     [Fact]
@@ -165,6 +181,21 @@ public class RerunCommandConfigurationUnitTests
         //Arrange
         _configuration.Set(Command);
         var result = Command.Parse("path");
+        _configuration.GetValues(result);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be("test path --logger \"trx\"");
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithLogTestResults_ShouldNotModifyArguments()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path --logTestResults");
         _configuration.GetValues(result);
 
         //Act

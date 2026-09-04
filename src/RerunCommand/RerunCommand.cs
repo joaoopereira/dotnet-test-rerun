@@ -54,6 +54,7 @@ public class RerunCommand : RootCommand
         var startOfDotnetRun = DateTime.Now;
         IDirectoryInfo resultsDirectory = FileSystem.DirectoryInfo.New(Config.ResultsDirectory);
         await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
+        LogTestResults(resultsDirectory, startOfDotnetRun);
         if (DotNetTestRunner.GetErrorCode() == ErrorCode.FailedTests)
         {
             var attempt = 1;
@@ -103,6 +104,7 @@ public class RerunCommand : RootCommand
                         Log.Warning($"Rerun filter: {Config.Filter}");
                         await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
                     }
+                    LogTestResults(resultsDirectory, startOfDotnetRun);
                     attempt++;
                 }
                 else
@@ -136,6 +138,15 @@ public class RerunCommand : RootCommand
         {
             FileSystem.File.Delete(file);
         }
+    }
+
+    private void LogTestResults(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
+    {
+        if (Config.LogTestResults is false)
+            return;
+
+        var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startSearchTime);
+        TestResultsAnalyzer.LogTestResults(trxFiles);
     }
 
     private void MergeCoverageResults(IDirectoryInfo resultsDirectory, DateTime startTime)
