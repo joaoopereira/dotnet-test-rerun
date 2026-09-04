@@ -226,6 +226,16 @@ test-rerun test.dll --logPassedTests
 
 This appends a `console;verbosity=detailed` logger to the underlying `dotnet test` invocation, in addition to any loggers already configured. Because this can produce a lot of output, it is disabled by default.
 
+### Logging Individual Test Results
+
+`--logTestResults` logs the outcome of every individual test (✓ passed / ✗ failed), independently of the `--verbosity` passed to `dotnet test`:
+
+```bash
+test-rerun test.dll --logTestResults
+```
+
+Unlike `--logPassedTests`, this does not change the underlying `dotnet test` invocation or rely on console output. Instead, it reads the trx report generated after each run (including reruns) and logs each test's result. Failed tests also include the error message and stack trace.
+
 ## Code Coverage Configuration
 
 ### Basic Coverage Collection
