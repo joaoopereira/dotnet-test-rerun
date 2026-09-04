@@ -46,6 +46,15 @@ namespace dotnet.test.rerun.Logging
         public void Exception(Exception e);
 
         /// <summary>
+        /// Logs the result of an individual test, independently of the dotnet test verbosity.
+        /// </summary>
+        /// <param name="testName">The fully qualified name of the test.</param>
+        /// <param name="passed">Whether the test passed.</param>
+        /// <param name="errorMessage">The error message, when the test failed.</param>
+        /// <param name="stackTrace">The stack trace, when the test failed.</param>
+        public void TestResult(string testName, bool passed, string? errorMessage = null, string? stackTrace = null);
+
+        /// <summary>
         /// Logs the progress of an operation, single line with a spinner
         /// </summary>
         /// <param name="msg">initial message to print</param>
