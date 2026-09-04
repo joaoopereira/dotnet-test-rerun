@@ -21,7 +21,15 @@ jobs:
       - name: Install commitlint
         run: npm install -D @commitlint/cli @commitlint/config-conventional
       - name: Validate PR commits with commitlint
-        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+        run: |
+          # Copilot may create empty planning commits; validate only commits that change files.
+          git rev-list --reverse ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | while read -r commit; do
+            if git diff-tree --quiet --no-commit-id -r "$commit"; then
+              echo "Skipping empty commit $commit."
+              continue
+            fi
+            npx commitlint --from "$commit^" --to "$commit" --verbose
+          done
 
   build_and_test:
     needs: commitlint
