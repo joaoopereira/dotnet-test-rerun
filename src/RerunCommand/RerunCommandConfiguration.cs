@@ -33,6 +33,7 @@ public class RerunCommandConfiguration
     public string InlineRunSettings { get; internal set; } = string.Empty;
     public IEnumerable<string>? EnvironmentVariables { get; internal set; }
     public bool LogPassedTests { get; internal set; }
+    public bool LogTestResults { get; internal set; }
     
     #endregion Properties
 
@@ -167,6 +168,12 @@ public class RerunCommandConfiguration
         Arity = ArgumentArity.Zero
     };
 
+    private readonly Option<bool> LogTestResultsOption = new("--logTestResults")
+    {
+        Description = "Logs the result (passed/failed) of each individual test, independently of the dotnet test verbosity.",
+        Arity = ArgumentArity.Zero
+    };
+
     #endregion Options
 
     private string? OriginalFilter;
@@ -201,6 +208,7 @@ public class RerunCommandConfiguration
         cmd.Options.Add(InlineRunSettingsOption);
         cmd.Options.Add(EnvironmentVariablesOption);
         cmd.Options.Add(LogPassedTestsOption);
+        cmd.Options.Add(LogTestResultsOption);
     }
 
     public void GetValues(ParseResult parseResult)
@@ -228,6 +236,7 @@ public class RerunCommandConfiguration
         InlineRunSettings = FetchInlineRunSettingsFromParse(parseResult);
         EnvironmentVariables = parseResult.GetValue(EnvironmentVariablesOption);
         LogPassedTests = parseResult.GetValue(LogPassedTestsOption);
+        LogTestResults = parseResult.GetValue(LogTestResultsOption);
         
         //Store Original Values
         OriginalFilter = Filter;

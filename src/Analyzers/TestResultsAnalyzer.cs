@@ -33,6 +33,42 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         return allFailedTests;
     }
 
+    public void LogTestResults(IFileInfo[] trxFiles)
+    {
+        const string passedOutcome = "Passed";
+
+        foreach (var trxFile in trxFiles)
+        {
+            var trx = TrxDeserializer.Deserialize(trxFile.FullName);
+            reportFiles.Add(trxFile.FullName);
+
+            var fullMethodNameByTestId = trx.TestDefinitions?.UnitTests
+                .ToDictionary(x => x.Id, x => $"{x.TestMethod.ClassName}.{x.TestMethod.Name}") ?? new();
+
+            foreach (var result in trx.Results?.UnitTestResults ?? new List<UnitTestResult>())
+            {
+                var testName = BuildFullTestName(result, fullMethodNameByTestId);
+                var passed = result.Outcome.Equals(passedOutcome, StringComparison.InvariantCultureIgnoreCase);
+
+                Log.TestResult(testName, passed, result.Output?.ErrorInfo?.Message, result.Output?.ErrorInfo?.StackTrace);
+            }
+        }
+    }
+
+    private static string BuildFullTestName(UnitTestResult result, Dictionary<string, string> fullMethodNameByTestId)
+    {
+        var fullMethodName = fullMethodNameByTestId.TryGetValue(result.TestId, out var name)
+            ? name
+            : result.TestName;
+
+        // Some frameworks (e.g. NUnit, MSTest) don't include parameters in the test definition's method name,
+        // while others (e.g. xUnit) already include the parameters in the result's test name.
+        var parametersStartIndex = result.TestName.IndexOf('(');
+        return parametersStartIndex >= 0 && fullMethodName.Contains('(') is false
+            ? fullMethodName + result.TestName.Substring(parametersStartIndex)
+            : fullMethodName;
+    }
+
     public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
         => resultsDirectory.Exists
             ? resultsDirectory.EnumerateFiles("*.trx").Where(file => file.CreationTime >= startSearchTime).ToArray()
