@@ -3,6 +3,7 @@ using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Logging;
 using AwesomeAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.Analyzers;
@@ -324,5 +325,53 @@ public class TestResultsAnalyzerTests
         result.Filters.ElementAt(0).Key.Should().Be("net6.0");
         // Should filter to rerun all tests in XUnitExample.SimpleTest class
         result.Filters.ElementAt(0).Value.Filter.Should().Be("FullyQualifiedName~XUnitExample.SimpleTest");
+    }
+
+    [Fact]
+    public void LogTestResults_XUnit_AllTestsPassing_LogsEachTestAsPassed()
+    {
+        //Arrange
+        var logger = Substitute.For<ILogger>();
+        var testResultsAnalyzer = new TestResultsAnalyzer(logger);
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithAllTestsPassing.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        testResultsAnalyzer.LogTestResults(new[] { trxFile! });
+
+        //Assert
+        logger.DidNotReceive().TestResult(Arg.Any<string>(), false, Arg.Any<string?>(), Arg.Any<string?>());
+        logger.Received().TestResult("XUnitExample.SimpleTest.SimpleStringCompare", true, null, null);
+    }
+
+    [Fact]
+    public void LogTestResults_XUnit_OneFailedTest_LogsTheFailedTestWithErrorInfo()
+    {
+        //Arrange
+        var logger = Substitute.For<ILogger>();
+        var testResultsAnalyzer = new TestResultsAnalyzer(logger);
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithOneFailedTest.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        testResultsAnalyzer.LogTestResults(new[] { trxFile! });
+
+        //Assert
+        logger.Received(1).TestResult("XUnitExample.SimpleTest.SimpleStringCompare", false,
+            Arg.Is<string?>(msg => msg!.Contains("Assert.Equal() Failure")), Arg.Any<string?>());
+        logger.Received(1).TestResult("XUnitExample.SimpleTest.SimpleNumberCompare(number: 1, expectedNumber: 1)", true, null, null);
+    }
+
+    [Fact]
+    public void LogTestResults_AddsTrxFileToReportFiles()
+    {
+        //Arrange
+        var logger = Substitute.For<ILogger>();
+        var testResultsAnalyzer = new TestResultsAnalyzer(logger);
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithAllTestsPassing.trx").OrderBy(f => f.Name).LastOrDefault();
+
+        //Act
+        testResultsAnalyzer.LogTestResults(new[] { trxFile! });
+
+        //Assert
+        testResultsAnalyzer.GetReportFiles().Should().Contain(trxFile!.FullName);
     }
 }
