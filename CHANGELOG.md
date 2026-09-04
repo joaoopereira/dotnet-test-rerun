@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="4.3.0-alpha.0"></a>
+## [4.3.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.3.0-alpha.0) (2026-09-04)
+
+### Features
+
+* log individual test results independently of dotnet test verbosity ([e53e521](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/e53e521bbe38e755f38f25c529da6da36f7466d3))
+
 <a name="4.2.0"></a>
 ## [4.2.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.2.0) (2026-08-07)
 
