@@ -206,6 +206,21 @@ public class RerunCommandConfigurationUnitTests
     }
 
     [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithLogPassedTestsAndLogTestResults_ShouldNotAppendConsoleLogger()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path --logPassedTests --logTestResults");
+        _configuration.GetValues(result);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be("test path --logger \"trx\"");
+    }
+
+    [Fact]
     public void RerunCommandConfiguration_GetArguments_WithNoArguments()
     {
         //Arrange

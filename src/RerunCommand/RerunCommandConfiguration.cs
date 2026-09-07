@@ -248,7 +248,7 @@ public class RerunCommandConfiguration
             AddArguments(Filter, FilterOption),
             AddArguments(Settings, SettingsOption),
             AddArguments(Logger, LoggerOption),
-            LogPassedTests ? AddArguments(PassedTestsLoggerValue, LoggerOption) : string.Empty,
+            LogPassedTests && !LogTestResults ? AddArguments(PassedTestsLoggerValue, LoggerOption) : string.Empty,
             AddArguments(NoBuild, NoBuildOption),
             AddArguments(NoRestore, NoRestoreOption),
             AddArguments(Blame, BlameOption),
