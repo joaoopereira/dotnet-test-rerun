@@ -470,13 +470,13 @@ public class DotNetTestRerunTests
 
         // Assert
         output.Should().Contain("Passed!");
-        // Two failures initially, but we're primarily testing the DataDrivenTest(2,2) retry
+        // Two failures initially: DataDrivenTest(2,2) and StringParamTest("Value B","Type Y","All pays")
         output.Should().Contain("Failed!");
         // First run: 2 failed, 6 passed (8 total tests, 2 fail)
         output.Should().Contain("Failed:     2, Passed:     6",
             Exactly.Once());
-        // Second run: At least the DataDrivenTest(2,2) is retried successfully
-        output.Should().Contain("Failed:     0, Passed:     1",
+        // Second run: both failing test cases are retried and pass
+        output.Should().Contain("Failed:     0, Passed:     2",
             Exactly.Once());
         var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
         files.Should().HaveCountGreaterThanOrEqualTo(2);
@@ -515,8 +515,10 @@ public class DotNetTestRerunTests
         // Act
         var output = await RunDotNetTestRerunAndCollectOutputMessage("NUnitTestParameterizedPassOnSecondRunExample", dir: testDir);
 
-        // Assert - Main goal: verify no shell parsing errors occur with string parameters containing spaces
-        // The user reported errors like "can't find the assembly 'pays'" due to quotes and spaces
+        // Assert - Main goal: verify the string parameter test case (with spaces inside quoted values) is
+        // actually matched and rerun, instead of being silently skipped ("No test matches the given testcase
+        // filter") as it used to be before the fix.
+        output.Should().NotContain("No test matches the given testcase filter");
         output.Should().NotContain("can't find the assembly");
         output.Should().NotContain("unrecognized escape sequence");
         
@@ -524,9 +526,11 @@ public class DotNetTestRerunTests
         output.Should().Contain("Failed:     2, Passed:     6",
             Exactly.Once());
         
-        // The test completes without shell parsing errors (the main fix)
-        // This verifies that removing quotes from the filter prevents the shell from misinterpreting 
-        // parameters with spaces like "All pays" as separate command arguments
+        // The StringParamTest("Value B","Type Y","All pays") case is correctly matched by the rerun filter
+        // (quotes preserved via percent-encoding) and passes on the second attempt, together with
+        // DataDrivenTest(2,2).
+        output.Should().Contain("Failed:     0, Passed:     2",
+            Exactly.Once());
         var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
         files.Should().HaveCountGreaterThanOrEqualTo(2);
         

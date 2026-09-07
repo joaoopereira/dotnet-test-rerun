@@ -143,10 +143,13 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         // For NUnit with parameterized tests, use the ~ (contains) operator with full test name including parameters
         if (useContainsOperator && hasParameters)
         {
-            // Remove quotes from string parameters to avoid command-line parsing issues
             // NUnit test names with string parameters include quotes: MethodName("param1","param2")
-            // The ~ operator matches substrings, so MethodName(param1,param2) will still match
-            var filterValue = fullyQualifiedName.Replace("\"", "");
+            // Keeping the quotes is required so the filter matches the FullyQualifiedName exactly (which also
+            // contains the quotes). A literal quote in the filter value breaks the "dotnet test" command line
+            // (it is forwarded to MSBuild as the VSTestTestCaseFilter property, whose parser cannot handle raw
+            // quotes). Percent-encoding the quotes as %22 avoids that: MSBuild decodes %22 back to a literal
+            // quote before invoking VSTest, so the filter that VSTest evaluates still contains the real quotes.
+            var filterValue = fullyQualifiedName.Replace("\"", "%22");
             return $"FullyQualifiedName~{filterValue}";
         }
 
