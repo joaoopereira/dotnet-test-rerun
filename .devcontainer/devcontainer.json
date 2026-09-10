@@ -2,21 +2,21 @@
     "name": "dotnet-test-rerun devcontainer",
     "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
     "containerEnv": {
-        "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+        "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+        "ZSH_DOTENV_PROMPT": "false"
     },
     "features": {
         "ghcr.io/devcontainers/features/dotnet": {
             "version": "10.0",
             "additionalVersions": "8.0"
         },
-        "ghcr.io/devcontainers/features/ruby": {
-            "version": "3.1"
-        },
         "ghcr.io/devcontainers/features/github-cli": {},
-        "ghcr.io/devcontainers/features/docker-in-docker": {},
+        "ghcr.io/devcontainers/features/docker-in-docker": {
+            "moby": false
+        },
         "ghcr.io/nils-geistmann/devcontainers-features/zsh": {
             "theme": "agnoster",
-            "plugins": "git docker dotnet"
+            "plugins": "git docker dotnet dotenv"            
         },
         "ghcr.io/stuartleeks/dev-container-features/shell-history": {}
     },
@@ -34,5 +34,9 @@
             ]
         }
     },
-    "postCreateCommand": "dotnet tool restore && dotnet build && echo \"alias 'test-rerun=/workspaces/dotnet-test-rerun/src/bin/Debug/net9.0/test-rerun'\" >> /home/$USER/.bashrc && cd /workspaces/dotnet-test-rerun/docs && bundle install"
+    "postCreateCommand": 
+    {
+        "build": "dotnet tool restore && dotnet build",
+        "alias": "echo \"alias 'test-rerun=/workspaces/dotnet-test-rerun/src/bin/Debug/net10.0/test-rerun'\" >> /home/$USER/.bashrc "
+    }
 }
