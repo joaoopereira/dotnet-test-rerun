@@ -50,7 +50,8 @@ The Husky pre-commit hook runs the unit tests on every `git commit` (~30s). The 
 ## Release and issue workflow (observed practice)
 
 - Fix or feature PRs are often opened by Copilot as drafts on `copilot/*` branches.
-- The maintainer publishes an alpha from the PR branch (`dotnet r bump` gives `chore(release): X.Y.Z-alpha.N` plus a tag and a GitHub pre-release). They then ask the reporter on the issue to try it.
-- When rebasing a PR branch, drop a `chore(release)` commit whose version is lower than `main`'s. The tag keeps the original commit.
+- To let a reporter try a PR, add the `preview` label. `.github/workflows/preview.yml` publishes `X.Y.Z-pr.<PR>.<run>` to NuGet and comments on the PR. Then share that version on the issue. See `RELEASE.md`.
+- Never commit version bumps (`dotnet r bump`) on PR branches. Version and CHANGELOG only change on `main`.
+- Older PRs may still contain `chore(release): X.Y.Z-alpha.N` commits from the previous process. Drop them when rebasing; the tags keep the original commits.
 - Never run `dotnet r bump:live` or merge PRs without the maintainer asking.
-- Skills: `triage-issues` (review issues, PRs, alphas and feedback), `add-cli-option`, `verify-end-to-end`.
+- Skills: `triage-issues` (review issues, PRs, preview packages and feedback), `add-cli-option`, `verify-end-to-end`.
