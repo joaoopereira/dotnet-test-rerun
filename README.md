@@ -207,6 +207,7 @@ docker run joaoopereira/dotnet-test-rerun:latest
 | `--verbosity, -v` | - | dotnet test verbosity level |
 | `--logPassedTests` | `false` | Log each passed test as it completes during execution |
 | `--logTestResults` | `false` | Log the result (passed/failed) of each individual test, independently of the dotnet test verbosity |
+| `--generateTestCommand` | `false` | Print a `dotnet test` command to run the tests still failing at the end |
 
 📘 **[View All Options](https://joaoopereira.github.io/dotnet-test-rerun/usage)** • **[Configuration Guide](https://joaoopereira.github.io/dotnet-test-rerun/configuration)** • **[Examples](https://joaoopereira.github.io/dotnet-test-rerun/examples)**
 

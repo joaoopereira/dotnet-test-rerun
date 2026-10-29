@@ -750,6 +750,116 @@ public class RerunCommandTests
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
     }
 
+    [Fact]
+    public async Task Run_TestsFailOnAllAttempts_WithGenerateTestCommand_LogsDotnetTestCommand()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, extraParams: "--generateTestCommand", filter: string.Empty);
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var trxFile = fileSystem.FileInfo.New("First.trx");
+        var testFilterCollection = new TestFilterCollection();
+        testFilterCollection.Add(new TestFilter(string.Empty,
+            new List<string>() { "FullyQualifiedName=Tests.TestA", "FullyQualifiedName=Tests.TestB" }));
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { trxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(testFilterCollection);
+
+        // Act
+        await command.Run();
+
+        // Assert
+        await dotNetTestRunner.Received(3).Test(config, directoryInfo.FullName);
+        logger.Received(1).Information("To run the failed tests:");
+        logger.Received(1).Information(
+            "dotnet test path --filter \"FullyQualifiedName=Tests.TestA | FullyQualifiedName=Tests.TestB\" --settings \"settings\"");
+    }
+
+    [Fact]
+    public async Task Run_TestsFailOnAllAttempts_WithoutGenerateTestCommand_DoesNotLogDotnetTestCommand()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, filter: string.Empty);
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var trxFile = fileSystem.FileInfo.New("First.trx");
+        var testFilterCollection = new TestFilterCollection();
+        testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() { "FullyQualifiedName=Tests.TestA" }));
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { trxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(testFilterCollection);
+
+        // Act
+        await command.Run();
+
+        // Assert
+        logger.DidNotReceive().Information("To run the failed tests:");
+        logger.DidNotReceive().Information(Arg.Is<string>(msg => msg.StartsWith("dotnet test")));
+    }
+
+    [Fact]
+    public async Task Run_TestsFailOnFirstRun_PassOnSecond_WithGenerateTestCommand_DoesNotLogDotnetTestCommand()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, extraParams: "--generateTestCommand", filter: string.Empty);
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var firstTrxFile = fileSystem.FileInfo.New("First.trx");
+        var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
+        var testFilterCollection = new TestFilterCollection();
+        testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() { "FullyQualifiedName=Tests.TestA" }));
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+            .Returns(testFilterCollection);
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+            .Returns(new TestFilterCollection());
+
+        // Act
+        await command.Run();
+
+        // Assert
+        logger.DidNotReceive().Information("To run the failed tests:");
+    }
+
     private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "", string filter = "--filter filter ")
     {
         var command = new Command("test-rerun");

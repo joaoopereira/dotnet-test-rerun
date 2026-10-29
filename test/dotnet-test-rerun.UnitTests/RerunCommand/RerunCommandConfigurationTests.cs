@@ -26,6 +26,7 @@ public class RerunCommandConfigurationUnitTests
     [InlineData("--loglevel", "Log Level")]
     [InlineData("--logPassedTests", "Logs each passed test as it completes during execution. This can produce a lot of output.")]
     [InlineData("--logTestResults", "Logs the result (passed/failed) of each individual test, independently of the dotnet test verbosity.")]
+    [InlineData("--generateTestCommand", "Prints a dotnet test command to run the tests that are still failing at the end of the execution.")]
     public void RerunCommandConfiguration_Set_ShouldConfigureOptions(string optionName, string description)
     {
         //Act
@@ -410,4 +411,78 @@ public class RerunCommandConfigurationUnitTests
         args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" -e \"var2=test2\" -e \"var=test\" --results-directory \"results-directory\"");
     }
 
+    [Fact]
+    public void RerunCommandConfiguration_GetValues_GenerateTestCommand_ShouldBeFalseByDefault()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path");
+
+        //Act
+        _configuration.GetValues(result);
+
+        //Assert
+        _configuration.GenerateTestCommand.Should().BeFalse();
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetValues_GenerateTestCommand_ShouldBeTrueWhenPassed()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path --generateTestCommand");
+
+        //Act
+        _configuration.GetValues(result);
+
+        //Assert
+        _configuration.GenerateTestCommand.Should().BeTrue();
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetArguments_WithGenerateTestCommand_ShouldNotForwardOptionToDotnetTest()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path --generateTestCommand");
+        _configuration.GetValues(result);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be("test path --logger \"trx\"");
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetFailedTestsCommand_ShouldBuildStandaloneDotnetTestCommand()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("path --settings settings --logger logger -c Release -f net8.0 " +
+                                   "--results-directory results-directory --no-build --rerunMaxAttempts 2 --generateTestCommand");
+        _configuration.GetValues(result);
+
+        //Act
+        var command = _configuration.GetFailedTestsCommand("FullyQualifiedName=Tests.TestA | FullyQualifiedName=Tests.TestB");
+
+        //Assert
+        command.Should().Be("dotnet test path --filter \"FullyQualifiedName=Tests.TestA | FullyQualifiedName=Tests.TestB\" " +
+                            "--settings \"settings\" -c \"Release\" --framework \"net8.0\"");
+    }
+
+    [Fact]
+    public void RerunCommandConfiguration_GetFailedTestsCommand_WithOriginalFilter_ShouldCombineFilters()
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse("--filter TestCategory=Integration");
+        _configuration.GetValues(result);
+
+        //Act
+        var command = _configuration.GetFailedTestsCommand("FullyQualifiedName=Tests.TestA");
+
+        //Assert
+        command.Should().Be("dotnet test --filter \"(TestCategory=Integration)&(FullyQualifiedName=Tests.TestA)\"");
+    }
 }

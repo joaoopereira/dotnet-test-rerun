@@ -104,6 +104,12 @@ test-rerun <path> [OPTIONS]
 - Failed tests also print the error message and stack trace
 - Example: `test-rerun test.dll --logTestResults`
 
+**`--generateTestCommand`**
+- Print a standalone `dotnet test` command that runs only the tests still failing at the end of the execution
+- Opt-in flag; nothing is printed when all tests pass
+- Useful to reproduce failures locally without `dotnet-test-rerun`
+- Example: `test-rerun test.dll --generateTestCommand`
+
 ### Build Configuration
 
 **`--configuration, -c <config>`**

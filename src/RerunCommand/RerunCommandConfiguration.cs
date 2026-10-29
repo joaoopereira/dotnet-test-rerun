@@ -34,6 +34,7 @@ public class RerunCommandConfiguration
     public IEnumerable<string>? EnvironmentVariables { get; internal set; }
     public bool LogPassedTests { get; internal set; }
     public bool LogTestResults { get; internal set; }
+    public bool GenerateTestCommand { get; internal set; }
     
     #endregion Properties
 
@@ -174,6 +175,12 @@ public class RerunCommandConfiguration
         Arity = ArgumentArity.Zero
     };
 
+    private readonly Option<bool> GenerateTestCommandOption = new("--generateTestCommand")
+    {
+        Description = "Prints a dotnet test command to run the tests that are still failing at the end of the execution.",
+        Arity = ArgumentArity.Zero
+    };
+
     #endregion Options
 
     private string? OriginalFilter;
@@ -209,6 +216,7 @@ public class RerunCommandConfiguration
         cmd.Options.Add(EnvironmentVariablesOption);
         cmd.Options.Add(LogPassedTestsOption);
         cmd.Options.Add(LogTestResultsOption);
+        cmd.Options.Add(GenerateTestCommandOption);
     }
 
     public void GetValues(ParseResult parseResult)
@@ -237,6 +245,7 @@ public class RerunCommandConfiguration
         EnvironmentVariables = parseResult.GetValue(EnvironmentVariablesOption);
         LogPassedTests = parseResult.GetValue(LogPassedTestsOption);
         LogTestResults = parseResult.GetValue(LogTestResultsOption);
+        GenerateTestCommand = parseResult.GetValue(GenerateTestCommandOption);
         
         //Store Original Values
         OriginalFilter = Filter;
@@ -261,6 +270,19 @@ public class RerunCommandConfiguration
             GetExtraArguments(),
             InlineRunSettings);
     
+    /// <summary>
+    /// Builds a standalone dotnet test command that runs only the given failed tests,
+    /// so it can be copied and executed without dotnet-test-rerun.
+    /// </summary>
+    /// <param name="failedTests">The filter with the failed tests.</param>
+    public string GetFailedTestsCommand(string failedTests)
+        => string.Concat("dotnet test",
+            string.IsNullOrWhiteSpace(Path) ? string.Empty : $" {Path}",
+            AddArguments(AppendFailedTests(failedTests), FilterOption),
+            AddArguments(Settings, SettingsOption),
+            AddArguments(Configuration, ConfigurationOption),
+            AddArguments(Framework, FrameworkOption));
+
     public string GetMergeCoverageArgumentList(string fileNames, string resultsDirectory)
         => string.Concat("merge ",
             $"-o {System.IO.Path.Combine(resultsDirectory, $"merged.{GetMergeExtension()}")} ",
