@@ -271,7 +271,9 @@ This builds images for both .NET 8.0 and 9.0 targets.
 
 See `RELEASE.md` for detailed release instructions.
 
-**Pre-release**:
+**Preview of a pull request**: add the `preview` label to the PR (see `RELEASE.md`). Never bump versions on PR branches.
+
+**Pre-release** (only on `main`):
 ```bash
 dotnet r bump  # Bumps to alpha version (e.g., 1.4.2-alpha.0)
 ```

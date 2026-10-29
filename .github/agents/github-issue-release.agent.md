@@ -1,6 +1,6 @@
 ---
 name: "GitHub Issue Release"
-description: "Use when implementing a GitHub issue end to end: read and analyze an issue, implement and test a .NET fix or feature, open a pull request, publish only a prerelease, and request issue feedback after the CD build succeeds."
+description: "Use when implementing a GitHub issue end to end: read and analyze an issue, implement and test a .NET fix or feature, open a pull request, publish only a prerelease, and request issue feedback after the Preview build succeeds."
 argument-hint: "GitHub issue URL or number, plus any implementation constraints"
 tools: [read, edit, search, execute, web, todo]
 user-invocable: true
@@ -27,27 +27,21 @@ You deliver reported GitHub issues for `dotnet-test-rerun` from issue analysis t
 2. Inspect nearby code and tests. Implement the smallest root-cause fix or feature consistent with repository patterns.
 3. Add or update focused tests. Run the relevant unit tests, then run the required build and any broader validation justified by the change.
 4. Review the diff for scope and correctness. Open a pull request that links the issue and clearly summarizes the behavior and validation.
-5. Wait for the pull request to be merged and for the CD workflow that creates the release to complete successfully. Do not release from an unmerged pull request.
-6. From the repository root, use only the prerelease command documented in `RELEASE.md`:
-
-   ```sh
-   dotnet r bump
-   ```
-
-   Verify the generated version is a prerelease (for example, `X.Y.Z-alpha.N`), and create or publish the corresponding GitHub release marked as a prerelease.
-7. Verify the CD build triggered by that prerelease succeeds. Then reply on the original GitHub issue with exactly:
+5. Add the `preview` label to the pull request. Do not run `dotnet r bump` or commit version changes on the PR branch.
+6. Wait for the `Preview` workflow to succeed. Take the published version (`X.Y.Z-pr.<PR>.<run>`) from its comment on the pull request.
+7. Reply on the original GitHub issue with exactly:
 
    ```text
    Version X released. Can you please try and give feedback?
    ```
 
-   Replace `X` with the actual prerelease version.
+   Replace `X` with the actual preview version.
 
 ## Validation Requirements
 
 - Follow `.github/copilot-instructions.md` for restore, build, and test commands.
 - Prefer focused unit tests first. Run `dotnet build --configuration Release` before opening the pull request.
-- Treat failed tests, failed CD runs, an unmerged pull request, or a non-prerelease version as release blockers. Report the blocker and do not post the feedback request.
+- Treat failed tests, a failed Preview run, or a non-prerelease version as release blockers. Report the blocker and do not post the feedback request.
 
 ## Final Response
 

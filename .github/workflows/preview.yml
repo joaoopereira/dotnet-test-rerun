@@ -1,0 +1,89 @@
+name: Preview
+
+# Publishes a prerelease NuGet package for a pull request without committing a version change.
+# Add the `preview` label to a PR to publish; every new push to a labelled PR publishes a new build.
+run-name: Preview - PR #${{ github.event.pull_request.number }}
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: 📦 Pack and Push preview nuget
+    # Secrets are not available to fork PRs, so only same-repository PRs can publish.
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'preview') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (github.event.action != 'labeled' || github.event.label.name == 'preview')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Get version
+        uses: kzrnm/get-net-sdk-project-versions-action@v3
+        id: get-version
+        with:
+          proj-path: src/dotnet-test-rerun.csproj
+
+      - name: Compute preview version
+        id: preview-version
+        env:
+          PROJECT_VERSION: ${{ steps.get-version.outputs.version }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          # 4.2.0 -> 4.2.1-pr.<pr>.<run>, so a preview sorts above the current release
+          # and below the next one.
+          base="${PROJECT_VERSION%%-*}"
+          if [ "$base" = "$PROJECT_VERSION" ]; then
+            IFS=. read -r major minor patch <<< "$base"
+            base="$major.$minor.$((patch + 1))"
+          fi
+          echo "version=$base-pr.$PR_NUMBER.$RUN_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: test
+        run: dotnet test test/dotnet-test-rerun.UnitTests/dotnet-test-rerun.UnitTests.csproj --configuration Release
+
+      - name: pack
+        run: dotnet pack src/dotnet-test-rerun.csproj --configuration Release /p:Version=${{ steps.preview-version.outputs.version }}
+
+      - name: push
+        run: dotnet nuget push src/nupkg/dotnet-test-rerun.${{ steps.preview-version.outputs.version }}.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+      - name: comment
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ steps.preview-version.outputs.version }}
+        with:
+          script: |
+            const version = process.env.VERSION;
+            const body = [
+              `📦 Preview package \`${version}\` published for ${context.payload.pull_request.head.sha.substring(0, 7)}.`,
+              '',
+              'It can take a few minutes to be indexed on NuGet. Install it with:',
+              '```bash',
+              `dotnet tool update --global dotnet-test-rerun --version ${version}`,
+              '```',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body,
+            });
