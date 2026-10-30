@@ -3,7 +3,6 @@ using AwesomeAssertions;
 using Spectre.Console;
 using Spectre.Console.Testing;
 using Xunit;
-using StatusContext = dotnet.test.rerun.Logging.StatusContext;
 
 namespace dotnet_test_rerun.UnitTest.Logging;
 
@@ -135,59 +134,8 @@ public class LoggerTests
             testConsole.Output.Should().Contain(exception.Message);
         }
 
-        [Fact]
-        public void LoggerTests_Status_ShouldWrite()
-        {
-            // Arrange
-            var testConsole = new TestConsole();
-            var logger = new Logger(testConsole);
-            var message = "test message";
-
-            // Act
-            logger.Status(message);
-
-            // Assert
-            testConsole.Output.Should().Contain(message);
-        }
         
-        [Fact]
-        public void LoggerTests_StatusWithAction_ShouldWrite()
-        {
-            // Arrange
-            var testConsole = new TestConsole();
-            var logger = new Logger(testConsole);
-            var message = "test message";
-            var actionCalled = false;
 
-            // Act
-            logger.Status(message, delegate(StatusContext context) { actionCalled = true; });
-
-            // Assert
-            testConsole.Output.Should().Contain(message);
-            actionCalled.Should().BeTrue();
-        }
-
-        [Fact]
-        public void LoggerTests_StatusWithActionAndContextUpdate_ShouldUpdateStatus()
-        {
-            // Arrange
-            var testConsole = new TestConsole();
-            var logger = new Logger(testConsole);
-            var message = "initial message";
-            var updatedMessage = "updated message";
-            var actionCalled = false;
-
-            // Act
-            logger.Status(message, context =>
-            {
-                actionCalled = true;
-                context.Status(updatedMessage);
-            });
-
-            // Assert
-            testConsole.Output.Should().Contain(updatedMessage);
-            actionCalled.Should().BeTrue();
-        }
 
         [Theory]
         [InlineData(LogLevel.Debug, "✓ test.name")]
@@ -243,18 +191,21 @@ public class LoggerTests
             stringWriter.ToString().Trim().Should().Be("✗ test.name");
         }
 
-        [Fact]
-        public void Render_Should_Write_Renderable()
+        [Theory]
+        [InlineData("value [x] and [/]")]
+        [InlineData("[red]not markup[/]")]
+        [InlineData("array[0]")]
+        public void LoggerTests_MessagesWithBrackets_ArePrintedAsIs(string message)
         {
             // Arrange
-            var testConsole = new TestConsole();
-            var logger = new Logger(testConsole);
-            var renderable = new Rule("test");
+            var stringWriter = new StringWriter();
+            Console.SetOut(stringWriter);
+            var logger = new Logger();
 
             // Act
-            logger.Render(renderable);
+            logger.Error(message);
 
             // Assert
-            testConsole.Output.Should().Contain("───────────────────────────────────── test ─────────────────────────────────────");
+            stringWriter.ToString().Trim().Should().Be(message);
         }
 }
