@@ -157,7 +157,7 @@ public class RerunCommandConfigurationUnitTests
         var args = _configuration.GetTestArgumentList("results-directory");
 
         //Assert
-        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\"");
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" --logger \"trx\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\"");
     }
 
     [Fact]
@@ -188,6 +188,24 @@ public class RerunCommandConfigurationUnitTests
 
         //Assert
         args.Should().Be("test path --logger \"trx\"");
+    }
+
+    [Theory]
+    [InlineData("--logger junit", "test path --logger \"junit\" --logger \"trx\"")]
+    [InlineData("--logger \"trx;LogFileName=results.trx\"", "test path --logger \"trx;LogFileName=results.trx\"")]
+    [InlineData("--logger TRX --logger junit", "test path --logger \"TRX\" --logger \"junit\"")]
+    public void RerunCommandConfiguration_GetArguments_AlwaysIncludesTrxLogger(string loggers, string expected)
+    {
+        //Arrange
+        _configuration.Set(Command);
+        var result = Command.Parse($"path {loggers}");
+        _configuration.GetValues(result);
+
+        //Act
+        var args = _configuration.GetTestArgumentList("");
+
+        //Assert
+        args.Should().Be(expected);
     }
 
     [Fact]
@@ -230,7 +248,7 @@ public class RerunCommandConfigurationUnitTests
         var args = _configuration.GetTestArgumentList("");
 
         //Assert
-        args.Should().Be("test");
+        args.Should().Be("test --logger \"trx\"");
     }
 
     [Fact]
@@ -373,7 +391,7 @@ public class RerunCommandConfigurationUnitTests
         var args = _configuration.GetTestArgumentList("results-directory");
 
         //Assert
-        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\" -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True");
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" --logger \"trx\" -c \"release\" -v \"Minimal\" --results-directory \"results-directory\" -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True");
     }
     
     [Fact]
@@ -390,7 +408,7 @@ public class RerunCommandConfigurationUnitTests
         var args = _configuration.GetTestArgumentList("results-directory");
 
         //Assert
-        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" -e \"var=test\" --results-directory \"results-directory\"");
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" --logger \"trx\" -c \"release\" -v \"Minimal\" -e \"var=test\" --results-directory \"results-directory\"");
     }
     
     [Fact]
@@ -407,7 +425,7 @@ public class RerunCommandConfigurationUnitTests
         var args = _configuration.GetTestArgumentList("results-directory");
 
         //Assert
-        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" -c \"release\" -v \"Minimal\" -e \"var2=test2\" -e \"var=test\" --results-directory \"results-directory\"");
+        args.Should().Be("test path --filter \"filter\" --settings \"settings\" --logger \"logger\" --logger \"trx\" -c \"release\" -v \"Minimal\" -e \"var2=test2\" -e \"var=test\" --results-directory \"results-directory\"");
     }
 
 }

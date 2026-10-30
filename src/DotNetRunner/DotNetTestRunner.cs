@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Abstractions;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
@@ -12,10 +13,12 @@ public class DotNetTestRunner : IDotNetTestRunner
     private readonly ILogger Log;
     private readonly ProcessStartInfo ProcessStartInfo;
     private readonly IProcessExecution ProcessExecution;
+    private readonly IFileSystem FileSystem;
     private string[] WellKnownErrors = { "No test source files were specified." };
 
     public DotNetTestRunner(ILogger logger,
-        IProcessExecution processExecution)
+        IProcessExecution processExecution,
+        IFileSystem fileSystem)
     {
         ProcessStartInfo = new()
         {
@@ -27,6 +30,7 @@ public class DotNetTestRunner : IDotNetTestRunner
         };
         Log = logger;
         ProcessExecution = processExecution;
+        FileSystem = fileSystem;
     }
 
     /// <summary>
@@ -36,7 +40,11 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// <param name="resultsDirectory">The results directory.</param>
     /// <param name="cancellationToken">Cancels the run and stops the dotnet test process.</param>
     public async Task Test(RerunCommandConfiguration config, string resultsDirectory, CancellationToken cancellationToken = default)
-        => await Run(config.GetTestArgumentList(resultsDirectory), cancellationToken);
+    {
+        var trxFilesBeforeRun = GetTrxFiles(resultsDirectory);
+        await Run(config.GetTestArgumentList(resultsDirectory), cancellationToken);
+        HandleProcessEnd(HaveProducedTrxFiles(resultsDirectory, trxFilesBeforeRun));
+    }
 
     public ErrorCode GetErrorCode()
         => ErrorCode;
@@ -56,68 +64,76 @@ public class DotNetTestRunner : IDotNetTestRunner
         ProcessExecution.FetchOutput(ps!);
         ProcessExecution.FetchError(ps!);
         ExitCode = await ProcessExecution.End(ps!, cancellationToken);
-
-        HandleProcessEnd();
     }
 
     /// <summary>
-    /// Handles the process end.
+    /// Classifies how dotnet test ended. Structured signals come first: a non-zero exit code
+    /// with TRX files produced by this run means tests failed (or the run was aborted), which the
+    /// TRX analysis handles. The console text is only a fallback, as it is localised.
     /// </summary>
-    /// <exception cref="RerunException">command:\n\n\t\tdotnet {ProcessStartInfo.Arguments}</exception>
-    private void HandleProcessEnd()
+    /// <exception cref="RerunException">dotnet test failed for a reason other than failed tests</exception>
+    private void HandleProcessEnd(bool haveProducedTrxFiles)
     {
-        if (ExitCode != 0)
-        {
-            if (IsWellKnownError())
-            {
-                ErrorCode = ErrorCode.WellKnownError;
-                Log.Warning(ProcessExecution.GetError());
-            }
-            else if (HaveFailedTests() || HaveSimpleFailedTests() || HaveTestHostCrash())
-            {
-                ErrorCode = ErrorCode.FailedTests;
-            }
-            else
-            {
-                ErrorCode = ErrorCode.Error;
-                Log.Verbose(ProcessExecution.GetError());
-                Log.Verbose($"Exit code {ExitCode}.");
-                throw new RerunException($"command: dotnet {ProcessStartInfo.Arguments} exited with code {ExitCode}. \n\nError message: {ProcessExecution.GetError()}");
-            }
-        }
-        else
+        if (ExitCode == 0)
         {
             ErrorCode = ErrorCode.Success;
         }
+        else if (haveProducedTrxFiles)
+        {
+            ErrorCode = ErrorCode.FailedTests;
+        }
+        else if (IsWellKnownError())
+        {
+            ErrorCode = ErrorCode.WellKnownError;
+            Log.Warning(ProcessExecution.GetError());
+        }
+        else if (HaveFailedTestsInOutput())
+        {
+            Log.Debug("No TRX file was produced; detected failed tests from the dotnet test output.");
+            ErrorCode = ErrorCode.FailedTests;
+        }
+        else
+        {
+            ErrorCode = ErrorCode.Error;
+            Log.Verbose(ProcessExecution.GetError());
+            Log.Verbose($"Exit code {ExitCode}.");
+            throw new RerunException($"command: dotnet {ProcessStartInfo.Arguments} exited with code {ExitCode}. \n\nError message: {ProcessExecution.GetError()}");
+        }
     }
 
     /// <summary>
-    /// Determines whether [is well known error] [the specified exit code].
+    /// Compares the TRX files before and after the run instead of using timestamps,
+    /// as file system timestamps can lag behind the system clock.
     /// </summary>
-    /// <returns>
-    ///   <c>true</c> if [is well known error] [the specified exit code]; otherwise, <c>false</c>.
-    /// </returns>
-    private bool IsWellKnownError() => ExitCode == 1 && WellKnownErrors.Contains(ProcessExecution.GetError());
+    private bool HaveProducedTrxFiles(string resultsDirectory, IReadOnlyDictionary<string, DateTime> trxFilesBeforeRun)
+        => GetTrxFiles(resultsDirectory).Any(file =>
+            !trxFilesBeforeRun.TryGetValue(file.Key, out var lastWriteTime) || lastWriteTime != file.Value);
+
+    private IReadOnlyDictionary<string, DateTime> GetTrxFiles(string resultsDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(resultsDirectory))
+            return new Dictionary<string, DateTime>();
+
+        var directory = FileSystem.DirectoryInfo.New(resultsDirectory);
+        return directory.Exists
+            ? directory.EnumerateFiles("*.trx").ToDictionary(file => file.FullName, file => file.LastWriteTimeUtc)
+            : new Dictionary<string, DateTime>();
+    }
+
+    private bool IsWellKnownError()
+    {
+        var error = ProcessExecution.GetError();
+        return WellKnownErrors.Any(wellKnownError => error.Contains(wellKnownError));
+    }
 
     /// <summary>
-    /// Check if the output of dotnet test have in the last line failed tests
+    /// Fallback for runs without TRX output: English dotnet test summary or test host crash messages.
     /// </summary>
-    /// <returns></returns>
-    private bool HaveFailedTests() => ExitCode == 1 &&
-                                      ProcessExecution.GetOutput().Contains("Failed!  - Failed:");
-    
-    /// <summary>
-    /// Check if the output of dotnet test have in the last line failed tests
-    /// </summary>
-    /// <returns></returns>
-    private bool HaveSimpleFailedTests() => ExitCode == 1 &&
-                                      ProcessExecution.GetOutput().Contains("Failed:");
-    
-    /// <summary>
-    /// Check if the test host process crashed during test execution
-    /// </summary>
-    /// <returns></returns>
-    private bool HaveTestHostCrash() => ExitCode == 1 &&
-                                       (ProcessExecution.GetOutput().Contains("Test host process crashed") ||
-                                        ProcessExecution.GetOutput().Contains("Test Run Aborted"));
+    private bool HaveFailedTestsInOutput()
+    {
+        var output = ProcessExecution.GetOutput();
+        return output.Contains("Failed:") ||
+               output.Contains("Test host process crashed") ||
+               output.Contains("Test Run Aborted");
+    }
 }

@@ -224,6 +224,50 @@ public class DotNetTestRerunTests
         Environment.ExitCode.Should().Be(0);
     }
 
+    [Fact]
+    public async Task DotnetTestRerun_FailingXUnit_WithNonEnglishOutput_PassOnSecond()
+    {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
+        var previousLanguage = Environment.GetEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE");
+        Environment.SetEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "pt-BR");
+
+        try
+        {
+            // Act
+            var output = await RunDotNetTestRerunAndCollectOutputMessage("XUnitTestPassOnSecondRunExample", dir: testDir);
+
+            // Assert
+            output.Should().Contain("Rerun filter: FullyQualifiedName=XUnitTestPassOnSecondRunExample.SimpleTest", Exactly.Once());
+            FileSystem.Directory.EnumerateFiles(testDir, "*trx").Should().HaveCount(2);
+            Environment.ExitCode.Should().Be(0);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", previousLanguage);
+        }
+    }
+
+    [Fact]
+    public async Task DotnetTestRerun_FailingXUnit_WithoutTrxLogger_PassOnSecond()
+    {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("XUnitTestPassOnSecondRunExample",
+            "--logger \"console;verbosity=normal\"", dir: testDir);
+
+        // Assert
+        output.Should().Contain("Rerun filter: FullyQualifiedName=XUnitTestPassOnSecondRunExample.SimpleTest", Exactly.Once());
+        FileSystem.Directory.EnumerateFiles(testDir, "*trx").Should().HaveCount(2);
+        Environment.ExitCode.Should().Be(0);
+    }
+
     [InlineData("normal")]
     [InlineData("quiet")]
     [InlineData("minimal")]
@@ -597,7 +641,7 @@ public class DotNetTestRerunTests
 
         RerunCommand rerunCommand = new RerunCommand(logger,
             rerunCommandConfiguration,
-            new DotNetTestRunner(logger, new ProcessExecution(logger)),
+            new DotNetTestRunner(logger, new ProcessExecution(logger), FileSystem),
             new DotNetCoverageRunner(logger, new ProcessExecution(logger)),
             FileSystem,
             new TestResultsAnalyzer(logger));
