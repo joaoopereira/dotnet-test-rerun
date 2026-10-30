@@ -1,24 +1,21 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using dotnet.test.rerun.Configuration;
 using dotnet.test.rerun.Execution;
 using dotnet.test.rerun.Logging;
-using dotnet.test.rerun.RerunCommand;
 
 namespace dotnet.test.rerun.DotNetRunner;
 
 public class DotNetCoverageRunner : IDotNetCoverageRunner
 {
-    private int ExitCode;
+    private static readonly string[] SearchPatterns = { "*.coverage", "*.cobertura*" };
     private readonly ILogger Log;
-    private string CommandLine = string.Empty;
-    private readonly IProcessExecution ProcessExecution;
-    private string[] SearchPatterns = { "*.coverage", "*.cobertura*" }; 
+    private readonly IProcessRunner ProcessRunner;
 
     public DotNetCoverageRunner(ILogger logger,
-        IProcessExecution processExecution)
+        IProcessRunner processRunner)
     {
         Log = logger;
-        ProcessExecution = processExecution;
+        ProcessRunner = processRunner;
     }
 
     /// <summary>
@@ -28,71 +25,48 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
     /// <param name="resultsDirectory">The results directory.</param>
     /// <param name="startDate">Initial date to look for files.</param>
     /// <param name="cancellationToken">Cancels the merge and stops the dotnet-coverage process.</param>
+    /// <exception cref="RerunException">dotnet-coverage could not run or exited with a non-zero code</exception>
     public async Task Merge(RerunOptions options, string resultsDirectory, DateTime startDate, CancellationToken cancellationToken = default)
     {
         var arguments = CoverageMergeArguments.Build(options, GetCoverageFiles(resultsDirectory, startDate), resultsDirectory);
-        await Run(arguments, cancellationToken);
-    }
-
-    /// <summary>
-    /// Runs dotnet command with the specified arguments.
-    /// </summary>
-    /// <param name="arguments">The arguments.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    private async Task Run(IReadOnlyList<string> arguments, CancellationToken cancellationToken)
-    {
         var processStartInfo = new ProcessStartInfo
         {
             FileName = "dotnet-coverage",
-            WorkingDirectory = "/",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
+            WorkingDirectory = "/"
         };
         foreach (var argument in arguments)
             processStartInfo.ArgumentList.Add(argument);
-        CommandLine = CommandLineDisplay.Render(processStartInfo.FileName, arguments);
+        var commandLine = CommandLineDisplay.Render(processStartInfo.FileName, arguments);
 
         Log.Debug($"working directory: {processStartInfo.WorkingDirectory}");
-        Log.Debug($"forking {CommandLine}");
-        string unexpectedError = string.Empty;
+        Log.Debug($"forking {commandLine}");
+
+        int exitCode;
+        string error;
         try
         {
-            using Process? ps = await ProcessExecution.Start(processStartInfo);
-            ProcessExecution.FetchOutput(ps!);
-            ProcessExecution.FetchError(ps!);
-            ExitCode = await ProcessExecution.End(ps!, cancellationToken);
+            var result = await ProcessRunner.RunAsync(processStartInfo, cancellationToken);
+            exitCode = result.ExitCode;
+            error = result.Error;
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
-            ExitCode = 1;
-            unexpectedError = e.Message;
+            exitCode = 1;
+            error = e.Message;
         }
-        HandleProcessEnd(unexpectedError);
-    }
 
-    /// <summary>
-    /// Handles the process end.
-    /// </summary>
-    /// <exception cref="RerunException">dotnet-coverage exited with a non-zero code</exception>
-    private void HandleProcessEnd(string unexpectedError)
-    {
-        if (ExitCode != 0)
+        if (exitCode != 0)
         {
-            Log.Verbose(GetErrorMessage(unexpectedError));
-            Log.Verbose($"Exit code {ExitCode}.");
-            throw new RerunException($"command failed:\n{CommandLine} \n" +
-                                     $"reason: {GetErrorMessage(unexpectedError)}");
+            Log.Verbose(error);
+            Log.Verbose($"Exit code {exitCode}.");
+            throw new RerunException($"command failed:\n{commandLine} \nreason: {error}");
         }
     }
 
-    private IEnumerable<string> GetCoverageFiles(string resultsDirectory, DateTime startDate)
+    private static IEnumerable<string> GetCoverageFiles(string resultsDirectory, DateTime startDate)
         => SearchPatterns.SelectMany(pattern =>
                         Directory.GetFiles(resultsDirectory, pattern, SearchOption.AllDirectories))
                         .Select(file => new FileInfo(file))
                         .Where(fileInfo => fileInfo.CreationTime >= startDate)
                         .Select(fileInfo => fileInfo.FullName);
-    
-    private string GetErrorMessage(string unexpectedError)
-        => string.IsNullOrWhiteSpace(unexpectedError) ? ProcessExecution.GetError() : unexpectedError;
 }

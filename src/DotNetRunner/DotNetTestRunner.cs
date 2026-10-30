@@ -1,74 +1,54 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO.Abstractions;
 using dotnet.test.rerun.Configuration;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Execution;
 using dotnet.test.rerun.Logging;
-using dotnet.test.rerun.RerunCommand;
 
 namespace dotnet.test.rerun.DotNetRunner;
 
 public class DotNetTestRunner : IDotNetTestRunner
 {
-    private ErrorCode ErrorCode;
-    private int ExitCode;
+    private static readonly string[] WellKnownErrors = { "No test source files were specified." };
     private readonly ILogger Log;
-    private string CommandLine = string.Empty;
-    private readonly IProcessExecution ProcessExecution;
+    private readonly IProcessRunner ProcessRunner;
     private readonly IFileSystem FileSystem;
-    private string[] WellKnownErrors = { "No test source files were specified." };
 
     public DotNetTestRunner(ILogger logger,
-        IProcessExecution processExecution,
+        IProcessRunner processRunner,
         IFileSystem fileSystem)
     {
         Log = logger;
-        ProcessExecution = processExecution;
+        ProcessRunner = processRunner;
         FileSystem = fileSystem;
     }
 
     /// <summary>
-    /// Runs dotnet test with the specified arguments
+    /// Runs dotnet test and classifies how it ended.
     /// </summary>
     /// <param name="options">The test-rerun options.</param>
     /// <param name="request">The filter, framework and results directory of this run.</param>
     /// <param name="cancellationToken">Cancels the run and stops the dotnet test process.</param>
-    public async Task Test(RerunOptions options, RunRequest request, CancellationToken cancellationToken = default)
+    /// <exception cref="RerunException">dotnet test failed for a reason other than failed tests</exception>
+    public async Task<TestRunResult> Test(RerunOptions options, RunRequest request, CancellationToken cancellationToken = default)
     {
-        var trxFilesBeforeRun = GetTrxFiles(request.ResultsDirectory);
-        await Run(DotNetTestArguments.Build(options, request), cancellationToken);
-        HandleProcessEnd(HaveProducedTrxFiles(request.ResultsDirectory, trxFilesBeforeRun));
-    }
-
-    public ErrorCode GetErrorCode()
-        => ErrorCode;
-
-    /// <summary>
-    /// Runs dotnet test with the specified arguments.
-    /// </summary>
-    /// <param name="arguments">The arguments.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    private async Task Run(IReadOnlyList<string> arguments, CancellationToken cancellationToken)
-    {
+        var arguments = DotNetTestArguments.Build(options, request);
         var processStartInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            WorkingDirectory = Directory.GetCurrentDirectory(),
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
+            WorkingDirectory = Directory.GetCurrentDirectory()
         };
         foreach (var argument in arguments)
             processStartInfo.ArgumentList.Add(argument);
-        CommandLine = CommandLineDisplay.Render(processStartInfo.FileName, arguments);
+        var commandLine = CommandLineDisplay.Render(processStartInfo.FileName, arguments);
 
         Log.Debug($"working directory: {processStartInfo.WorkingDirectory}");
-        Log.Debug($"forking {CommandLine}");
+        Log.Debug($"forking {commandLine}");
 
-        using Process? ps = await ProcessExecution.Start(processStartInfo);
-        ProcessExecution.FetchOutput(ps!);
-        ProcessExecution.FetchError(ps!);
-        ExitCode = await ProcessExecution.End(ps!, cancellationToken);
+        var trxFilesBeforeRun = GetTrxFiles(request.ResultsDirectory);
+        var result = await ProcessRunner.RunAsync(processStartInfo, cancellationToken);
+        var outcome = Classify(result, HaveProducedTrxFiles(request.ResultsDirectory, trxFilesBeforeRun), commandLine);
+        return new TestRunResult(outcome, result.ExitCode);
     }
 
     /// <summary>
@@ -76,34 +56,29 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// with TRX files produced by this run means tests failed (or the run was aborted), which the
     /// TRX analysis handles. The console text is only a fallback, as it is localised.
     /// </summary>
-    /// <exception cref="RerunException">dotnet test failed for a reason other than failed tests</exception>
-    private void HandleProcessEnd(bool haveProducedTrxFiles)
+    private ErrorCode Classify(ProcessResult result, bool haveProducedTrxFiles, string commandLine)
     {
-        if (ExitCode == 0)
+        if (result.ExitCode == 0)
+            return ErrorCode.Success;
+
+        if (haveProducedTrxFiles)
+            return ErrorCode.FailedTests;
+
+        if (IsWellKnownError(result.Error))
         {
-            ErrorCode = ErrorCode.Success;
+            Log.Warning(result.Error);
+            return ErrorCode.WellKnownError;
         }
-        else if (haveProducedTrxFiles)
-        {
-            ErrorCode = ErrorCode.FailedTests;
-        }
-        else if (IsWellKnownError())
-        {
-            ErrorCode = ErrorCode.WellKnownError;
-            Log.Warning(ProcessExecution.GetError());
-        }
-        else if (HaveFailedTestsInOutput())
+
+        if (HaveFailedTestsInOutput(result.Output))
         {
             Log.Debug("No TRX file was produced; detected failed tests from the dotnet test output.");
-            ErrorCode = ErrorCode.FailedTests;
+            return ErrorCode.FailedTests;
         }
-        else
-        {
-            ErrorCode = ErrorCode.Error;
-            Log.Verbose(ProcessExecution.GetError());
-            Log.Verbose($"Exit code {ExitCode}.");
-            throw new RerunException($"command: {CommandLine} exited with code {ExitCode}. \n\nError message: {ProcessExecution.GetError()}");
-        }
+
+        Log.Verbose(result.Error);
+        Log.Verbose($"Exit code {result.ExitCode}.");
+        throw new RerunException($"command: {commandLine} exited with code {result.ExitCode}. \n\nError message: {result.Error}");
     }
 
     /// <summary>
@@ -125,20 +100,14 @@ public class DotNetTestRunner : IDotNetTestRunner
             : new Dictionary<string, DateTime>();
     }
 
-    private bool IsWellKnownError()
-    {
-        var error = ProcessExecution.GetError();
-        return WellKnownErrors.Any(wellKnownError => error.Contains(wellKnownError));
-    }
+    private static bool IsWellKnownError(string error)
+        => WellKnownErrors.Any(error.Contains);
 
     /// <summary>
     /// Fallback for runs without TRX output: English dotnet test summary or test host crash messages.
     /// </summary>
-    private bool HaveFailedTestsInOutput()
-    {
-        var output = ProcessExecution.GetOutput();
-        return output.Contains("Failed:") ||
-               output.Contains("Test host process crashed") ||
-               output.Contains("Test Run Aborted");
-    }
+    private static bool HaveFailedTestsInOutput(string output)
+        => output.Contains("Failed:") ||
+           output.Contains("Test host process crashed") ||
+           output.Contains("Test Run Aborted");
 }

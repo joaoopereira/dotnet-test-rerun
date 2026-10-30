@@ -27,7 +27,7 @@ Reference implementations: `--logPassedTests` (forwarded to `dotnet test` as an 
 
 ## 2. Behaviour
 
-The rerun loop and end-of-run logic live in `src/RerunCommand/RerunCommand.cs`. Anything that needs TRX files must run before `DeleteFiles()`, because `--deleteReports` removes them.
+The rerun loop and end-of-run logic live in `src/Execution/RerunOrchestrator.cs`. Anything that needs TRX files must run before the `--deleteReports` block, which removes them.
 
 ## 3. Tests (`test/dotnet-test-rerun.UnitTests/`)
 
@@ -35,10 +35,10 @@ The rerun loop and end-of-run logic live in `src/RerunCommand/RerunCommand.cs`. 
   - Add an `[InlineData("--myFlag", "<exact description>")]` to `RerunCliDefinition_AddTo_ShouldConfigureOptions`.
   - Test the default value and the value when passed. `RerunCliDefinition_ToOptions_DefaultsMatchRerunOptionsDefaults` fails if the `RerunOptions` default differs from the CLI default.
 - `Execution/DotNetTestArgumentsTests.cs`: test the `DotNetTestArguments.Build` output.
-- `RerunCommand/RerunCommandTests.cs`:
-  - Use `var config = InitialConfigurationSetup(extraParams: "--myFlag", filter: string.Empty);` and `command.Run(config)`.
+- `Execution/RerunOrchestratorTests.cs`:
+  - Use `var config = InitialConfigurationSetup(extraParams: "--myFlag", filter: string.Empty);` and `command.RunAsync(config)`.
   - Use `Substitute.For<ILogger>()` when you need to assert log output (`logger.Received(1).Information("...")`).
-  - `GetErrorCode().Returns(ErrorCode.FailedTests)` makes every attempt fail. `.Returns(ErrorCode.FailedTests, ErrorCode.Success)` makes the run pass on the second attempt.
+  - `ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests)` makes every attempt fail. `ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success)` makes the run pass on the second attempt.
 
 ## 4. Docs (all three)
 

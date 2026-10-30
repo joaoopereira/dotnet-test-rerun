@@ -7,7 +7,7 @@ using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Cli;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
-using dotnet.test.rerun.RerunCommand;
+using dotnet.test.rerun.Execution;
 using AwesomeAssertions;
 using Xunit.Abstractions;
 
@@ -639,14 +639,15 @@ public class DotNetTestRerunTests
 
         var options = cliDefinition.ToOptions(result);
 
-        RerunCommand rerunCommand = new RerunCommand(logger,
-            cliDefinition,
-            new DotNetTestRunner(logger, new ProcessExecution(logger), FileSystem),
-            new DotNetCoverageRunner(logger, new ProcessExecution(logger)),
+        var processRunner = new ProcessRunner(logger);
+        var orchestrator = new RerunOrchestrator(logger,
+            new DotNetTestRunner(logger, processRunner, FileSystem),
+            new DotNetCoverageRunner(logger, processRunner),
             FileSystem,
             new TestResultsAnalyzer(logger));
 
-        await rerunCommand.Run(options);
+        var outcome = await orchestrator.RunAsync(options);
+        Environment.ExitCode = RerunRootCommand.ToExitCode(outcome);
 
         return stringWriter.ToString().Trim();
     }

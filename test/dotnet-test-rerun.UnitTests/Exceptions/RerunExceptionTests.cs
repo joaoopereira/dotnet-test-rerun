@@ -1,5 +1,4 @@
 ﻿using dotnet.test.rerun;
-using dotnet.test.rerun.RerunCommand;
 using AwesomeAssertions;
 using Xunit;
 
@@ -11,7 +10,7 @@ public class RerunExceptionTests
     public void RerunExceptionTests_ConstructorWithoutMessage_ThrowsException()
     {
         //Arrange
-        var message = "Exception of type 'dotnet.test.rerun.RerunCommand.RerunException' was thrown.";
+        var message = "Exception of type 'dotnet.test.rerun.RerunException' was thrown.";
         
         //Act
         var exception = new RerunException();

@@ -34,7 +34,7 @@ The Husky pre-commit hook runs the unit tests on every `git commit` (~30s). The 
 |---|---|
 | New CLI option | `src/Cli/RerunCliDefinition.cs` + `src/Configuration/RerunOptions.cs` (see skill `add-cli-option`) |
 | Arguments passed to `dotnet test` / `dotnet-coverage` | `src/Execution/DotNetTestArguments.cs`, `CoverageMergeArguments.cs` (argument lists, quoted by the runtime) |
-| Rerun loop, end-of-run behaviour | `src/RerunCommand/RerunCommand.cs` |
+| Rerun loop, end-of-run behaviour | `src/Execution/RerunOrchestrator.cs` (returns a `RerunOutcome`; `Cli/RerunRootCommand.cs` maps it to the exit code) |
 | TRX parsing and filter building | `src/Analyzers/TestResultsAnalyzer.cs` |
 | Exit-code and failure detection from `dotnet test` output | `src/DotNetRunner/DotNetTestRunner.cs` |
 | Console output (Spectre markup, escaped) | `src/Logging/Logger.cs` |

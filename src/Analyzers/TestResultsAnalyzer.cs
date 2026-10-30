@@ -12,12 +12,10 @@ using TrxFileParser.Models;
 public class TestResultsAnalyzer : ITestResultsAnalyzer
 {
     private readonly ILogger Log;
-    public HashSet<string> reportFiles;
 
     public TestResultsAnalyzer(ILogger logger)
     {
         Log = logger;
-        reportFiles = new();
     }
 
     public TestFilterCollection GetFailedTestsFilter(IFileInfo[] trxFiles)
@@ -40,7 +38,6 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         foreach (var trxFile in trxFiles)
         {
             var trx = TrxDeserializer.Deserialize(trxFile.FullName);
-            reportFiles.Add(trxFile.FullName);
 
             var fullMethodNameByTestId = trx.TestDefinitions?.UnitTests
                 .ToDictionary(x => x.Id, x => $"{x.TestMethod.ClassName}.{x.TestMethod.Name}") ?? new();
@@ -74,20 +71,10 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             ? resultsDirectory.EnumerateFiles("*.trx").Where(file => file.CreationTime >= startSearchTime).ToArray()
             : new IFileInfo[0];
 
-    public void AddLastTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
-    {
-        foreach (var fileInfo in GetTrxFiles(resultsDirectory, startSearchTime))
-            reportFiles.Add(fileInfo.FullName);
-    }
-
-    public HashSet<string> GetReportFiles()
-        => reportFiles;
-
     private (TestFilter Filter, int TotalTests) GetFailedTestsFilter(IFileInfo trxFile)
     {
         const string outcome = "Failed";
         var trx = TrxDeserializer.Deserialize(trxFile.FullName);
-        reportFiles.Add(trxFile.FullName);
         var totalTests = trx.ResultSummary?.Counters?.Total ?? 0;
 
         var fullMethodNameByTestId = trx.TestDefinitions?.UnitTests
