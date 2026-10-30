@@ -202,7 +202,7 @@ docker run joaoopereira/dotnet-test-rerun:latest
 | Option | Default | Description |
 |--------|---------|-------------|
 | `--logger, -l` | `trx` | Test result logger (trx, junit, console) |
-| `--results-directory, -r` | - | Output directory for test results |
+| `--results-directory, -r` | `.` | Output directory for test results; each attempt writes to an `attempt-N` subdirectory |
 | `--loglevel` | `Verbose` | Tool log level |
 | `--verbosity, -v` | - | dotnet test verbosity level |
 | `--logPassedTests` | `false` | Log each passed test as it completes during execution |

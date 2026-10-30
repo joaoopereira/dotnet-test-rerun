@@ -315,6 +315,20 @@ Specify where test results are stored:
 test-rerun test.dll --results-directory ./TestResults
 ```
 
+Each attempt gets its own subdirectory, so the results of one attempt are never mixed up with another's:
+
+```
+TestResults/
+  attempt-0/            # initial run
+  attempt-1/            # first rerun (all its dotnet test invocations)
+  attempt-2/
+  merged.cobertura.xml  # --mergeCoverageFormat output
+```
+
+`attempt-N` directories left by a previous run in the same results directory are deleted when test-rerun starts.
+
+> **Migrating from 4.x:** reports used to be written directly to the results directory. Point CI steps that publish or read TRX/JUnit files at a recursive pattern, for example `TestResults/**/*.trx`. The final results are in the `attempt-N` directory with the highest N.
+
 Clean up results after execution:
 
 ```bash

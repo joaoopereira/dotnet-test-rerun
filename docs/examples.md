@@ -145,7 +145,7 @@ test:
   artifacts:
     when: always
     reports:
-      junit: TestResults/junit-results.xml
+      junit: TestResults/**/junit-results.xml
 ```
 
 ## Code Coverage Examples

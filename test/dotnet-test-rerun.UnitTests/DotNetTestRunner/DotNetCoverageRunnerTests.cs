@@ -38,7 +38,7 @@ public class DotNetCoverageRunnerTests
             .Returns(new ProcessResult(0, string.Empty, string.Empty));
 
         // Act
-        var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
+        var act = () => dotNetCoverageRunner.Merge(configuration, new[] { _dir }, _dir);
 
         // Assert
         await act.Should().NotThrowAsync<RerunException>();
@@ -63,7 +63,7 @@ public class DotNetCoverageRunnerTests
         TestUtilities.CopyFixture("DotNetCoverage", new DirectoryInfo(_dir));
 
         // Act
-        var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
+        var act = () => dotNetCoverageRunner.Merge(configuration, new[] { _dir }, _dir);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentOutOfRangeException>().WithMessage("Specified argument was out of the range of valid values. (Parameter 'MergeCoverageFormat')");
@@ -89,7 +89,7 @@ public class DotNetCoverageRunnerTests
             .Returns(new ProcessResult(1, string.Empty, errorMessage));
 
         // Act
-        var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
+        var act = () => dotNetCoverageRunner.Merge(configuration, new[] { _dir }, _dir);
 
         // Assert
         await act.Should().ThrowAsync<RerunException>().WithMessage($"*{errorMessage}");
@@ -116,22 +116,21 @@ public class DotNetCoverageRunnerTests
             .ThrowsAsync(new Exception(errorMessage));
 
         // Act
-        var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
+        var act = () => dotNetCoverageRunner.Merge(configuration, new[] { _dir }, _dir);
 
         // Assert
         await act.Should().ThrowAsync<RerunException>().WithMessage($"*{errorMessage}");
     }
 
     [Fact]
-    public async Task Merge_PassesOnlyCoverageFilesCreatedSinceStartDate()
+    public async Task Merge_PassesOnlyCoverageFilesFromTheSearchedDirectories()
     {
         // Arrange
         var fileSystem = new System.IO.Abstractions.TestingHelpers.MockFileSystem();
         var resultsDirectory = fileSystem.Path.GetFullPath("results");
-        fileSystem.AddFile(fileSystem.Path.Combine(resultsDirectory, "old.coverage"),
-            new System.IO.Abstractions.TestingHelpers.MockFileData("") { CreationTime = new DateTime(2020, 1, 1) });
-        fileSystem.AddFile(fileSystem.Path.Combine(resultsDirectory, "run", "new.cobertura.xml"),
-            new System.IO.Abstractions.TestingHelpers.MockFileData("") { CreationTime = new DateTime(2030, 1, 1) });
+        var attemptDirectory = fileSystem.Path.Combine(resultsDirectory, "attempt-0");
+        fileSystem.AddFile(fileSystem.Path.Combine(resultsDirectory, "previous", "old.coverage"), new System.IO.Abstractions.TestingHelpers.MockFileData(""));
+        fileSystem.AddFile(fileSystem.Path.Combine(attemptDirectory, "guid", "new.cobertura.xml"), new System.IO.Abstractions.TestingHelpers.MockFileData(""));
         var processRunner = Substitute.For<IProcessRunner>();
         processRunner.RunAsync(Arg.Any<ProcessStartInfo>(), Arg.Any<CancellationToken>())
             .Returns(new ProcessResult(0, string.Empty, string.Empty));
@@ -139,11 +138,11 @@ public class DotNetCoverageRunnerTests
 
         // Act
         await dotNetCoverageRunner.Merge(new RerunOptions { MergeCoverageFormat = CoverageFormat.Cobertura },
-            resultsDirectory, new DateTime(2025, 1, 1));
+            new[] { attemptDirectory, fileSystem.Path.Combine(resultsDirectory, "attempt-1") }, resultsDirectory);
 
         // Assert
         await processRunner.Received(1).RunAsync(
-            Arg.Is<ProcessStartInfo>(psi => psi.ArgumentList.Contains(fileSystem.Path.Combine(resultsDirectory, "run", "new.cobertura.xml")) &&
+            Arg.Is<ProcessStartInfo>(psi => psi.ArgumentList.Contains(fileSystem.Path.Combine(attemptDirectory, "guid", "new.cobertura.xml")) &&
                                             !psi.ArgumentList.Any(argument => argument.EndsWith("old.coverage"))),
             Arg.Any<CancellationToken>());
     }

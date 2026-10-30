@@ -67,10 +67,10 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
             : fullMethodName;
     }
 
-    public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
+    public IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory)
         => resultsDirectory.Exists
-            ? resultsDirectory.EnumerateFiles("*.trx").Where(file => file.CreationTime >= startSearchTime).ToArray()
-            : new IFileInfo[0];
+            ? resultsDirectory.EnumerateFiles("*.trx", SearchOption.AllDirectories).ToArray()
+            : Array.Empty<IFileInfo>();
 
     private (TestFilter Filter, int TotalTests) GetFailedTestsFilter(IFileInfo trxFile)
     {

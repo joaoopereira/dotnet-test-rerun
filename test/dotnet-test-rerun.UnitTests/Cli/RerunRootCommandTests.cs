@@ -37,7 +37,7 @@ public class RerunRootCommandTests
         await parseResult.InvokeAsync();
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(Arg.Any<RerunOptions>(), Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        await dotNetTestRunner.Received(1).Test(Arg.Any<RerunOptions>(), Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class RerunRootCommandTests
         // Assert
         result.Should().Be(0);
         await dotNetTestRunner.Received(1).Test(Arg.Is<RerunOptions>(o => o.MsBuildArguments.Contains(msbuildArg)), Arg.Any<RunRequest>(), Arg.Any<CancellationToken>());
-        await dotNetTestRunner.Received(1).Test(Arg.Any<RerunOptions>(), Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        await dotNetTestRunner.Received(1).Test(Arg.Any<RerunOptions>(), Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class RerunRootCommandTests
         result.Should().Be(0);
         await dotNetTestRunner.Received(1).Test(Arg.Is<RerunOptions>(o => o.MsBuildArguments.Contains("/p:MyProperty=Value")), Arg.Any<RunRequest>(), Arg.Any<CancellationToken>());
         await dotNetTestRunner.Received(1).Test(Arg.Is<RerunOptions>(o => o.MsBuildArguments.Contains("-m:3")), Arg.Any<RunRequest>(), Arg.Any<CancellationToken>());
-        await dotNetTestRunner.Received(1).Test(Arg.Any<RerunOptions>(), Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        await dotNetTestRunner.Received(1).Test(Arg.Any<RerunOptions>(), Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
     }
 
     [Theory]
