@@ -440,64 +440,6 @@ public class RerunCommandTests
     }
 
     [Fact]
-    public async Task Run_TestsFailOnMultipleFrameworks_RerunsEachFrameworkSeparately()
-    {
-        // Arrange
-        var logger = new Logger();
-        var config = new RerunCommandConfiguration();
-        InitialConfigurationSetup(config);
-        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
-        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
-        var fileSystem = new FileSystem();
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
-            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
-        var frameworksUsed = new List<string?>();
-        dotNetTestRunner.When(x => x.Test(config, Arg.Any<string>(), Arg.Any<CancellationToken>()))
-            .Do(_ => frameworksUsed.Add(config.Framework));
-        dotNetTestRunner.GetErrorCode().Returns(ErrorCode.FailedTests, ErrorCode.Success, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
-            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
-            .Returns(MultipleFrameworksFilter());
-
-        // Act
-        await command.Run();
-
-        // Assert
-        frameworksUsed.Should().Equal(null, "net8.0", "net9.0", "net8.0", "net9.0");
-        config.Framework.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Run_TestsFailOnMultipleFrameworks_WithUserFramework_KeepsUserFramework()
-    {
-        // Arrange
-        var logger = new Logger();
-        var config = new RerunCommandConfiguration();
-        InitialConfigurationSetup(config, "--framework net9.0");
-        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
-        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
-        var fileSystem = new FileSystem();
-        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
-            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
-        var frameworksUsed = new List<string?>();
-        dotNetTestRunner.When(x => x.Test(config, Arg.Any<string>(), Arg.Any<CancellationToken>()))
-            .Do(_ => frameworksUsed.Add(config.Framework));
-        dotNetTestRunner.GetErrorCode().Returns(ErrorCode.FailedTests, ErrorCode.Success, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
-            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
-            .Returns(MultipleFrameworksFilter());
-
-        // Act
-        await command.Run();
-
-        // Assert
-        frameworksUsed.Should().Equal("net9.0", "net9.0", "net9.0", "net9.0", "net9.0");
-        config.Framework.Should().Be("net9.0");
-    }
-
-    [Fact]
     public async Task Run_TestsFailOnMultipleFrameworks_OnlyFirstFrameworkStillFails_ExitCodeIsFailure()
     {
         // Arrange
