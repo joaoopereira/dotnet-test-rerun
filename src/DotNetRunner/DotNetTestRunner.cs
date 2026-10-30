@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.IO.Abstractions;
+using dotnet.test.rerun.Configuration;
 using dotnet.test.rerun.Enums;
+using dotnet.test.rerun.Execution;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
 
@@ -11,7 +13,7 @@ public class DotNetTestRunner : IDotNetTestRunner
     private ErrorCode ErrorCode;
     private int ExitCode;
     private readonly ILogger Log;
-    private readonly ProcessStartInfo ProcessStartInfo;
+    private string CommandLine = string.Empty;
     private readonly IProcessExecution ProcessExecution;
     private readonly IFileSystem FileSystem;
     private string[] WellKnownErrors = { "No test source files were specified." };
@@ -20,14 +22,6 @@ public class DotNetTestRunner : IDotNetTestRunner
         IProcessExecution processExecution,
         IFileSystem fileSystem)
     {
-        ProcessStartInfo = new()
-        {
-            FileName = "dotnet",
-            WorkingDirectory = Directory.GetCurrentDirectory(),
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
         Log = logger;
         ProcessExecution = processExecution;
         FileSystem = fileSystem;
@@ -36,14 +30,14 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// <summary>
     /// Runs dotnet test with the specified arguments
     /// </summary>
-    /// <param name="config">The config.</param>
-    /// <param name="resultsDirectory">The results directory.</param>
+    /// <param name="options">The test-rerun options.</param>
+    /// <param name="request">The filter, framework and results directory of this run.</param>
     /// <param name="cancellationToken">Cancels the run and stops the dotnet test process.</param>
-    public async Task Test(RerunCommandConfiguration config, string resultsDirectory, CancellationToken cancellationToken = default)
+    public async Task Test(RerunOptions options, RunRequest request, CancellationToken cancellationToken = default)
     {
-        var trxFilesBeforeRun = GetTrxFiles(resultsDirectory);
-        await Run(config.GetTestArgumentList(resultsDirectory), cancellationToken);
-        HandleProcessEnd(HaveProducedTrxFiles(resultsDirectory, trxFilesBeforeRun));
+        var trxFilesBeforeRun = GetTrxFiles(request.ResultsDirectory);
+        await Run(DotNetTestArguments.Build(options, request), cancellationToken);
+        HandleProcessEnd(HaveProducedTrxFiles(request.ResultsDirectory, trxFilesBeforeRun));
     }
 
     public ErrorCode GetErrorCode()
@@ -54,13 +48,24 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// </summary>
     /// <param name="arguments">The arguments.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    private async Task Run(string arguments, CancellationToken cancellationToken)
+    private async Task Run(IReadOnlyList<string> arguments, CancellationToken cancellationToken)
     {
-        Log.Debug($"working directory: {ProcessStartInfo.WorkingDirectory}");
-        Log.Debug($"forking {arguments}");
-        ProcessStartInfo.Arguments = arguments;
+        var processStartInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            WorkingDirectory = Directory.GetCurrentDirectory(),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        foreach (var argument in arguments)
+            processStartInfo.ArgumentList.Add(argument);
+        CommandLine = CommandLineDisplay.Render(processStartInfo.FileName, arguments);
 
-        using Process? ps = await ProcessExecution.Start(ProcessStartInfo);
+        Log.Debug($"working directory: {processStartInfo.WorkingDirectory}");
+        Log.Debug($"forking {CommandLine}");
+
+        using Process? ps = await ProcessExecution.Start(processStartInfo);
         ProcessExecution.FetchOutput(ps!);
         ProcessExecution.FetchError(ps!);
         ExitCode = await ProcessExecution.End(ps!, cancellationToken);
@@ -97,7 +102,7 @@ public class DotNetTestRunner : IDotNetTestRunner
             ErrorCode = ErrorCode.Error;
             Log.Verbose(ProcessExecution.GetError());
             Log.Verbose($"Exit code {ExitCode}.");
-            throw new RerunException($"command: dotnet {ProcessStartInfo.Arguments} exited with code {ExitCode}. \n\nError message: {ProcessExecution.GetError()}");
+            throw new RerunException($"command: {CommandLine} exited with code {ExitCode}. \n\nError message: {ProcessExecution.GetError()}");
         }
     }
 

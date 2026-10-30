@@ -286,24 +286,9 @@ dotnet-test-rerun/
 
 To add a new command-line option:
 
-1. Add the option to `RerunCommandConfiguration.cs`:
-   ```csharp
-   public Option<T> NewOption { get; set; }
-   ```
-
-2. Configure it in `RerunCommand.cs` constructor:
-   ```csharp
-   NewOption = new Option<T>(
-       name: "--new-option",
-       description: "Description of the option");
-   AddOption(NewOption);
-   ```
-
-3. Use it in the command handler:
-   ```csharp
-   var newValue = commandResult.GetValueForOption(NewOption);
-   ```
-
+1. Add an init-only property to `src/Configuration/RerunOptions.cs`, with the same default as the CLI.
+2. Define the option in `src/Cli/RerunCliDefinition.cs`, register it in `AddTo` and map it in `ToOptions`.
+3. If `dotnet test` must receive it, add it to `src/Execution/DotNetTestArguments.cs`.
 4. Add tests for the new option
 5. Update documentation
 

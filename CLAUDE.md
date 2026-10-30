@@ -32,7 +32,8 @@ The Husky pre-commit hook runs the unit tests on every `git commit` (~30s). The 
 
 | Change | File |
 |---|---|
-| New CLI option | `src/RerunCommand/RerunCommandConfiguration.cs` (see skill `add-cli-option`) |
+| New CLI option | `src/Cli/RerunCliDefinition.cs` + `src/Configuration/RerunOptions.cs` (see skill `add-cli-option`) |
+| Arguments passed to `dotnet test` / `dotnet-coverage` | `src/Execution/DotNetTestArguments.cs`, `CoverageMergeArguments.cs` (argument lists, quoted by the runtime) |
 | Rerun loop, end-of-run behaviour | `src/RerunCommand/RerunCommand.cs` |
 | TRX parsing and filter building | `src/Analyzers/TestResultsAnalyzer.cs` |
 | Exit-code and failure detection from `dotnet test` output | `src/DotNetRunner/DotNetTestRunner.cs` |
@@ -45,7 +46,7 @@ The Husky pre-commit hook runs the unit tests on every `git commit` (~30s). The 
 - `( ) ? { }` must be backslash-escaped (`EscapeAll`). Spaces in a FullyQualifiedName are escaped as `\ `.
 - NUnit parameterised tests use `FullyQualifiedName~Name(args)`. xUnit uses `FullyQualifiedName=Name&DisplayName~args`. MSTest uses only `FullyQualifiedName=`.
 - xUnit's TRX `TestMethod.Name` omits Theory parameters. NUnit and MSTest include them.
-- When a user-supplied `--filter` exists, failed tests are combined as `(original)&(failed)` via `AppendFailedTests`.
+- When a user-supplied `--filter` exists, failed tests are combined as `(original)&(failed)` via `FilterComposer.Combine`.
 
 ## Release and issue workflow (observed practice)
 

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO.Abstractions;
 using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.Analyzers;
+using dotnet.test.rerun.Cli;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
@@ -51,7 +52,7 @@ public class DotNetTestRerunTests
         // Assert
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] { "Failed!", "Rerun attempt" });
-        output.Should().Contain("-c \"debug\" -v \"Minimal\"");
+        output.Should().Contain("-c debug -v Minimal");
         Environment.ExitCode.Should().Be(0);
         IsThereACoverageFile().Should().BeTrue();
     }
@@ -630,22 +631,22 @@ public class DotNetTestRerunTests
         logger.SetLogLevel(LogLevel.Debug);
 
         Command command = new Command("test-rerun");
-        RerunCommandConfiguration rerunCommandConfiguration = new RerunCommandConfiguration();
-        rerunCommandConfiguration.Set(command);
+        var cliDefinition = new RerunCliDefinition();
+        cliDefinition.AddTo(command);
 
         ParseResult result = command.Parse(
                 $"{testDir}\\{proj} --rerunMaxAttempts 3 --results-directory {testDir} {extraArgs}");
 
-        rerunCommandConfiguration.GetValues(result);
+        var options = cliDefinition.ToOptions(result);
 
         RerunCommand rerunCommand = new RerunCommand(logger,
-            rerunCommandConfiguration,
+            cliDefinition,
             new DotNetTestRunner(logger, new ProcessExecution(logger), FileSystem),
             new DotNetCoverageRunner(logger, new ProcessExecution(logger)),
             FileSystem,
             new TestResultsAnalyzer(logger));
 
-        await rerunCommand.Run();
+        await rerunCommand.Run(options);
 
         return stringWriter.ToString().Trim();
     }

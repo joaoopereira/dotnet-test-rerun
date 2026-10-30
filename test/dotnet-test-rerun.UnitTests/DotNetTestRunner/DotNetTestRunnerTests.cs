@@ -4,6 +4,8 @@ using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
+using dotnet.test.rerun.Configuration;
+using dotnet.test.rerun.Execution;
 using dotnet.test.rerun.RerunCommand;
 using AwesomeAssertions;
 using NSubstitute;
@@ -45,7 +47,7 @@ public class DotNetTestRunnerTests
             .Returns(new Process());
 
         // Act
-        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+        await dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, "resultsDirectory"));
 
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.Success);
@@ -70,10 +72,10 @@ public class DotNetTestRunnerTests
             .Returns(new Process());
 
         // Act
-        var act = () => dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+        var act = () => dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, "resultsDirectory"));
 
         // Assert
-        await act.Should().ThrowAsync<RerunException>().WithMessage($"command: dotnet test --logger \"trx\" --results-directory \"resultsDirectory\" exited with code 1. \n\nError message: {errorMessage}");
+        await act.Should().ThrowAsync<RerunException>().WithMessage($"command: dotnet test --logger trx --results-directory resultsDirectory exited with code 1. \n\nError message: {errorMessage}");
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.Error);
     }
     
@@ -94,7 +96,7 @@ public class DotNetTestRunnerTests
             .Returns(new Process());
 
         // Act
-        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+        await dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, "resultsDirectory"));
 
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.WellKnownError);
@@ -117,7 +119,7 @@ public class DotNetTestRunnerTests
             .Returns(new Process());
 
         // Act
-        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+        await dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, "resultsDirectory"));
 
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.FailedTests);
@@ -140,7 +142,7 @@ public class DotNetTestRunnerTests
             .Returns(new Process());
 
         // Act
-        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+        await dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, "resultsDirectory"));
 
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.FailedTests);
@@ -163,7 +165,7 @@ public class DotNetTestRunnerTests
             .Returns(new Process());
 
         // Act
-        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+        await dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, "resultsDirectory"));
 
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.FailedTests);
@@ -191,7 +193,7 @@ public class DotNetTestRunnerTests
             .Returns(string.Empty);
 
         // Act
-        await dotNetTestRunner.Test(new RerunCommandConfiguration(), resultsDirectory);
+        await dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, resultsDirectory));
 
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.FailedTests);
@@ -215,7 +217,7 @@ public class DotNetTestRunnerTests
             .Returns(string.Empty);
 
         // Act
-        var act = () => dotNetTestRunner.Test(new RerunCommandConfiguration(), resultsDirectory);
+        var act = () => dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, resultsDirectory));
 
         // Assert
         await act.Should().ThrowAsync<RerunException>();
@@ -240,7 +242,7 @@ public class DotNetTestRunnerTests
             .Returns("\nNo test source files were specified.");
 
         // Act
-        await dotNetTestRunner.Test(new RerunCommandConfiguration(), "resultsDirectory");
+        await dotNetTestRunner.Test(new RerunOptions(), new RunRequest(null, null, "resultsDirectory"));
 
         // Assert
         dotNetTestRunner.GetErrorCode().Should().Be(ErrorCode.WellKnownError);
