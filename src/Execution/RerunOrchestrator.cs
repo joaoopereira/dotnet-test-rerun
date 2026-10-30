@@ -48,7 +48,6 @@ public class RerunOrchestrator
         {
             while (attempt <= options.RerunMaxAttempts)
             {
-                await Task.Delay(options.Delay, cancellationToken);
                 var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startOfDotnetRun);
 
                 if (trxFiles.Length == 0)
@@ -86,6 +85,8 @@ public class RerunOrchestrator
                     }
                 }
 
+                // Only wait when there is something to rerun
+                await Task.Delay(options.Delay, cancellationToken);
                 Log.Information($"Rerun attempt {attempt}/{options.RerunMaxAttempts}");
                 Log.Warning($"Found Failed tests: {testsToRerun}");
                 startOfDotnetRun = DateTime.Now;
@@ -93,13 +94,20 @@ public class RerunOrchestrator
                 var attemptResults = new List<ErrorCode>();
                 foreach (var tests in testsToRerun.Filters)
                 {
-                    var request = new RunRequest(
-                        FilterComposer.Combine(options.Filter, tests.Value.Filter),
-                        options.Framework,
-                        resultsDirectory.FullName);
+                    var batches = FilterBatches.Split(tests.Value.Tests);
+                    if (batches.Count > 1)
+                        Log.Information($"Rerun filter split into {batches.Count} batches to keep the command line short.");
 
-                    Log.Warning($"Rerun filter: {request.Filter}");
-                    attemptResults.Add((await DotNetTestRunner.Test(options, request, cancellationToken)).Outcome);
+                    foreach (var batch in batches)
+                    {
+                        var request = new RunRequest(
+                            FilterComposer.Combine(options.Filter, batch),
+                            options.Framework,
+                            resultsDirectory.FullName);
+
+                        Log.Warning($"Rerun filter: {request.Filter}");
+                        attemptResults.Add((await DotNetTestRunner.Test(options, request, cancellationToken)).Outcome);
+                    }
                 }
                 errorCode = AggregateErrorCodes(attemptResults);
                 LogTestResults(options, resultsDirectory, startOfDotnetRun, reportFiles);

@@ -666,6 +666,62 @@ public class RerunOrchestratorTests
         outcome.Should().Be(expected);
     }
 
+    [Fact]
+    public async Task RunAsync_NothingToRerun_DoesNotWaitForDelay()
+    {
+        // Arrange
+        var config = InitialConfigurationSetup() with { Delay = TimeSpan.FromSeconds(10) };
+        var dotNetTestRunner = CreateTestRunner();
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(new Logger(), dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(new TestFilterCollection());
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        // Act
+        await command.RunAsync(config);
+
+        // Assert
+        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task RunAsync_ManyFailedTests_RerunsInBatches()
+    {
+        // Arrange
+        var config = InitialConfigurationSetup(filter: string.Empty);
+        var dotNetTestRunner = CreateTestRunner();
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(new Logger(), dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        var failedTests = Enumerable.Range(1, 2000).Select(i => $"FullyQualifiedName=My.Namespace.MyClass.Test{i}").ToList();
+        var testFilterCollection = new TestFilterCollection();
+        testFilterCollection.Add(new TestFilter("net8.0", failedTests));
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(testFilterCollection, new TestFilterCollection());
+        var filters = new List<string>();
+        dotNetTestRunner.When(x => x.Test(Arg.Any<RerunOptions>(), Arg.Any<RunRequest>(), Arg.Any<CancellationToken>()))
+            .Do(call => filters.Add(call.Arg<RunRequest>().Filter ?? string.Empty));
+
+        // Act
+        await command.RunAsync(config);
+
+        // Assert
+        var rerunFilters = filters.Skip(1).ToList();
+        rerunFilters.Should().HaveCountGreaterThan(1);
+        rerunFilters.Should().OnlyContain(filter => filter.Length <= FilterBatches.MaxFilterLength);
+        rerunFilters.SelectMany(filter => filter.Split(" | ")).Should().Equal(failedTests);
+    }
+
     private static IDotNetTestRunner CreateTestRunner()
     {
         var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
