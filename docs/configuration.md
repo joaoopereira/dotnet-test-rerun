@@ -218,6 +218,8 @@ test-rerun test.dll --logger trx --logger "console;verbosity=detailed"
 test-rerun test.dll --logger "junit;LogFileName=junit-results.xml"
 ```
 
+test-rerun reads the TRX results to know which tests failed, so it always adds `--logger trx` when none of your loggers is a TRX logger.
+
 Common logger formats:
 - `trx` - Visual Studio Test Results File
 - `junit` - JUnit XML format
