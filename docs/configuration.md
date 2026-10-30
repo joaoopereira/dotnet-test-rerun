@@ -130,6 +130,8 @@ Add delays between retry attempts to allow external resources to recover:
 test-rerun test.dll --delay 5
 ```
 
+The delay is applied only before an actual rerun. It is skipped when the analysis finds nothing to rerun or a failure threshold stops the rerun.
+
 **Use Cases:**
 - Database connection pooling issues
 - Rate limiting from external APIs
@@ -172,6 +174,12 @@ test-rerun test.dll --filter "Category=Integration|Category=EndToEnd"
 # NOT operation
 test-rerun test.dll --filter "Category!=Unit"
 ```
+
+### How Failed Tests Are Rerun
+
+On each attempt, test-rerun builds a filter with one clause per failed test (for example `FullyQualifiedName=MyNamespace.MyClass.MyTest`). If you passed `--filter`, it is combined as `(your filter)&(failed tests)`.
+
+When many tests fail, the rerun filter is split into batches of at most 8,000 characters. Each batch runs as its own `dotnet test` invocation within the same attempt. This keeps the command line under the Windows limit and filters fast to parse. The attempt fails if any batch still has failing tests. Use `--rerunMaxFailedTests` or `--rerunFailedThreshold` if you would rather not rerun at all when many tests fail.
 
 ## Logging Configuration
 
