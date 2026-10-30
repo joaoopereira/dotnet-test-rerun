@@ -34,8 +34,9 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// </summary>
     /// <param name="config">The config.</param>
     /// <param name="resultsDirectory">The results directory.</param>
-    public async Task Test(RerunCommandConfiguration config, string resultsDirectory)
-        => await Run(config.GetTestArgumentList(resultsDirectory));
+    /// <param name="cancellationToken">Cancels the run and stops the dotnet test process.</param>
+    public async Task Test(RerunCommandConfiguration config, string resultsDirectory, CancellationToken cancellationToken = default)
+        => await Run(config.GetTestArgumentList(resultsDirectory), cancellationToken);
 
     public ErrorCode GetErrorCode()
         => ErrorCode;
@@ -44,7 +45,8 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// Runs dotnet test with the specified arguments.
     /// </summary>
     /// <param name="arguments">The arguments.</param>
-    private async Task Run(string arguments)
+    /// <param name="cancellationToken">The cancellation token.</param>
+    private async Task Run(string arguments, CancellationToken cancellationToken)
     {
         Log.Debug($"working directory: {ProcessStartInfo.WorkingDirectory}");
         Log.Debug($"forking {arguments}");
@@ -53,7 +55,7 @@ public class DotNetTestRunner : IDotNetTestRunner
         using Process? ps = await ProcessExecution.Start(ProcessStartInfo);
         ProcessExecution.FetchOutput(ps!);
         ProcessExecution.FetchError(ps!);
-        ExitCode = await ProcessExecution.End(ps!);
+        ExitCode = await ProcessExecution.End(ps!, cancellationToken);
 
         HandleProcessEnd();
     }

@@ -5,7 +5,7 @@ namespace dotnet.test.rerun.DotNetRunner;
 
 public interface IDotNetTestRunner
 {
-    public Task Test(RerunCommandConfiguration config, string resultsDirectory);
+    public Task Test(RerunCommandConfiguration config, string resultsDirectory, CancellationToken cancellationToken = default);
 
     public ErrorCode GetErrorCode();
 }

@@ -30,14 +30,14 @@ public class RerunCommandTests
         var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
         // Act
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class RerunCommandTests
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var trxFile = fileSystem.FileInfo.New("First.trx");
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { trxFile });
@@ -65,7 +65,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).LogTestResults(Arg.Is<IFileInfo[]>(files => files[0] == trxFile));
     }
@@ -85,14 +85,14 @@ public class RerunCommandTests
         var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
         // Act
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         testResultsAnalyzer.DidNotReceive().LogTestResults(Arg.Any<IFileInfo[]>());
     }
 
@@ -116,7 +116,7 @@ public class RerunCommandTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() { filterToRerun }));
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
@@ -131,7 +131,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         testResultsAnalyzer.Received(1).LogTestResults(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
         testResultsAnalyzer.Received(1).LogTestResults(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
     }
@@ -153,7 +153,7 @@ public class RerunCommandTests
         var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
         // Act
@@ -162,7 +162,7 @@ public class RerunCommandTests
         await parseResult.InvokeAsync();
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public class RerunCommandTests
         var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
@@ -191,7 +191,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
@@ -212,7 +212,7 @@ public class RerunCommandTests
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var trxFile = fileSystem.FileInfo.New("Second.trx");
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
@@ -225,7 +225,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile));
@@ -251,7 +251,7 @@ public class RerunCommandTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() {filterToRerun }));
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
@@ -266,7 +266,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert       
-        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         config.Filter.Should().Be(filterToRerun);
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
@@ -294,7 +294,7 @@ public class RerunCommandTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() {filterToRerun }));
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
@@ -309,7 +309,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert       
-        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         config.Filter.Should().Be(string.Concat("(filter)&(", filterToRerun, ")"));
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
@@ -336,7 +336,7 @@ public class RerunCommandTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() {"filterToRerun" }));
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
@@ -349,7 +349,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile));
@@ -374,7 +374,7 @@ public class RerunCommandTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter("net6.0", new List<string>() {"filterToRerun" }));
         
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
@@ -391,7 +391,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
@@ -420,7 +420,7 @@ public class RerunCommandTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter("net6.0", new List<string>() {"filterToRerun" }));
         
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
@@ -433,7 +433,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert
-        await dotNetTestRunner.Received(3).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(3).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(2).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
@@ -454,7 +454,7 @@ public class RerunCommandTests
         var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.Success);
@@ -463,7 +463,7 @@ public class RerunCommandTests
         await command.Run();
 
         // Assert
-        await dotNetCoverageRunner.Received(1).Merge(config, directoryInfo.FullName, Arg.Any<DateTime>());
+        await dotNetCoverageRunner.Received(1).Merge(config, directoryInfo.FullName, Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -482,11 +482,11 @@ public class RerunCommandTests
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var merge = new TaskCompletionSource();
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.Success);
-        dotNetCoverageRunner.Merge(config, directoryInfo.FullName, Arg.Any<DateTime>())
+        dotNetCoverageRunner.Merge(config, directoryInfo.FullName, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(merge.Task);
 
         // Act
@@ -513,11 +513,11 @@ public class RerunCommandTests
         var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.Success);
-        dotNetCoverageRunner.Merge(config, directoryInfo.FullName, Arg.Any<DateTime>())
+        dotNetCoverageRunner.Merge(config, directoryInfo.FullName, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new RerunException("merge failed")));
 
         // Act
@@ -546,7 +546,7 @@ public class RerunCommandTests
         // Add 3 failed tests, which exceeds the threshold of 2
         testFilterCollection.Add(new TestFilter("net6.0", new List<string>() { "test1", "test2", "test3" }));
         
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
@@ -560,7 +560,7 @@ public class RerunCommandTests
 
         // Assert
         // Should only run the initial test, not any reruns
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
@@ -586,7 +586,7 @@ public class RerunCommandTests
         // Add 3 failed tests, which is within the threshold of 5
         testFilterCollection.Add(new TestFilter("net6.0", new List<string>() { "test1", "test2", "test3" }));
         
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
@@ -602,7 +602,7 @@ public class RerunCommandTests
 
         // Assert
         // Should run initial test plus one rerun
-        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
@@ -629,7 +629,7 @@ public class RerunCommandTests
         var manyTests = Enumerable.Range(1, 100).Select(i => $"test{i}").ToList();
         testFilterCollection.Add(new TestFilter("net6.0", manyTests));
         
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
@@ -645,7 +645,7 @@ public class RerunCommandTests
 
         // Assert
         // Should run initial test plus one rerun even with many failures
-        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
@@ -670,7 +670,7 @@ public class RerunCommandTests
         testFilterCollection.Add(new TestFilter("net6.0", Enumerable.Range(1, 35).Select(i => $"test{i}").ToList()));
         testFilterCollection.TotalTests = 100;
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests);
@@ -684,7 +684,7 @@ public class RerunCommandTests
 
         // Assert
         // Should only run the initial test, not any reruns
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
@@ -711,7 +711,7 @@ public class RerunCommandTests
         testFilterCollection.Add(new TestFilter("net6.0", Enumerable.Range(1, 8).Select(i => $"test{i}").ToList()));
         testFilterCollection.TotalTests = 100;
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         dotNetTestRunner.GetErrorCode()
             .Returns(ErrorCode.FailedTests, ErrorCode.Success);
@@ -727,7 +727,7 @@ public class RerunCommandTests
 
         // Assert
         // Should run initial test plus one rerun
-        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(2).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
         dotNetTestRunner.Received(2).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
@@ -770,7 +770,7 @@ public class RerunCommandTests
         var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
         // Act
@@ -780,7 +780,7 @@ public class RerunCommandTests
         // Assert
         result.Should().Be(0);
         config.ExtraArguments.Should().Contain(msbuildArg);
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -797,7 +797,7 @@ public class RerunCommandTests
         var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
 
-        dotNetTestRunner.Test(config, directoryInfo.FullName)
+        dotNetTestRunner.Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
         // Act
@@ -808,7 +808,7 @@ public class RerunCommandTests
         result.Should().Be(0);
         config.ExtraArguments.Should().Contain("/p:MyProperty=Value");
         config.ExtraArguments.Should().Contain("-m:3");
-        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
+        await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
     }
 
     private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "", string filter = "--filter filter ")

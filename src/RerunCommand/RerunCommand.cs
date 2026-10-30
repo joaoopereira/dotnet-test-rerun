@@ -53,14 +53,14 @@ public class RerunCommand : RootCommand
         var startOfProcess = DateTime.Now;
         var startOfDotnetRun = DateTime.Now;
         IDirectoryInfo resultsDirectory = FileSystem.DirectoryInfo.New(Config.ResultsDirectory);
-        await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
+        await DotNetTestRunner.Test(Config, resultsDirectory.FullName, cancellationToken);
         LogTestResults(resultsDirectory, startOfDotnetRun);
         if (DotNetTestRunner.GetErrorCode() == ErrorCode.FailedTests)
         {
             var attempt = 1;
             while (attempt <= Config.RerunMaxAttempts)
             {
-                await Task.Delay(Config.Delay);
+                await Task.Delay(Config.Delay, cancellationToken);
                 var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startOfDotnetRun);
 
                 if (trxFiles.Length > 0)
@@ -102,7 +102,7 @@ public class RerunCommand : RootCommand
                         Config.Filter = Config.AppendFailedTests(tests.Value.Filter);
 
                         Log.Warning($"Rerun filter: {Config.Filter}");
-                        await DotNetTestRunner.Test(Config, resultsDirectory.FullName);
+                        await DotNetTestRunner.Test(Config, resultsDirectory.FullName, cancellationToken);
                     }
                     LogTestResults(resultsDirectory, startOfDotnetRun);
                     attempt++;
@@ -128,7 +128,7 @@ public class RerunCommand : RootCommand
         
         if (Config.MergeCoverageFormat.HasValue)
         {
-            await MergeCoverageResults(resultsDirectory, startOfProcess);
+            await MergeCoverageResults(resultsDirectory, startOfProcess, cancellationToken);
         }
     }
 
@@ -149,6 +149,6 @@ public class RerunCommand : RootCommand
         TestResultsAnalyzer.LogTestResults(trxFiles);
     }
 
-    private Task MergeCoverageResults(IDirectoryInfo resultsDirectory, DateTime startTime)
-        => DotNetCoverageRunner.Merge(Config, resultsDirectory.FullName, startTime);
+    private Task MergeCoverageResults(IDirectoryInfo resultsDirectory, DateTime startTime, CancellationToken cancellationToken)
+        => DotNetCoverageRunner.Merge(Config, resultsDirectory.FullName, startTime, cancellationToken);
 }

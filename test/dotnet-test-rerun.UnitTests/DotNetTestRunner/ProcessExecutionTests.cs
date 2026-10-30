@@ -2,6 +2,7 @@
 using dotnet.test.rerun.Logging;
 using AwesomeAssertions;
 using System.Diagnostics;
+using System.Text;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.DotNetTestRunner;
@@ -15,14 +16,14 @@ public class ProcessExecutionTests
         var logger = new Logger();
         ProcessExecution processExecution = new ProcessExecution(logger)
         {
-            Output = "Output"
+            Output = new StringBuilder("Output")
         };
 
         // Act
         var output = processExecution.GetOutput();
 
         // Assert
-        output.Should().Be(processExecution.Output);
+        output.Should().Be("Output");
     }
     
     [Fact]
@@ -32,14 +33,14 @@ public class ProcessExecutionTests
         var logger = new Logger();
         ProcessExecution processExecution = new ProcessExecution(logger)
         {
-            Error = "Error"
+            Error = new StringBuilder("Error")
         };
 
         // Act
         var error = processExecution.GetError();
 
         // Assert
-        error.Should().Be(processExecution.Error);
+        error.Should().Be("Error");
     }
 
     [Fact]
@@ -49,8 +50,8 @@ public class ProcessExecutionTests
         var logger = new Logger();
         var processExecution = new ProcessExecution(logger)
         {
-            Output = "Previous Output",
-            Error = "Previous Error"
+            Output = new StringBuilder("Previous Output"),
+            Error = new StringBuilder("Previous Error")
         };
 
         var processStartInfo = new ProcessStartInfo
@@ -67,8 +68,8 @@ public class ProcessExecutionTests
         var process = await processExecution.Start(processStartInfo);
 
         // Assert
-        processExecution.Output.Should().BeEmpty();
-        processExecution.Error.Should().BeEmpty();
+        processExecution.GetOutput().Should().BeEmpty();
+        processExecution.GetError().Should().BeEmpty();
         process.Should().NotBeNull();
         
         // Cleanup
@@ -189,8 +190,8 @@ public class ProcessExecutionTests
         var process2 = await processExecution.Start(processStartInfo);
 
         // Assert
-        processExecution.Output.Should().BeEmpty();
-        processExecution.Error.Should().BeEmpty();
+        processExecution.GetOutput().Should().BeEmpty();
+        processExecution.GetError().Should().BeEmpty();
         
         // Cleanup
         if (process2 != null && !process2.HasExited)
@@ -198,5 +199,60 @@ public class ProcessExecutionTests
             process2.Kill();
             process2.Dispose();
         }
+    }
+
+    [Fact]
+    public async Task End_ShouldReturnOnlyAfterAllOutputWasCaptured()
+    {
+        // Arrange
+        var logger = new Logger();
+        logger.SetLogLevel(LogLevel.Error);
+        var processExecution = new ProcessExecution(logger);
+        var process = await processExecution.Start(ShellCommand("for i in $(seq 1 3000); do echo line$i; done",
+            "for /L %i in (1,1,3000) do @echo line%i"));
+
+        // Act
+        processExecution.FetchOutput(process!);
+        processExecution.FetchError(process!);
+        var exitCode = await processExecution.End(process!);
+
+        // Assert
+        exitCode.Should().Be(0);
+        processExecution.GetOutput().Should().EndWith("line3000");
+    }
+
+    [Fact]
+    public async Task End_WhenCancelled_KillsProcessAndThrows()
+    {
+        // Arrange
+        var logger = new Logger();
+        logger.SetLogLevel(LogLevel.Error);
+        var processExecution = new ProcessExecution(logger);
+        var process = await processExecution.Start(ShellCommand("sleep 60", "ping -n 60 127.0.0.1 > nul"));
+        processExecution.FetchOutput(process!);
+        processExecution.FetchError(process!);
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+        var stopwatch = Stopwatch.StartNew();
+
+        // Act
+        var act = () => processExecution.End(process!, cancellation.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(30));
+        process!.WaitForExit(5000).Should().BeTrue();
+        process.HasExited.Should().BeTrue();
+    }
+
+    private static ProcessStartInfo ShellCommand(string unixCommand, string windowsCommand)
+    {
+        var startInfo = OperatingSystem.IsWindows()
+            ? new ProcessStartInfo("cmd", $"/c {windowsCommand}")
+            : new ProcessStartInfo("sh", new[] { "-c", unixCommand });
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        startInfo.UseShellExecute = false;
+        startInfo.CreateNoWindow = true;
+        return startInfo;
     }
 }
