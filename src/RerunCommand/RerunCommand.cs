@@ -118,6 +118,11 @@ public class RerunCommand : RootCommand
         if (DotNetTestRunner.GetErrorCode() == ErrorCode.FailedTests)
         {
             Environment.ExitCode = 1;
+
+            if (Config.GenerateTestCommand)
+            {
+                LogFailedTestsCommand(resultsDirectory, startOfDotnetRun);
+            }
         }
 
         if (Config.DeleteReportFiles)
@@ -129,6 +134,23 @@ public class RerunCommand : RootCommand
         if (Config.MergeCoverageFormat.HasValue)
         {
             MergeCoverageResults(resultsDirectory, startOfProcess);
+        }
+    }
+
+    private void LogFailedTestsCommand(IDirectoryInfo resultsDirectory, DateTime startOfLastRun)
+    {
+        var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startOfLastRun);
+        if (trxFiles.Length == 0)
+            return;
+
+        var failedTests = TestResultsAnalyzer.GetFailedTestsFilter(trxFiles);
+        if (failedTests.HasTestsToReRun is false)
+            return;
+
+        Log.Information("To run the failed tests:");
+        foreach (var filter in failedTests.Filters.Values)
+        {
+            Log.Information(Config.GetFailedTestsCommand(filter.Filter));
         }
     }
 

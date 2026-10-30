@@ -236,6 +236,21 @@ test-rerun test.dll --logTestResults
 
 Unlike `--logPassedTests`, this does not change the underlying `dotnet test` invocation or rely on console output. Instead, it reads the trx report generated after each run (including reruns) and logs each test's result. Failed tests also include the error message and stack trace.
 
+### Generating a Command for Failed Tests
+
+To reproduce the failures locally, enable the opt-in `--generateTestCommand` flag. When tests are still failing after the last attempt, a standalone `dotnet test` command with a `--filter` for those tests is printed at the end of the execution:
+
+```bash
+test-rerun MyProject.Tests.csproj --generateTestCommand
+```
+
+```text
+To run the failed tests:
+dotnet test MyProject.Tests.csproj --filter "FullyQualifiedName=Namespace.Tests.TestA | FullyQualifiedName=Namespace.Tests.TestB"
+```
+
+The command keeps the original `--filter`, `--settings`, `--configuration` and `--framework` values, so it can be executed directly with `dotnet test`. Nothing is printed when all tests pass. The failed tests are read from the trx files, so keep the default `trx` logger enabled.
+
 ## Code Coverage Configuration
 
 ### Basic Coverage Collection
