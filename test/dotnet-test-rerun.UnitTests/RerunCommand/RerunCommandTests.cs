@@ -192,7 +192,7 @@ public class RerunCommandTests
 
         // Assert
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
-        dotNetTestRunner.Received(2).GetErrorCode();
+        dotNetTestRunner.Received(1).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
 
@@ -226,7 +226,7 @@ public class RerunCommandTests
 
         // Assert
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
-        dotNetTestRunner.Received(2).GetErrorCode();
+        dotNetTestRunner.Received(1).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile));
     }
@@ -434,9 +434,105 @@ public class RerunCommandTests
 
         // Assert
         await dotNetTestRunner.Received(3).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
-        dotNetTestRunner.Received(2).GetErrorCode();
+        dotNetTestRunner.Received(3).GetErrorCode();
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(2).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
+    }
+
+    [Fact]
+    public async Task Run_TestsFailOnMultipleFrameworks_RerunsEachFrameworkSeparately()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config);
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var fileSystem = new FileSystem();
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        var frameworksUsed = new List<string?>();
+        dotNetTestRunner.When(x => x.Test(config, Arg.Any<string>(), Arg.Any<CancellationToken>()))
+            .Do(_ => frameworksUsed.Add(config.Framework));
+        dotNetTestRunner.GetErrorCode().Returns(ErrorCode.FailedTests, ErrorCode.Success, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(MultipleFrameworksFilter());
+
+        // Act
+        await command.Run();
+
+        // Assert
+        frameworksUsed.Should().Equal(null, "net8.0", "net9.0", "net8.0", "net9.0");
+        config.Framework.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Run_TestsFailOnMultipleFrameworks_WithUserFramework_KeepsUserFramework()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, "--framework net9.0");
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var fileSystem = new FileSystem();
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        var frameworksUsed = new List<string?>();
+        dotNetTestRunner.When(x => x.Test(config, Arg.Any<string>(), Arg.Any<CancellationToken>()))
+            .Do(_ => frameworksUsed.Add(config.Framework));
+        dotNetTestRunner.GetErrorCode().Returns(ErrorCode.FailedTests, ErrorCode.Success, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(MultipleFrameworksFilter());
+
+        // Act
+        await command.Run();
+
+        // Assert
+        frameworksUsed.Should().Equal("net9.0", "net9.0", "net9.0", "net9.0", "net9.0");
+        config.Framework.Should().Be("net9.0");
+    }
+
+    [Fact]
+    public async Task Run_TestsFailOnMultipleFrameworks_OnlyFirstFrameworkStillFails_ExitCodeIsFailure()
+    {
+        // Arrange
+        Environment.ExitCode = 0;
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config);
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var fileSystem = new FileSystem();
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        // in every attempt net8.0 still fails while net9.0, the last invocation, passes
+        dotNetTestRunner.GetErrorCode().Returns(ErrorCode.FailedTests,
+            ErrorCode.FailedTests, ErrorCode.Success,
+            ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(MultipleFrameworksFilter());
+
+        // Act
+        await command.Run();
+
+        // Assert
+        Environment.ExitCode.Should().Be(1);
+        Environment.ExitCode = 0;
+    }
+
+    private static TestFilterCollection MultipleFrameworksFilter()
+    {
+        var testFilterCollection = new TestFilterCollection();
+        testFilterCollection.Add(new TestFilter("net8.0", new List<string> { "FullyQualifiedName=A.Test" }));
+        testFilterCollection.Add(new TestFilter("net9.0", new List<string> { "FullyQualifiedName=B.Test" }));
+        return testFilterCollection;
     }
 
     [Fact]
@@ -561,7 +657,7 @@ public class RerunCommandTests
         // Assert
         // Should only run the initial test, not any reruns
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
-        dotNetTestRunner.Received(2).GetErrorCode();
+        dotNetTestRunner.Received(1).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
     }
@@ -685,7 +781,7 @@ public class RerunCommandTests
         // Assert
         // Should only run the initial test, not any reruns
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName, Arg.Any<CancellationToken>());
-        dotNetTestRunner.Received(2).GetErrorCode();
+        dotNetTestRunner.Received(1).GetErrorCode();
         testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
     }
