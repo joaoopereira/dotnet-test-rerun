@@ -183,6 +183,8 @@ public class RerunCommandConfiguration
     /// so passed tests are printed to the console as they complete during execution.
     /// </summary>
     private const string PassedTestsLoggerValue = "console;verbosity=detailed";
+
+    private const string TrxLoggerValue = "trx";
     
     public void Set(Command cmd)
     {
@@ -248,6 +250,7 @@ public class RerunCommandConfiguration
             AddArguments(Filter, FilterOption),
             AddArguments(Settings, SettingsOption),
             AddArguments(Logger, LoggerOption),
+            HasTrxLogger() ? string.Empty : AddArguments(TrxLoggerValue, LoggerOption),
             LogPassedTests && !LogTestResults ? AddArguments(PassedTestsLoggerValue, LoggerOption) : string.Empty,
             AddArguments(NoBuild, NoBuildOption),
             AddArguments(NoRestore, NoRestoreOption),
@@ -261,6 +264,12 @@ public class RerunCommandConfiguration
             GetExtraArguments(),
             InlineRunSettings);
     
+    /// <summary>
+    /// The rerun works from TRX results, so a TRX logger is always added when the user's loggers have none.
+    /// </summary>
+    private bool HasTrxLogger()
+        => Logger.Any(logger => logger.StartsWith(TrxLoggerValue, StringComparison.OrdinalIgnoreCase));
+
     public string GetMergeCoverageArgumentList(string fileNames, string resultsDirectory)
         => string.Concat("merge ",
             $"-o {System.IO.Path.Combine(resultsDirectory, $"merged.{GetMergeExtension()}")} ",
