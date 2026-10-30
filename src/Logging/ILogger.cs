@@ -1,7 +1,3 @@
-﻿using System.CommandLine.Parsing;
-using System.CommandLine;
-using Spectre.Console;
-using Spectre.Console.Rendering;
 
 namespace dotnet.test.rerun.Logging
 {
@@ -54,18 +50,6 @@ namespace dotnet.test.rerun.Logging
         /// <param name="stackTrace">The stack trace, when the test failed.</param>
         public void TestResult(string testName, bool passed, string? errorMessage = null, string? stackTrace = null);
 
-        /// <summary>
-        /// Logs the progress of an operation, single line with a spinner
-        /// </summary>
-        /// <param name="msg">initial message to print</param>
-        public void Status(string msg, Action<StatusContext> action = null!);
-
-        /// <summary>
-        /// renders a renderable Spectre object (currently we use it for trees)
-        /// This abstracts from the logging library (up to a point)
-        /// </summary>
-        /// <param name="renderable"></param>
-        public void Render(IRenderable renderable);
 
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.CommandLine.Parsing;
 using Spectre.Console;
-using Spectre.Console.Rendering;
 
 namespace dotnet.test.rerun.Logging
 {
@@ -107,32 +106,6 @@ namespace dotnet.test.rerun.Logging
         }
 
         /// <summary>
-        /// Logs the progress of an operation, single line with a spinner
-        /// </summary>
-        /// <param name="msg">initial message to print</param>
-        public void Status(string msg, Action<StatusContext> action = null!)
-        {
-            AnsiConsole.Status().Start(msg, ctx =>
-            {
-                ctx.Spinner(Spinner.Known.Dots);
-                if (action != null)
-                {
-                    action(new StatusContext(ctx));
-                }
-            });
-        }
-
-        /// <summary>
-        /// renders a renderable Spectre object (currently we use it for trees)
-        /// This abstracts from the logging library (up to a point)
-        /// </summary>
-        /// <param name="renderable"></param>
-        public void Render(IRenderable renderable)
-        {
-            AnsiConsole.Write(renderable);
-        }
-
-        /// <summary>
         /// Abstracts from the logging library
         /// </summary>
         /// <param name="msg">The MSG.</param>
@@ -150,13 +123,11 @@ namespace dotnet.test.rerun.Logging
         }
 
         /// <summary>
-        /// Escapes Spectre Console markup
-        /// Markup is enclosed in [] and escaped as [[]]
-        /// This is a very naive operation that will likely need extending in the future
+        /// Escapes Spectre Console markup, so text with [ and ] is printed as is
         /// </summary>
         /// <param name="msg">message to be escaped</param>
         /// <returns>escaped message</returns>
-        private string EscapeMarkup(string msg) => msg?.Replace("[", "[[").Replace("]", "]]") ?? string.Empty;
+        private static string EscapeMarkup(string? msg) => Markup.Escape(msg ?? string.Empty);
 
         /// <summary>
         /// LogLevel Parser

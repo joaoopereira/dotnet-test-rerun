@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO.Abstractions;
 using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
@@ -24,7 +25,7 @@ public class DotNetCoverageRunnerTests
         // Arrange
         var logger = new Logger();
         var processRunner = Substitute.For<IProcessRunner>();
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner);
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner, new FileSystem());
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunOptions()
         {
@@ -52,7 +53,7 @@ public class DotNetCoverageRunnerTests
         // Arrange
         var logger = new Logger();
         var processRunner = Substitute.For<IProcessRunner>();
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner);
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner, new FileSystem());
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunOptions()
         {
@@ -74,7 +75,7 @@ public class DotNetCoverageRunnerTests
         // Arrange
         var logger = new Logger();
         var processRunner = Substitute.For<IProcessRunner>();
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner);
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner, new FileSystem());
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunOptions()
         {
@@ -101,7 +102,7 @@ public class DotNetCoverageRunnerTests
         // Arrange
         var logger = new Logger();
         var processRunner = Substitute.For<IProcessRunner>();
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner);
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner, new FileSystem());
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunOptions()
         {
@@ -119,5 +120,31 @@ public class DotNetCoverageRunnerTests
 
         // Assert
         await act.Should().ThrowAsync<RerunException>().WithMessage($"*{errorMessage}");
+    }
+
+    [Fact]
+    public async Task Merge_PassesOnlyCoverageFilesCreatedSinceStartDate()
+    {
+        // Arrange
+        var fileSystem = new System.IO.Abstractions.TestingHelpers.MockFileSystem();
+        var resultsDirectory = fileSystem.Path.GetFullPath("results");
+        fileSystem.AddFile(fileSystem.Path.Combine(resultsDirectory, "old.coverage"),
+            new System.IO.Abstractions.TestingHelpers.MockFileData("") { CreationTime = new DateTime(2020, 1, 1) });
+        fileSystem.AddFile(fileSystem.Path.Combine(resultsDirectory, "run", "new.cobertura.xml"),
+            new System.IO.Abstractions.TestingHelpers.MockFileData("") { CreationTime = new DateTime(2030, 1, 1) });
+        var processRunner = Substitute.For<IProcessRunner>();
+        processRunner.RunAsync(Arg.Any<ProcessStartInfo>(), Arg.Any<CancellationToken>())
+            .Returns(new ProcessResult(0, string.Empty, string.Empty));
+        var dotNetCoverageRunner = new DotNetCoverageRunner(new Logger(), processRunner, fileSystem);
+
+        // Act
+        await dotNetCoverageRunner.Merge(new RerunOptions { MergeCoverageFormat = CoverageFormat.Cobertura },
+            resultsDirectory, new DateTime(2025, 1, 1));
+
+        // Assert
+        await processRunner.Received(1).RunAsync(
+            Arg.Is<ProcessStartInfo>(psi => psi.ArgumentList.Contains(fileSystem.Path.Combine(resultsDirectory, "run", "new.cobertura.xml")) &&
+                                            !psi.ArgumentList.Any(argument => argument.EndsWith("old.coverage"))),
+            Arg.Any<CancellationToken>());
     }
 }

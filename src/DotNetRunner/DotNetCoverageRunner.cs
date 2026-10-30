@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.Abstractions;
 using dotnet.test.rerun.Configuration;
 using dotnet.test.rerun.Execution;
 using dotnet.test.rerun.Logging;
@@ -10,12 +11,15 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
     private static readonly string[] SearchPatterns = { "*.coverage", "*.cobertura*" };
     private readonly ILogger Log;
     private readonly IProcessRunner ProcessRunner;
+    private readonly IFileSystem FileSystem;
 
     public DotNetCoverageRunner(ILogger logger,
-        IProcessRunner processRunner)
+        IProcessRunner processRunner,
+        IFileSystem fileSystem)
     {
         Log = logger;
         ProcessRunner = processRunner;
+        FileSystem = fileSystem;
     }
 
     /// <summary>
@@ -32,7 +36,7 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
         var processStartInfo = new ProcessStartInfo
         {
             FileName = "dotnet-coverage",
-            WorkingDirectory = "/"
+            WorkingDirectory = FileSystem.Directory.GetCurrentDirectory()
         };
         foreach (var argument in arguments)
             processStartInfo.ArgumentList.Add(argument);
@@ -63,10 +67,11 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
         }
     }
 
-    private static IEnumerable<string> GetCoverageFiles(string resultsDirectory, DateTime startDate)
+    private IEnumerable<string> GetCoverageFiles(string resultsDirectory, DateTime startDate)
         => SearchPatterns.SelectMany(pattern =>
-                        Directory.GetFiles(resultsDirectory, pattern, SearchOption.AllDirectories))
-                        .Select(file => new FileInfo(file))
+                        FileSystem.Directory.GetFiles(resultsDirectory, pattern, SearchOption.AllDirectories))
+                        .Select(file => FileSystem.FileInfo.New(file))
                         .Where(fileInfo => fileInfo.CreationTime >= startDate)
-                        .Select(fileInfo => fileInfo.FullName);
+                        .Select(fileInfo => fileInfo.FullName)
+                        .ToArray();
 }

@@ -642,7 +642,7 @@ public class DotNetTestRerunTests
         var processRunner = new ProcessRunner(logger);
         var orchestrator = new RerunOrchestrator(logger,
             new DotNetTestRunner(logger, processRunner, FileSystem),
-            new DotNetCoverageRunner(logger, processRunner),
+            new DotNetCoverageRunner(logger, processRunner, FileSystem),
             FileSystem,
             new TestResultsAnalyzer(logger));
 
