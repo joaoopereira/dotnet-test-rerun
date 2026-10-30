@@ -33,17 +33,19 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
     /// <param name="config">The config.</param>
     /// <param name="resultsDirectory">The results directory.</param>
     /// <param name="startDate">Initial date to look for files.</param>
-    public async Task Merge(RerunCommandConfiguration config, string resultsDirectory, DateTime startDate)
+    /// <param name="cancellationToken">Cancels the merge and stops the dotnet-coverage process.</param>
+    public async Task Merge(RerunCommandConfiguration config, string resultsDirectory, DateTime startDate, CancellationToken cancellationToken = default)
     {
         string arguments = config.GetMergeCoverageArgumentList(GetCoverageFiles(resultsDirectory, startDate), resultsDirectory);
-        await Run(arguments);
+        await Run(arguments, cancellationToken);
     }
 
     /// <summary>
     /// Runs dotnet command with the specified arguments.
     /// </summary>
     /// <param name="arguments">The arguments.</param>
-    private async Task Run(string arguments)
+    /// <param name="cancellationToken">The cancellation token.</param>
+    private async Task Run(string arguments, CancellationToken cancellationToken)
     {
         Log.Debug($"working directory: {ProcessStartInfo.WorkingDirectory}");
         Log.Debug($"forking {arguments}");
@@ -54,9 +56,9 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
             using Process? ps = await ProcessExecution.Start(ProcessStartInfo);
             ProcessExecution.FetchOutput(ps!);
             ProcessExecution.FetchError(ps!);
-            ExitCode = await ProcessExecution.End(ps!);
+            ExitCode = await ProcessExecution.End(ps!, cancellationToken);
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             ExitCode = 1;
             unexpectedError = e.Message;

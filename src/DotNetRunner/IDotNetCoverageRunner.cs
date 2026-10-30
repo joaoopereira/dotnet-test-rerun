@@ -4,5 +4,5 @@ namespace dotnet.test.rerun.DotNetRunner;
 
 public interface IDotNetCoverageRunner
 {
-    public Task Merge(RerunCommandConfiguration config, string resultsDirectory, DateTime startDate);
+    public Task Merge(RerunCommandConfiguration config, string resultsDirectory, DateTime startDate, CancellationToken cancellationToken = default);
 }

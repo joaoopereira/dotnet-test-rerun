@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using dotnet.test.rerun.Logging;
 
 namespace dotnet.test.rerun.DotNetRunner;
@@ -6,8 +7,8 @@ namespace dotnet.test.rerun.DotNetRunner;
 public class ProcessExecution : IProcessExecution
 {
     private readonly ILogger Log;
-    internal string Output = string.Empty;
-    internal string Error = string.Empty;
+    internal StringBuilder Output = new();
+    internal StringBuilder Error = new();
     
     public ProcessExecution(ILogger logger)
     {
@@ -17,39 +18,57 @@ public class ProcessExecution : IProcessExecution
     public Task<Process?> Start(ProcessStartInfo processStartInfo)
     {
         //reset variables for the case of rerun
-        Output = string.Empty;
-        Error = string.Empty;
+        Output = new StringBuilder();
+        Error = new StringBuilder();
 
         return Task.Run(() => Process.Start(processStartInfo));
     }
 
     public void FetchOutput(Process process)
     {
+        var output = Output;
         process.OutputDataReceived += (sender, args) =>
         {
-            Log.Verbose(args.Data!);
-            Output += $"\n{args.Data}";
+            if (args.Data is null)
+                return;
+
+            Log.Verbose(args.Data);
+            lock (output)
+                output.Append('\n').Append(args.Data);
         };
         process.BeginOutputReadLine();
     }
 
     public void FetchError(Process process)
     {
+        var error = Error;
         process.ErrorDataReceived += (sender, args) =>
         {
-            Log.Error(args.Data!);
-            Error += $"\n{args.Data}";
+            if (args.Data is null)
+                return;
+
+            Log.Error(args.Data);
+            lock (error)
+                error.Append('\n').Append(args.Data);
         };
         process.BeginErrorReadLine();
     }
 
-    public async Task<int> End(Process process)
+    /// <summary>
+    /// Waits for the process to exit and for its redirected output to be fully read.
+    /// On cancellation the whole process tree is killed and the cancellation is rethrown.
+    /// </summary>
+    public async Task<int> End(Process process, CancellationToken cancellationToken = default)
     {
-        int waitForExitSeconds = 5;
-        while(!process.HasExited)
+        try
         {
-            Log.Debug($"Process still running... Waiting for {waitForExitSeconds} seconds before checking again.");
-            await Task.Delay(TimeSpan.FromSeconds(waitForExitSeconds));
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            Log.Warning("Cancellation requested. Stopping the running process...");
+            KillProcessTree(process);
+            throw;
         }
 
         Log.Debug($"Process has exited with code {process.ExitCode}");
@@ -57,8 +76,27 @@ public class ProcessExecution : IProcessExecution
     }
 
     public string GetOutput()
-        => Output;
+    {
+        lock (Output)
+            return Output.ToString();
+    }
 
     public string GetError()
-        => Error;
+    {
+        lock (Error)
+            return Error.ToString();
+    }
+
+    private void KillProcessTree(Process process)
+    {
+        try
+        {
+            if (!process.HasExited)
+                process.Kill(entireProcessTree: true);
+        }
+        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            Log.Debug($"Could not kill process: {e.Message}");
+        }
+    }
 }

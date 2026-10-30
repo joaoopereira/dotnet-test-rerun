@@ -27,8 +27,15 @@ var cmd = serviceProvider.GetService<RerunCommand>();
 try
 {
     var parseResult = cmd!.Parse(args);
-    var result = await parseResult.InvokeAsync();
+    // Let exceptions reach the handlers below instead of System.CommandLine's default handler,
+    // so RerunException is reported as a plain message and cancellation gets its own exit code.
+    var result = await parseResult.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false });
     Environment.ExitCode = result;
+}
+catch (OperationCanceledException)
+{
+    Log.Warning("Test run cancelled.");
+    Environment.ExitCode = 130;
 }
 catch (Exception exception)
 {
