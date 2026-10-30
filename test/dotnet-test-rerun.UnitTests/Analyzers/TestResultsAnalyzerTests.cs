@@ -231,27 +231,6 @@ public class TestResultsAnalyzerTests
     }
     
     [Fact]
-    public void AddLastTrxFile_FromValidDirectory_ReturnFiles()
-    {
-        //Arrange
-        DateTime start = DateTime.MinValue;
-        var testDirPath = TestUtilities.GetTmpDirectory();
-        IDirectoryInfo testDir = FileSystem.DirectoryInfo.New(testDirPath);
-        TestUtilities.CopyFixtureFile("RerunCommand", "MsTestTrxFileWithOneFailedTest.trx", new DirectoryInfo(testDirPath));
-        
-        //Act
-        TestResultsAnalyzer.AddLastTrxFiles(testDir, start);
-
-        //Assert
-        var reportFiles = TestResultsAnalyzer.GetReportFiles();
-        reportFiles.Should().NotBeNull();
-        reportFiles.Should().HaveCount(1);
-        var trxFiles = TestResultsAnalyzer.GetTrxFiles(testDir, start);
-        trxFiles.Should().HaveCount(1);
-        reportFiles.ElementAt(0).Should().Be(trxFiles[0].FullName);
-    }
-    
-    [Fact]
     public void GetFailedTestsFilter_MsTest_NoFailedTests_WithTwoFiles_ReturnEmpty()
     {
         //Arrange
@@ -378,18 +357,4 @@ public class TestResultsAnalyzerTests
         logger.Received(1).TestResult("XUnitExample.SimpleTest.SimpleNumberCompare(number: 1, expectedNumber: 1)", true, null, null);
     }
 
-    [Fact]
-    public void LogTestResults_AddsTrxFileToReportFiles()
-    {
-        //Arrange
-        var logger = Substitute.For<ILogger>();
-        var testResultsAnalyzer = new TestResultsAnalyzer(logger);
-        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithAllTestsPassing.trx").OrderBy(f => f.Name).LastOrDefault();
-
-        //Act
-        testResultsAnalyzer.LogTestResults(new[] { trxFile! });
-
-        //Assert
-        testResultsAnalyzer.GetReportFiles().Should().Contain(trxFile!.FullName);
-    }
 }

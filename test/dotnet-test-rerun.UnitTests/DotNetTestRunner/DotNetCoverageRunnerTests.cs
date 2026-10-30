@@ -5,7 +5,7 @@ using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.Configuration;
 using dotnet.test.rerun.Execution;
-using dotnet.test.rerun.RerunCommand;
+using dotnet.test.rerun;
 using AwesomeAssertions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -23,8 +23,8 @@ public class DotNetCoverageRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = Substitute.For<IProcessExecution>();
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
+        var processRunner = Substitute.For<IProcessRunner>();
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner);
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunOptions()
         {
@@ -33,18 +33,17 @@ public class DotNetCoverageRunnerTests
 
         TestUtilities.CopyFixture("DotNetCoverage", new DirectoryInfo(_dir));
 
-        processExecution.End(Arg.Any<Process>()).Returns(0);
-        processExecution.Start(Arg.Any<ProcessStartInfo>()).Returns(new Process());
+        processRunner.RunAsync(Arg.Any<ProcessStartInfo>(), Arg.Any<CancellationToken>())
+            .Returns(new ProcessResult(0, string.Empty, string.Empty));
 
         // Act
         var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
 
         // Assert
         await act.Should().NotThrowAsync<RerunException>();
-        processExecution.Received(1).FetchOutput(Arg.Any<Process>());
-        processExecution.Received(1).FetchError(Arg.Any<Process>());
-        await processExecution.Received(1).End(Arg.Any<Process>());
-        await processExecution.Received(1).Start(Arg.Any<ProcessStartInfo>());
+        await processRunner.Received(1).RunAsync(
+            Arg.Is<ProcessStartInfo>(psi => psi.FileName == "dotnet-coverage" && psi.ArgumentList[0] == "merge"),
+            Arg.Any<CancellationToken>());
     }
     
     [Fact]
@@ -52,8 +51,8 @@ public class DotNetCoverageRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = Substitute.For<IProcessExecution>();
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
+        var processRunner = Substitute.For<IProcessRunner>();
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner);
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunOptions()
         {
@@ -74,8 +73,8 @@ public class DotNetCoverageRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = Substitute.For<IProcessExecution>();
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
+        var processRunner = Substitute.For<IProcessRunner>();
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner);
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunOptions()
         {
@@ -85,20 +84,15 @@ public class DotNetCoverageRunnerTests
 
         TestUtilities.CopyFixture("DotNetCoverage", new DirectoryInfo(_dir));
         
-        processExecution.End(Arg.Any<Process>()).Returns(1);
-        processExecution.Start(Arg.Any<ProcessStartInfo>())!.Returns(new Process());
-        processExecution.GetError().Returns(errorMessage);
+        processRunner.RunAsync(Arg.Any<ProcessStartInfo>(), Arg.Any<CancellationToken>())
+            .Returns(new ProcessResult(1, string.Empty, errorMessage));
 
         // Act
         var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);
 
         // Assert
         await act.Should().ThrowAsync<RerunException>().WithMessage($"*{errorMessage}");
-        processExecution.Received(1).FetchOutput(Arg.Any<Process>());
-        processExecution.Received(1).FetchError(Arg.Any<Process>());
-        await processExecution.Received(1).End(Arg.Any<Process>());
-        await processExecution.Received(1).Start(Arg.Any<ProcessStartInfo>());
-        processExecution.Received(2).GetError();
+        await processRunner.Received(1).RunAsync(Arg.Any<ProcessStartInfo>(), Arg.Any<CancellationToken>());
     }
     
     [Fact]
@@ -106,8 +100,8 @@ public class DotNetCoverageRunnerTests
     {
         // Arrange
         var logger = new Logger();
-        var processExecution = Substitute.For<IProcessExecution>();
-        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
+        var processRunner = Substitute.For<IProcessRunner>();
+        var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processRunner);
         var _dir = TestUtilities.GetTmpDirectory();
         var configuration = new RerunOptions()
         {
@@ -117,7 +111,8 @@ public class DotNetCoverageRunnerTests
 
         TestUtilities.CopyFixture("DotNetCoverage", new DirectoryInfo(_dir));
         
-        processExecution.Start(Arg.Any<ProcessStartInfo>()).Throws(new Exception(errorMessage));
+        processRunner.RunAsync(Arg.Any<ProcessStartInfo>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new Exception(errorMessage));
 
         // Act
         var act = () => dotNetCoverageRunner.Merge(configuration, _dir, DateTime.MinValue);

@@ -260,12 +260,14 @@ For feature requests, include:
 dotnet-test-rerun/
 ├── src/                          # Main application code
 │   ├── Analyzers/               # Test result analysis
+│   ├── Cli/                     # Command-line definition and root command
+│   ├── Configuration/           # Immutable options
 │   ├── Domain/                  # Domain models
 │   ├── DotNetRunner/            # Test execution
 │   ├── Enums/                   # Enumerations
+│   ├── Execution/               # Rerun loop, dotnet test arguments, filters
 │   ├── Extensions/              # Utility extensions
 │   ├── Logging/                 # Console output
-│   ├── RerunCommand/            # Main command logic
 │   └── Program.cs               # Entry point
 ├── test/                        # Test projects
 │   ├── dotnet-test-rerun.Common/
@@ -276,7 +278,7 @@ dotnet-test-rerun/
 
 ### Key Components
 
-- **RerunCommand**: Main command logic, retry orchestration
+- **RerunOrchestrator**: Retry loop; returns a `RerunOutcome` that `RerunRootCommand` maps to the exit code
 - **DotNetTestRunner**: Executes `dotnet test` and captures results
 - **TestResultsAnalyzer**: Parses TRX files to identify failed tests
 - **TestFilter**: Builds test filters for rerunning specific tests

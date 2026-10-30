@@ -104,8 +104,8 @@ src/
 │   ├── DotNetTestRunner.cs
 │   ├── IDotNetCoverageRunner.cs
 │   ├── IDotNetTestRunner.cs
-│   ├── IProcessExecution.cs
-│   └── ProcessExecution.cs
+│   ├── IProcessRunner.cs
+│   └── ProcessRunner.cs
 ├── Enums/                 # Enumerations
 │   ├── CoverageFormat.cs
 │   ├── ErrorCode.cs
@@ -116,18 +116,18 @@ src/
 │   ├── ILogger.cs
 │   ├── Logger.cs
 │   └── StatusContext.cs
-├── Cli/                  # Command-line definition
-│   └── RerunCliDefinition.cs
+├── Cli/                  # Command-line definition and root command
+│   ├── RerunCliDefinition.cs
+│   └── RerunRootCommand.cs
 ├── Configuration/        # Immutable options parsed from the command line
 │   └── RerunOptions.cs
 ├── Execution/            # Argument lists for dotnet test / dotnet-coverage, filters
 │   ├── DotNetTestArguments.cs
 │   ├── CoverageMergeArguments.cs
 │   ├── FilterComposer.cs
+│   ├── RerunOrchestrator.cs
 │   └── RunRequest.cs
-├── RerunCommand/         # Main command implementation
-│   ├── RerunCommand.cs
-│   └── RerunException.cs
+├── RerunException.cs     # Error reported to the user without a stack trace
 ├── Program.cs            # Entry point with DI setup
 ├── dotnet-test-rerun.csproj
 ├── dockerfile            # Docker image build
@@ -251,7 +251,7 @@ The commit message validator runs via Husky pre-commit hook locally and via GitH
 
 ### Adding New Features
 
-- Main command logic: `src/RerunCommand/RerunCommand.cs`
+- Rerun loop: `src/Execution/RerunOrchestrator.cs`
 - Command-line options: `src/Cli/RerunCliDefinition.cs` and `src/Configuration/RerunOptions.cs`
 - `dotnet test` arguments: `src/Execution/DotNetTestArguments.cs`
 - Test execution: `src/DotNetRunner/DotNetTestRunner.cs`

@@ -15,8 +15,4 @@ public interface ITestResultsAnalyzer
     void LogTestResults(IFileInfo[] trxFiles);
 
     IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime);
-
-    void AddLastTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime);
-
-    HashSet<string> GetReportFiles();
 }
