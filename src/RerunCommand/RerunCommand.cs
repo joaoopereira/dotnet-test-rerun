@@ -55,8 +55,10 @@ public class RerunCommand : RootCommand
         IDirectoryInfo resultsDirectory = FileSystem.DirectoryInfo.New(Config.ResultsDirectory);
         await DotNetTestRunner.Test(Config, resultsDirectory.FullName, cancellationToken);
         LogTestResults(resultsDirectory, startOfDotnetRun);
-        if (DotNetTestRunner.GetErrorCode() == ErrorCode.FailedTests)
+        var errorCode = DotNetTestRunner.GetErrorCode();
+        if (errorCode == ErrorCode.FailedTests)
         {
+            var userFramework = Config.Framework;
             var attempt = 1;
             while (attempt <= Config.RerunMaxAttempts)
             {
@@ -97,13 +99,19 @@ public class RerunCommand : RootCommand
                     Log.Warning($"Found Failed tests: {testsToRerun}");
                     startOfDotnetRun = DateTime.Now;
 
+                    var attemptResults = new List<ErrorCode>();
                     foreach (var tests in testsToRerun.Filters)
                     {
                         Config.Filter = Config.AppendFailedTests(tests.Value.Filter);
+                        // Rerun only the target framework where the tests failed, unless the user chose one
+                        Config.Framework = userFramework ?? GetFrameworkToRerun(tests.Value);
 
                         Log.Warning($"Rerun filter: {Config.Filter}");
                         await DotNetTestRunner.Test(Config, resultsDirectory.FullName, cancellationToken);
+                        attemptResults.Add(DotNetTestRunner.GetErrorCode());
                     }
+                    Config.Framework = userFramework;
+                    errorCode = AggregateErrorCodes(attemptResults);
                     LogTestResults(resultsDirectory, startOfDotnetRun);
                     attempt++;
                 }
@@ -115,7 +123,7 @@ public class RerunCommand : RootCommand
             }
         }
 
-        if (DotNetTestRunner.GetErrorCode() == ErrorCode.FailedTests)
+        if (errorCode == ErrorCode.FailedTests)
         {
             Environment.ExitCode = 1;
         }
@@ -131,6 +139,17 @@ public class RerunCommand : RootCommand
             await MergeCoverageResults(resultsDirectory, startOfProcess, cancellationToken);
         }
     }
+
+    private static string? GetFrameworkToRerun(TestFilter testFilter)
+        => testFilter.Framework == TestFilter.NoFrameworkName ? null : testFilter.Framework;
+
+    /// <summary>
+    /// An attempt runs one dotnet test per target framework; it failed if any of them failed.
+    /// </summary>
+    private static ErrorCode AggregateErrorCodes(IReadOnlyCollection<ErrorCode> errorCodes)
+        => errorCodes.Contains(ErrorCode.FailedTests)
+            ? ErrorCode.FailedTests
+            : errorCodes.LastOrDefault(ErrorCode.Success);
 
     private void DeleteFiles()
     {

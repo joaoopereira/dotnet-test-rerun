@@ -272,12 +272,13 @@ public class DotNetTestRerunTests
         output.Should().MatchRegex(
             "Rerun filter: FullyQualifiedName=(FailingXUnitExample.)*SimpleTest.SimpleStringCompare",
             Exactly.Thrice());
-        output.Should().Contain("Passed:     1", Exactly.Times(4));
+        // reruns target only net9.0, where the test fails; net8.0 passes and runs only once
+        output.Should().Contain("Passed:     1", Exactly.Once());
         output.Should().Contain("Failed:     1", Exactly.Times(4));
-        output.Should().Contain("Passed!", Exactly.Times(4));
+        output.Should().Contain("Passed!", Exactly.Once());
         output.Should().Contain("Failed!", Exactly.Times(4));
         var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
-        files.Should().HaveCount(8);
+        files.Should().HaveCount(5);
         Environment.ExitCode.Should().Be(1);
     }
 
