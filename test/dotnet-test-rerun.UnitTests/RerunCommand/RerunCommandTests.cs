@@ -654,6 +654,44 @@ public class RerunCommandTests
         await dotNetTestRunner.Received(1).Test(config, directoryInfo.FullName);
     }
 
+    [Fact]
+    public async Task Run_TestsFailOnFirstRun_LogsNumberOfFailedTests()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, filter: string.Empty);
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var firstTrxFile = fileSystem.FileInfo.New("First.trx");
+        var secondTrxFile = fileSystem.FileInfo.New("Second.trx");
+        var testFilterCollection = new TestFilterCollection();
+        testFilterCollection.Add(new TestFilter(string.Empty,
+            new List<string>() { "FullyQualifiedName=Tests.TestA", "FullyQualifiedName=Tests.TestB" }));
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
+            .Returns(testFilterCollection);
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile))
+            .Returns(new TestFilterCollection());
+
+        // Act
+        await command.Run();
+
+        // Assert
+        logger.Received(1).Warning("Found 2 failed test(s) to rerun");
+    }
+
     private void InitialConfigurationSetup(RerunCommandConfiguration configuration, string extraParams = "", string filter = "--filter filter ")
     {
         var command = new Command("test-rerun");
