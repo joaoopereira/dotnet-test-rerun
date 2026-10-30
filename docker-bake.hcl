@@ -35,13 +35,21 @@ target "9" {
   }
 }
 
+# Pre-releases (e.g. 5.0.0-alpha.0) must not move "latest"
+function "is_prerelease" {
+  params = [version]
+  result = length(regexall("-", version)) > 0
+}
+
 target "10" {
-  tags = [
-    "${IMAGE}:${VERSION}",
-    "${IMAGE}:${VERSION}-net10",
-    "${IMAGE}:${VERSION}-dotnet10",
-    "${IMAGE}:latest"
-  ]
+  tags = concat(
+    [
+      "${IMAGE}:${VERSION}",
+      "${IMAGE}:${VERSION}-net10",
+      "${IMAGE}:${VERSION}-dotnet10"
+    ],
+    is_prerelease(VERSION) ? [] : ["${IMAGE}:latest"]
+  )
   args = {
     TARGET_DOTNET_VERSION = "10.0"
   }
