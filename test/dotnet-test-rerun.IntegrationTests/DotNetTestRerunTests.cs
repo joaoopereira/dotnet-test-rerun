@@ -141,7 +141,7 @@ public class DotNetTestRerunTests
         output.Should().Contain("Passed!", Exactly.Once());
         output.Should().NotContainAny(new string[] { "Failed!", "Rerun attempt" });
 
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories);
         files.Should().HaveCount(0);
     }
 
@@ -166,7 +166,7 @@ public class DotNetTestRerunTests
             Exactly.Thrice());
         output.Should().Contain("Passed:     4",
             Exactly.Once());
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories);
         files.Should().HaveCount(4);
         Environment.ExitCode.Should().Be(1);
     }    
@@ -220,8 +220,30 @@ public class DotNetTestRerunTests
         output.Should().Contain("Rerun filter: FullyQualifiedName=XUnitTestPassOnSecondRunExample.SimpleTest",            Exactly.Once());
         output.Should().Contain("Failed:     1, Passed:     1", Exactly.Once());
         output.Should().Contain("Failed:     0, Passed:     1", Exactly.Once());
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories);
         files.Should().HaveCount(2);
+        Environment.ExitCode.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DotnetTestRerun_FailingXUnit_PassOnSecond_UsesOneDirectoryPerAttempt()
+    {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
+        // results of a previous run in the same results directory
+        var staleAttempt = Directory.CreateDirectory(Path.Combine(testDir, "attempt-3"));
+        File.WriteAllText(Path.Combine(staleAttempt.FullName, "stale.trx"), "<TestRun />");
+
+        // Act
+        await RunDotNetTestRerunAndCollectOutputMessage("XUnitTestPassOnSecondRunExample", dir: testDir);
+
+        // Assert
+        Directory.Exists(staleAttempt.FullName).Should().BeFalse();
+        FileSystem.Directory.EnumerateFiles(Path.Combine(testDir, "attempt-0"), "*.trx").Should().HaveCount(1);
+        FileSystem.Directory.EnumerateFiles(Path.Combine(testDir, "attempt-1"), "*.trx").Should().HaveCount(1);
+        FileSystem.Directory.EnumerateFiles(testDir, "*.trx").Should().BeEmpty();
         Environment.ExitCode.Should().Be(0);
     }
 
@@ -242,7 +264,7 @@ public class DotNetTestRerunTests
 
             // Assert
             output.Should().Contain("Rerun filter: FullyQualifiedName=XUnitTestPassOnSecondRunExample.SimpleTest", Exactly.Once());
-            FileSystem.Directory.EnumerateFiles(testDir, "*trx").Should().HaveCount(2);
+            FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories).Should().HaveCount(2);
             Environment.ExitCode.Should().Be(0);
         }
         finally
@@ -265,7 +287,7 @@ public class DotNetTestRerunTests
 
         // Assert
         output.Should().Contain("Rerun filter: FullyQualifiedName=XUnitTestPassOnSecondRunExample.SimpleTest", Exactly.Once());
-        FileSystem.Directory.EnumerateFiles(testDir, "*trx").Should().HaveCount(2);
+        FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories).Should().HaveCount(2);
         Environment.ExitCode.Should().Be(0);
     }
 
@@ -293,7 +315,7 @@ public class DotNetTestRerunTests
         output.Should().Contain("Rerun filter: FullyQualifiedName=FailingXUnitExample.SimpleTest.SimpleStringCompare",
             Exactly.Thrice());
         output.Should().ContainAny("Passed: 4", "Passed:     4");
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories);
         files.Should().HaveCount(4);
         Environment.ExitCode.Should().Be(1);
     }
@@ -321,7 +343,7 @@ public class DotNetTestRerunTests
         output.Should().Contain("Failed:     1", Exactly.Times(4));
         output.Should().Contain("Passed!", Exactly.Times(4));
         output.Should().Contain("Failed!", Exactly.Times(4));
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories);
         files.Should().HaveCount(8);
         Environment.ExitCode.Should().Be(1);
     }
@@ -441,7 +463,7 @@ public class DotNetTestRerunTests
         output.Should().Contain("Passed:     4",
             Exactly.Once());
 
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories);
         files.Should().HaveCount(0);
     }
 
@@ -523,7 +545,7 @@ public class DotNetTestRerunTests
         // Second run: both failing test cases are retried and pass
         output.Should().Contain("Failed:     0, Passed:     2",
             Exactly.Once());
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories);
         files.Should().HaveCountGreaterThanOrEqualTo(2);
         
         // Clean up the counter files
@@ -576,7 +598,7 @@ public class DotNetTestRerunTests
         // DataDrivenTest(2,2).
         output.Should().Contain("Failed:     0, Passed:     2",
             Exactly.Once());
-        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx");
+        var files = FileSystem.Directory.EnumerateFiles(testDir, "*trx", SearchOption.AllDirectories);
         files.Should().HaveCountGreaterThanOrEqualTo(2);
         
         // Clean up the counter files

@@ -23,16 +23,16 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
     }
 
     /// <summary>
-    /// Merges the coverage reports produced since <paramref name="startDate"/>
+    /// Merges the coverage reports found in <paramref name="searchDirectories"/> (and their subdirectories)
     /// </summary>
     /// <param name="options">The test-rerun options.</param>
-    /// <param name="resultsDirectory">The results directory.</param>
-    /// <param name="startDate">Initial date to look for files.</param>
+    /// <param name="searchDirectories">The directories of the test runs, e.g. one per attempt.</param>
+    /// <param name="outputDirectory">Where the merged report is written.</param>
     /// <param name="cancellationToken">Cancels the merge and stops the dotnet-coverage process.</param>
     /// <exception cref="RerunException">dotnet-coverage could not run or exited with a non-zero code</exception>
-    public async Task Merge(RerunOptions options, string resultsDirectory, DateTime startDate, CancellationToken cancellationToken = default)
+    public async Task Merge(RerunOptions options, IEnumerable<string> searchDirectories, string outputDirectory, CancellationToken cancellationToken = default)
     {
-        var arguments = CoverageMergeArguments.Build(options, GetCoverageFiles(resultsDirectory, startDate), resultsDirectory);
+        var arguments = CoverageMergeArguments.Build(options, GetCoverageFiles(searchDirectories), outputDirectory);
         var processStartInfo = new ProcessStartInfo
         {
             FileName = "dotnet-coverage",
@@ -67,11 +67,12 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
         }
     }
 
-    private IEnumerable<string> GetCoverageFiles(string resultsDirectory, DateTime startDate)
-        => SearchPatterns.SelectMany(pattern =>
-                        FileSystem.Directory.GetFiles(resultsDirectory, pattern, SearchOption.AllDirectories))
-                        .Select(file => FileSystem.FileInfo.New(file))
-                        .Where(fileInfo => fileInfo.CreationTime >= startDate)
-                        .Select(fileInfo => fileInfo.FullName)
-                        .ToArray();
+    private IEnumerable<string> GetCoverageFiles(IEnumerable<string> searchDirectories)
+        => searchDirectories
+            .Where(FileSystem.Directory.Exists)
+            .SelectMany(directory => SearchPatterns.SelectMany(pattern =>
+                FileSystem.Directory.GetFiles(directory, pattern, SearchOption.AllDirectories)))
+            .Select(file => FileSystem.Path.GetFullPath(file))
+            .Distinct()
+            .ToArray();
 }
