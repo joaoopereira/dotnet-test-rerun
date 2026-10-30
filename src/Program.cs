@@ -3,6 +3,7 @@ using System.CommandLine.Invocation;
 using System.IO.Abstractions;
 using System.Reflection;
 using dotnet.test.rerun.Analyzers;
+using dotnet.test.rerun.Cli;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
 using dotnet.test.rerun.RerunCommand;
@@ -12,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 var serviceProvider = new ServiceCollection()
     .AddSingleton<ILogger, Logger>()
     .AddSingleton<RerunCommand>()
-    .AddSingleton<RerunCommandConfiguration>()
+    .AddSingleton<RerunCliDefinition>()
     .AddSingleton<IDotNetTestRunner, DotNetTestRunner>()
     .AddSingleton<IDotNetCoverageRunner, DotNetCoverageRunner>()
     .AddSingleton<IProcessExecution, ProcessExecution>()

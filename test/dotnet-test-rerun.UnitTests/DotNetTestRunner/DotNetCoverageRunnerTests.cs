@@ -3,6 +3,8 @@ using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
 using dotnet.test.rerun.Logging;
+using dotnet.test.rerun.Configuration;
+using dotnet.test.rerun.Execution;
 using dotnet.test.rerun.RerunCommand;
 using AwesomeAssertions;
 using NSubstitute;
@@ -24,7 +26,7 @@ public class DotNetCoverageRunnerTests
         var processExecution = Substitute.For<IProcessExecution>();
         var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
         var _dir = TestUtilities.GetTmpDirectory();
-        var configuration = new RerunCommandConfiguration()
+        var configuration = new RerunOptions()
         {
             MergeCoverageFormat = coverageFormat
         };
@@ -53,7 +55,7 @@ public class DotNetCoverageRunnerTests
         var processExecution = Substitute.For<IProcessExecution>();
         var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
         var _dir = TestUtilities.GetTmpDirectory();
-        var configuration = new RerunCommandConfiguration()
+        var configuration = new RerunOptions()
         {
             MergeCoverageFormat = null!
         };
@@ -75,7 +77,7 @@ public class DotNetCoverageRunnerTests
         var processExecution = Substitute.For<IProcessExecution>();
         var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
         var _dir = TestUtilities.GetTmpDirectory();
-        var configuration = new RerunCommandConfiguration()
+        var configuration = new RerunOptions()
         {
             MergeCoverageFormat = CoverageFormat.Cobertura
         };
@@ -107,7 +109,7 @@ public class DotNetCoverageRunnerTests
         var processExecution = Substitute.For<IProcessExecution>();
         var dotNetCoverageRunner = new DotNetCoverageRunner(logger, processExecution);
         var _dir = TestUtilities.GetTmpDirectory();
-        var configuration = new RerunCommandConfiguration()
+        var configuration = new RerunOptions()
         {
             MergeCoverageFormat = CoverageFormat.Cobertura
         };

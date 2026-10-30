@@ -2,9 +2,12 @@
 using System.CommandLine.Parsing;
 using System.IO.Abstractions;
 using dotnet.test.rerun.Analyzers;
+using dotnet.test.rerun.Cli;
+using dotnet.test.rerun.Configuration;
 using dotnet.test.rerun.Domain;
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Enums;
+using dotnet.test.rerun.Execution;
 using dotnet.test.rerun.Logging;
 
 namespace dotnet.test.rerun.RerunCommand;
@@ -12,14 +15,13 @@ namespace dotnet.test.rerun.RerunCommand;
 public class RerunCommand : RootCommand
 {
     private readonly ILogger Log;
-    private readonly RerunCommandConfiguration Config;
     private readonly IDotNetTestRunner DotNetTestRunner;
     private readonly IDotNetCoverageRunner DotNetCoverageRunner;
     private readonly IFileSystem FileSystem;
     private readonly ITestResultsAnalyzer TestResultsAnalyzer;
 
     public RerunCommand(ILogger logger,
-        RerunCommandConfiguration config,
+        RerunCliDefinition cliDefinition,
         IDotNetTestRunner dotNetTestRunner,
         IDotNetCoverageRunner dotNetCoverageRunner,
         IFileSystem fileSystem,
@@ -27,7 +29,6 @@ public class RerunCommand : RootCommand
         base("wrapper of dotnet test command with the extra option to automatic rerun failed tests")
     {
         Log = logger;
-        Config = config;
         DotNetTestRunner = dotNetTestRunner;
         DotNetCoverageRunner = dotNetCoverageRunner;
         FileSystem = fileSystem;
@@ -37,31 +38,31 @@ public class RerunCommand : RootCommand
         TreatUnmatchedTokensAsErrors = false;
 
         // Set Arguments and Options
-        config.Set(this);
+        cliDefinition.AddTo(this);
 
         this.SetAction(async (parseResult, cancellationToken) =>
         {
-            Config.GetValues(parseResult);
-            logger.SetLogLevel(Config.LogLevel);
-            await Run(cancellationToken);
+            var options = cliDefinition.ToOptions(parseResult);
+            logger.SetLogLevel(options.LogLevel);
+            await Run(options, cancellationToken);
             return Environment.ExitCode;
         });
     }
 
-    public async Task Run(CancellationToken cancellationToken = default)
+    public async Task Run(RerunOptions options, CancellationToken cancellationToken = default)
     {
         var startOfProcess = DateTime.Now;
         var startOfDotnetRun = DateTime.Now;
-        IDirectoryInfo resultsDirectory = FileSystem.DirectoryInfo.New(Config.ResultsDirectory);
-        await DotNetTestRunner.Test(Config, resultsDirectory.FullName, cancellationToken);
-        LogTestResults(resultsDirectory, startOfDotnetRun);
+        IDirectoryInfo resultsDirectory = FileSystem.DirectoryInfo.New(options.ResultsDirectory);
+        await DotNetTestRunner.Test(options, new RunRequest(options.Filter, options.Framework, resultsDirectory.FullName), cancellationToken);
+        LogTestResults(options, resultsDirectory, startOfDotnetRun);
         var errorCode = DotNetTestRunner.GetErrorCode();
         if (errorCode == ErrorCode.FailedTests)
         {
             var attempt = 1;
-            while (attempt <= Config.RerunMaxAttempts)
+            while (attempt <= options.RerunMaxAttempts)
             {
-                await Task.Delay(Config.Delay, cancellationToken);
+                await Task.Delay(options.Delay, cancellationToken);
                 var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startOfDotnetRun);
 
                 if (trxFiles.Length > 0)
@@ -75,40 +76,43 @@ public class RerunCommand : RootCommand
                     }
 
                     // Check if the number of failed tests exceeds the threshold
-                    if (Config.RerunMaxFailedTests > 0 && testsToRerun.TotalFailedTests > Config.RerunMaxFailedTests)
+                    if (options.RerunMaxFailedTests > 0 && testsToRerun.TotalFailedTests > options.RerunMaxFailedTests)
                     {
                         Environment.ExitCode = 1;
-                        Log.Error($"Failed tests ({testsToRerun.TotalFailedTests}) exceeded the maximum threshold ({Config.RerunMaxFailedTests}). Skipping rerun.");
+                        Log.Error($"Failed tests ({testsToRerun.TotalFailedTests}) exceeded the maximum threshold ({options.RerunMaxFailedTests}). Skipping rerun.");
                         break;
                     }
 
                     // Check if the percentage of failed tests exceeds the threshold
-                    if (Config.RerunFailedThreshold >= 0 && testsToRerun.TotalTests > 0)
+                    if (options.RerunFailedThreshold >= 0 && testsToRerun.TotalTests > 0)
                     {
                         var failedPercentage = testsToRerun.TotalFailedTests * 100d / testsToRerun.TotalTests;
-                        if (failedPercentage > Config.RerunFailedThreshold)
+                        if (failedPercentage > options.RerunFailedThreshold)
                         {
                             Environment.ExitCode = 1;
-                            Log.Error($"Failed tests percentage ({failedPercentage:0.##}%) exceeded the maximum threshold ({Config.RerunFailedThreshold}%). Skipping rerun.");
+                            Log.Error($"Failed tests percentage ({failedPercentage:0.##}%) exceeded the maximum threshold ({options.RerunFailedThreshold}%). Skipping rerun.");
                             break;
                         }
                     }
 
-                    Log.Information($"Rerun attempt {attempt}/{Config.RerunMaxAttempts}");
+                    Log.Information($"Rerun attempt {attempt}/{options.RerunMaxAttempts}");
                     Log.Warning($"Found Failed tests: {testsToRerun}");
                     startOfDotnetRun = DateTime.Now;
 
                     var attemptResults = new List<ErrorCode>();
                     foreach (var tests in testsToRerun.Filters)
                     {
-                        Config.Filter = Config.AppendFailedTests(tests.Value.Filter);
+                        var request = new RunRequest(
+                            FilterComposer.Combine(options.Filter, tests.Value.Filter),
+                            options.Framework,
+                            resultsDirectory.FullName);
 
-                        Log.Warning($"Rerun filter: {Config.Filter}");
-                        await DotNetTestRunner.Test(Config, resultsDirectory.FullName, cancellationToken);
+                        Log.Warning($"Rerun filter: {request.Filter}");
+                        await DotNetTestRunner.Test(options, request, cancellationToken);
                         attemptResults.Add(DotNetTestRunner.GetErrorCode());
                     }
                     errorCode = AggregateErrorCodes(attemptResults);
-                    LogTestResults(resultsDirectory, startOfDotnetRun);
+                    LogTestResults(options, resultsDirectory, startOfDotnetRun);
                     attempt++;
                 }
                 else
@@ -124,15 +128,15 @@ public class RerunCommand : RootCommand
             Environment.ExitCode = 1;
         }
 
-        if (Config.DeleteReportFiles)
+        if (options.DeleteReportFiles)
         {
             TestResultsAnalyzer.AddLastTrxFiles(resultsDirectory, startOfDotnetRun);
             DeleteFiles();
         }
         
-        if (Config.MergeCoverageFormat.HasValue)
+        if (options.MergeCoverageFormat.HasValue)
         {
-            await MergeCoverageResults(resultsDirectory, startOfProcess, cancellationToken);
+            await DotNetCoverageRunner.Merge(options, resultsDirectory.FullName, startOfProcess, cancellationToken);
         }
     }
 
@@ -152,15 +156,12 @@ public class RerunCommand : RootCommand
         }
     }
 
-    private void LogTestResults(IDirectoryInfo resultsDirectory, DateTime startSearchTime)
+    private void LogTestResults(RerunOptions options, IDirectoryInfo resultsDirectory, DateTime startSearchTime)
     {
-        if (Config.LogTestResults is false)
+        if (options.LogTestResults is false)
             return;
 
         var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startSearchTime);
         TestResultsAnalyzer.LogTestResults(trxFiles);
     }
-
-    private Task MergeCoverageResults(IDirectoryInfo resultsDirectory, DateTime startTime, CancellationToken cancellationToken)
-        => DotNetCoverageRunner.Merge(Config, resultsDirectory.FullName, startTime, cancellationToken);
 }
