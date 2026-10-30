@@ -11,6 +11,7 @@ dotnet-test-rerun can be installed in multiple ways depending on your needs and 
 ## Prerequisites
 
 - .NET SDK 8.0, 9.0, or 10.0
+  (this is what runs the tool; the projects you test can still target older frameworks, such as `net6.0` or .NET Framework, as long as the SDK can build and run them)
 - A .NET test project (compatible with `dotnet test`)
 
 ## Method 1: Global Tool (Recommended)
