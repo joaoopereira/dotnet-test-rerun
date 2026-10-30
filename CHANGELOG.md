@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="5.0.0-alpha.0"></a>
+## [5.0.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.0.0-alpha.0) (2026-10-30)
+
+### Features
+
+* **results:** write each attempt to its own attempt-N directory ([84d3a6f](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/84d3a6f038356d5af83d02ab47210fb9dd2860a0))
+
+### Bug Fixes
+
+* **coverage:** await coverage merge and surface its failures ([b0c63c1](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/b0c63c1115ede4aa61e7ea63a7bd5a7d782283ec))
+* **rerun:** apply --delay only before a rerun and batch long filters ([ae46d19](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/ae46d19684f15600eb1ae94ef8068bb5b7173787))
+* **rerun:** do not force --framework on reruns ([1a5af08](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/1a5af08a9a9a950f57a06e96792e6256bcc73469))
+* **rerun:** rerun each failed framework with -f and aggregate attempt results ([a9e7adb](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/a9e7adb8b5e15d19e9b392b5f79e8f34251fe7e6))
+* **runner:** detect failed tests from exit code and TRX, not console text ([196551c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/196551c1c361058ebfe675c2d020d4f84f06a3c1))
+* **runner:** wait for process exit properly and support cancellation ([fcfc346](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/fcfc346108835257476037ab38316d23cf6e1018))
+
+### Breaking Changes
+
+* drop the net6.0 target framework ([edb8136](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/edb81369eb5d9aebc5c619ee7a3b9481e374296d))
+* **results:** write each attempt to its own attempt-N directory ([84d3a6f](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/84d3a6f038356d5af83d02ab47210fb9dd2860a0))
+
 <a name="4.3.0-alpha.2"></a>
 ## [4.3.0-alpha.2](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.3.0-alpha.2) (2026-10-30)
 
