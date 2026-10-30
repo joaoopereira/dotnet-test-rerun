@@ -1,5 +1,5 @@
 using System.IO.Abstractions;
-using System.Text.RegularExpressions;
+using dotnet.test.rerun.Analyzers.Filters;
 using dotnet.test.rerun.Domain;
 using dotnet.test.rerun.Extensions;
 using dotnet.test.rerun.Logging;
@@ -12,6 +12,7 @@ using TrxFileParser.Models;
 public class TestResultsAnalyzer : ITestResultsAnalyzer
 {
     private readonly ILogger Log;
+    private readonly TestFilterBuilder FilterBuilder = new();
 
     public TestResultsAnalyzer(ILogger logger)
     {
@@ -80,9 +81,6 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         var fullMethodNameByTestId = trx.TestDefinitions?.UnitTests
             .ToDictionary(x => x.Id, x => $"{x.TestMethod.ClassName}.{x.TestMethod.Name}") ?? new();
 
-        var classNameByTestId = trx.TestDefinitions?.UnitTests
-            .ToDictionary(x => x.Id, x => x.TestMethod.ClassName) ?? new();
-
         var adapterTypeByTestId = trx.TestDefinitions?.UnitTests
             .ToDictionary(x => x.Id, x => x.TestMethod.AdapterTypeName) ?? new();
 
@@ -110,7 +108,7 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
                     .ToList() ?? new List<string>();
 
                 var abortedFilters = allClassNames
-                    .Select(className => $"FullyQualifiedName~{EscapeAll(className)}")
+                    .Select(VsTestFilter.ClassFilter)
                     .ToList();
 
                 return (new TestFilter(framework, abortedFilters), totalTests);
@@ -122,93 +120,13 @@ public class TestResultsAnalyzer : ITestResultsAnalyzer
         }
 
         var filters = failedTests
-            .Select(t =>
-            {
-                var adapterType = adapterTypeByTestId.TryGetValue(t.TestId, out var adapter) ? adapter : string.Empty;
-                var isNUnit = adapterType.Contains("nunit", StringComparison.OrdinalIgnoreCase);
-                var isMSTest = adapterType.Contains("mstest", StringComparison.OrdinalIgnoreCase);
-                // Only NUnit supports filtering by specific test cases with parameters
-                var useContainsOperator = isNUnit;
-
-                return BuildFilters(new string[] {
-                    BuildFullyQualifiedNameFilter(t, fullMethodNameByTestId, useContainsOperator, false, string.Empty),
-                    // MSTest and NUnit don't use DisplayName filters (NUnit uses ~ operator, MSTest doesn't support case-level filtering)
-                    (useContainsOperator || isMSTest) ? null : BuildDisplayNameFilter(t.TestName)});
-            })
+            .Select(t => FilterBuilder.BuildFilter(new FailedTest(
+                fullMethodNameByTestId.TryGetValue(t.TestId, out var fullMethodName) ? fullMethodName : t.TestName,
+                t.TestName,
+                adapterTypeByTestId.TryGetValue(t.TestId, out var adapter) ? adapter : string.Empty)))
             .Distinct()
             .ToList();
 
         return (new TestFilter(framework, filters), totalTests);
     }
-
-    private string BuildFilters(string?[] filters)
-        => EscapeAll(
-            string.Join(
-                "&",
-                filters.Where(x => x is not null)));
-
-    private static string BuildFullyQualifiedNameFilter(
-        UnitTestResult testResult,
-        Dictionary<string, string> fullMethodNameByTestId,
-        bool useContainsOperator,
-        bool isMSTest,
-        string className)
-    {
-        var fullyQualifiedName = fullMethodNameByTestId.TryGetValue(testResult.TestId, out var fullMethodName)
-            ? fullMethodName
-            : testResult.TestName;
-
-        // Check if the test has parameters
-        var openParenIndex = fullyQualifiedName.IndexOf('(');
-        var closeParenIndex = fullyQualifiedName.IndexOf(')');
-        var hasParameters = openParenIndex > 0 && closeParenIndex > openParenIndex + 1; // +1 to check for non-empty params
-
-        // For NUnit with parameterized tests, use the ~ (contains) operator with full test name including parameters
-        if (useContainsOperator && hasParameters)
-        {
-            // NUnit test names with string parameters include quotes: MethodName("param1","param2")
-            // Keeping the quotes is required so the filter matches the FullyQualifiedName exactly (which also
-            // contains the quotes). A literal quote in the filter value breaks the "dotnet test" command line
-            // (it is forwarded to MSBuild as the VSTestTestCaseFilter property, whose parser cannot handle raw
-            // quotes). Percent-encoding the quotes as %22 avoids that: MSBuild decodes %22 back to a literal
-            // quote before invoking VSTest, so the filter that VSTest evaluates still contains the real quotes.
-            var filterValue = fullyQualifiedName.Replace("\"", "%22");
-            return $"FullyQualifiedName~{filterValue}";
-        }
-
-        // For other frameworks or non-parameterized tests, use exact match with method name only
-        var fqn = fullyQualifiedName.Split('(')[0];
-        // Escape spaces in the fully qualified name
-        fqn = fqn.Replace(" ", "\\ ");
-        return $"FullyQualifiedName={fqn}";
-    }
-
-    private static string? BuildDisplayNameFilter(string testName)
-    {
-        var openParenthesisIndex = testName.IndexOf("(");
-        var closeParenthesisIndex = testName.IndexOf(")");
-
-        // Check if there are parameters in the test name
-        if (openParenthesisIndex == -1 || closeParenthesisIndex == -1 || closeParenthesisIndex <= openParenthesisIndex)
-        {
-            return null;
-        }
-
-        var testParameters = testName
-            .Substring(openParenthesisIndex + 1, closeParenthesisIndex - openParenthesisIndex - 1);
-
-        // If there are no parameters, return null
-        if (string.IsNullOrWhiteSpace(testParameters))
-        {
-            return null;
-        }
-
-        // Escape double quotes for filter compatibility
-        testParameters = testParameters.Replace("\"", "%22");
-
-        return $"DisplayName~{testParameters}";
-    }
-
-    private string EscapeAll(string input)
-        => Regex.Replace(input, @"[()?{}]", match => "\\" + match.Value);
 }
