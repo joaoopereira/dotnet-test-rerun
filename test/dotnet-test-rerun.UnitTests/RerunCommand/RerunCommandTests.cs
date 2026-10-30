@@ -466,6 +466,67 @@ public class RerunCommandTests
         await dotNetCoverageRunner.Received(1).Merge(config, directoryInfo.FullName, Arg.Any<DateTime>());
     }
 
+    [Fact]
+    public async Task Run_WithMergeCoverageFormat_WaitsForMergeToComplete()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, "--mergeCoverageFormat cobertura");
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+        var merge = new TaskCompletionSource();
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.Success);
+        dotNetCoverageRunner.Merge(config, directoryInfo.FullName, Arg.Any<DateTime>())
+            .Returns(merge.Task);
+
+        // Act
+        var run = command.Run();
+
+        // Assert
+        run.IsCompleted.Should().BeFalse();
+        merge.SetResult();
+        await run;
+    }
+
+    [Fact]
+    public async Task Run_WithMergeCoverageFormat_MergeFails_Throws()
+    {
+        // Arrange
+        var logger = new Logger();
+        var config = new RerunCommandConfiguration();
+        InitialConfigurationSetup(config, "--mergeCoverageFormat cobertura");
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        var dotNetCoverageRunner = Substitute.For<IDotNetCoverageRunner>();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var directoryInfo = fileSystem.DirectoryInfo.New(config.ResultsDirectory);
+        var command = new dotnet.test.rerun.RerunCommand.RerunCommand(logger, config, dotNetTestRunner,
+            dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
+
+        dotNetTestRunner.Test(config, directoryInfo.FullName)
+            .Returns(Task.CompletedTask);
+        dotNetTestRunner.GetErrorCode()
+            .Returns(ErrorCode.Success);
+        dotNetCoverageRunner.Merge(config, directoryInfo.FullName, Arg.Any<DateTime>())
+            .Returns(Task.FromException(new RerunException("merge failed")));
+
+        // Act
+        var act = () => command.Run();
+
+        // Assert
+        await act.Should().ThrowAsync<RerunException>().WithMessage("merge failed");
+    }
+
    [Fact]
     public async Task Run_TestsFailExceedingThreshold_SkipsRerun()
     {

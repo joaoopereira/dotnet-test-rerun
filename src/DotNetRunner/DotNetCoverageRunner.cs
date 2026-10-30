@@ -36,10 +36,6 @@ public class DotNetCoverageRunner : IDotNetCoverageRunner
     public async Task Merge(RerunCommandConfiguration config, string resultsDirectory, DateTime startDate)
     {
         string arguments = config.GetMergeCoverageArgumentList(GetCoverageFiles(resultsDirectory, startDate), resultsDirectory);
-
-        if (string.IsNullOrEmpty(resultsDirectory) is false)
-            arguments = $"{arguments} --results-directory {resultsDirectory}";
-
         await Run(arguments);
     }
 

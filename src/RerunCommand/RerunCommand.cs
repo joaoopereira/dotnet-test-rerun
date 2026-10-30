@@ -128,7 +128,7 @@ public class RerunCommand : RootCommand
         
         if (Config.MergeCoverageFormat.HasValue)
         {
-            MergeCoverageResults(resultsDirectory, startOfProcess);
+            await MergeCoverageResults(resultsDirectory, startOfProcess);
         }
     }
 
@@ -149,6 +149,6 @@ public class RerunCommand : RootCommand
         TestResultsAnalyzer.LogTestResults(trxFiles);
     }
 
-    private void MergeCoverageResults(IDirectoryInfo resultsDirectory, DateTime startTime)
+    private Task MergeCoverageResults(IDirectoryInfo resultsDirectory, DateTime startTime)
         => DotNetCoverageRunner.Merge(Config, resultsDirectory.FullName, startTime);
 }
