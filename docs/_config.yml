@@ -1,6 +1,6 @@
 # Jekyll configuration for dotnet-test-rerun documentation
 title: dotnet-test-rerun
-description: Automatically rerun failed dotnet tests until they pass or reach max attempts
+description: Rerun only the failed .NET tests, automatically, until they pass
 baseurl: "/dotnet-test-rerun"
 url: "https://joaoopereira.github.io"
 
@@ -12,6 +12,7 @@ markdown: kramdown
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
+  - jekyll-redirect-from
 
 # Just the Docs theme configuration
 # Color scheme - dark mode
@@ -33,7 +34,7 @@ back_to_top: true
 back_to_top_text: "Back to top"
 
 # Footer content
-footer_content: "Copyright &copy; 2023-2024 João Pereira. Distributed under the GNU General Public License v3.0."
+footer_content: "Copyright &copy; 2023-2026 João Pereira. Distributed under the GNU General Public License v3.0."
 
 # Aux links for the upper right navigation
 aux_links:
@@ -46,6 +47,15 @@ aux_links_new_tab: true
 # Enable copy code button
 enable_copy_code_button: true
 
+# Callouts: {: .note } and {: .warning } before a paragraph
+callouts:
+  note:
+    title: Note
+    color: blue
+  warning:
+    title: Warning
+    color: yellow
+
 # Navigation structure (Just the Docs uses front matter for navigation)
 # Pages will be ordered by nav_order in their front matter
 
@@ -57,6 +67,7 @@ github:
 
 # Exclude from build
 exclude:
+  - README.md
   - Gemfile
   - Gemfile.lock
   - node_modules

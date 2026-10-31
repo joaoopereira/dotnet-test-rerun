@@ -1,126 +1,64 @@
 ---
 layout: default
 title: Docker
-nav_order: 6
+nav_order: 7
 ---
 
-# Docker Guide
+# Docker
 
-dotnet-test-rerun is available as Docker images for containerized environments. This guide covers using the tool with Docker.
+Images are published on Docker Hub as [`joaoopereira/dotnet-test-rerun`](https://hub.docker.com/r/joaoopereira/dotnet-test-rerun). The entry point is `test-rerun`, so the container arguments are the tool arguments.
 
-## Available Images
+## Tags
 
-Docker images are available for multiple .NET runtime versions:
+| Tag | .NET | Notes |
+|---|---|---|
+| `latest` | 10.0 | Latest stable release. Pre-releases do not move it. |
+| `<version>`, `<version>-net10`, `<version>-dotnet10` | 10.0 | |
+| `<version>-net9`, `<version>-dotnet9` | 9.0 | |
+| `<version>-net8`, `<version>-dotnet8` | 8.0 | |
 
-| Tag | .NET Runtime | Description |
-|-----|-------------|-------------|
-| `latest` | .NET 10.0 | Latest version with .NET 10.0 runtime |
-| `{version}` | .NET 10.0 | Specific version with .NET 10.0 runtime |
-| `{version}-net10` | .NET 10.0 | Explicit .NET 10.0 image |
-| `{version}-dotnet10` | .NET 10.0 | Explicit .NET 10.0 image (alternative tag) |
-| `{version}-net9` | .NET 9.0 | .NET 9.0 image |
-| `{version}-dotnet9` | .NET 9.0 | .NET 9.0 image (alternative tag) |
-| `{version}-net8` | .NET 8.0 | .NET 8.0 image |
-| `{version}-dotnet8` | .NET 8.0 | .NET 8.0 image (alternative tag) |
+`<version>` is a NuGet version such as `4.2.0` or `5.0.0-alpha.0`. Pin a version in CI instead of using `latest`.
 
-## Docker Hub
+## Running tests
 
-Images are hosted on Docker Hub: [joaoopereira/dotnet-test-rerun](https://hub.docker.com/r/joaoopereira/dotnet-test-rerun)
-
-## Basic Usage
-
-### Pull the Image
+Mount your repository and pass paths inside the container. The image's working directory is `/app`, where the tool is installed, so use absolute paths:
 
 ```bash
-# Latest stable version (NET 10.0)
-docker pull joaoopereira/dotnet-test-rerun:latest
-
-# Specific version and runtime
-docker pull joaoopereira/dotnet-test-rerun:3.4.0-net8
+docker run --rm \
+  -v "$PWD:/src" \
+  joaoopereira/dotnet-test-rerun:4.2.0-net8 \
+  /src/tests/MyTests/MyTests.csproj \
+  --rerunMaxAttempts 3 \
+  --results-directory /src/TestResults
 ```
 
-### Run Tests
-
-```bash
-docker run -v $(pwd):/work -w /work \
-  joaoopereira/dotnet-test-rerun:latest \
-  path/to/test.dll
-```
-
-## Using Specific .NET Versions
-
-### .NET 8.0
-
-```bash
-docker run -v $(pwd):/work -w /work \
-  joaoopereira/dotnet-test-rerun:4.0.0-net8 \
-  tests/bin/Release/net8.0/MyTests.dll \
-  --rerunMaxAttempts 3
-```
-
-### .NET 9.0
-
-```bash
-docker run -v $(pwd):/work -w /work \
-  joaoopereira/dotnet-test-rerun:4.0.0-net9 \
-  tests/bin/Release/net9.0/MyTests.dll \
-  --rerunMaxAttempts 3
-```
-
-### .NET 10.0
-
-```bash
-docker run -v $(pwd):/work -w /work \
-  joaoopereira/dotnet-test-rerun:4.0.0-net10 \
-  tests/bin/Release/net10.0/MyTests.dll \
-  --rerunMaxAttempts 3
-```
-
-## Volume Mounting
-
-Mount your project directory to access test DLLs and write results:
-
-```bash
-docker run \
-  -v $(pwd):/work \        # Mount current directory
-  -w /work \               # Set working directory
-  joaoopereira/dotnet-test-rerun:latest \
-  tests/MyTests.dll \
-  --results-directory /work/TestResults
-```
+Choose the image whose .NET version matches the target framework of your test projects.
 
 ## Docker Compose
 
-Create a `docker-compose.yml` file:
-
 ```yaml
-version: '3.8'
-
 services:
-  test:
-    image: joaoopereira/dotnet-test-rerun:latest
+  tests:
+    image: joaoopereira/dotnet-test-rerun:4.2.0
     volumes:
-      - .:/app
-      - test-results:/app/TestResults
-    working_dir: /app
+      - .:/src
     command: >
-      tests/bin/Release/net8.0/MyTests.dll
+      /src/MySolution.sln
       --rerunMaxAttempts 3
-      --results-directory /app/TestResults
-      --logger "trx;LogFileName=results.trx"
-
-volumes:
-  test-results:
+      --filter "Category=Integration"
+      --results-directory /src/TestResults
 ```
-
-Run tests:
 
 ```bash
-docker-compose run test
+docker compose run --rm tests
 ```
 
-## Next Steps
+## Building the images
 
-- [Examples](examples) - See complete Docker examples
-- [Configuration](configuration) - Configure test execution
-- [Usage](usage) - Learn all command options
+The `Dockerfile` and `docker-bake.hcl` are at the root of the repository:
+
+```bash
+docker buildx bake                          # .NET 8, 9 and 10
+docker buildx bake 8                        # only .NET 8
+VERSION=1.2.3 docker buildx bake            # set the version used in the tags
+```

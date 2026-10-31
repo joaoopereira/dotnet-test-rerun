@@ -1,356 +1,109 @@
 ---
 layout: default
 title: Contributing
-nav_order: 7
+nav_order: 9
 ---
 
-# Contributing to dotnet-test-rerun
+# Contributing
+{: .no_toc }
 
-Thank you for your interest in contributing to dotnet-test-rerun! This guide will help you get started.
+Bug reports, ideas, documentation fixes and pull requests are welcome.
 
-## Ways to Contribute
+<details open markdown="block">
+  <summary>Contents</summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
 
-- 🐛 Report bugs and issues
-- 💡 Suggest new features or improvements
-- 📝 Improve documentation
-- 🔧 Submit bug fixes
-- ✨ Add new features
-- 🧪 Add or improve tests
-- 📖 Share examples and use cases
+## Reporting a bug
 
-## Getting Started
+[Open an issue](https://github.com/joaoopereira/dotnet-test-rerun/issues/new) with the information listed in [Troubleshooting](troubleshooting#still-stuck). A small project that reproduces the problem helps the most, especially for tests that are not rerun or rerun wrongly: include a test name and the printed `Rerun filter: …`.
 
-### Prerequisites
+## Development setup
 
-- .NET SDK 8.0, 9.0, or 10.0
-- Git
-- A code editor (Visual Studio, VS Code, Rider, etc.)
+You need:
 
-### Fork and Clone
+- the .NET SDK version in [`global.json`](https://github.com/joaoopereira/dotnet-test-rerun/blob/main/global.json) (10.0);
+- the .NET 8 and 9 runtimes, for the integration test fixtures.
 
-1. Fork the repository on GitHub
-2. Clone your fork locally:
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/dotnet-test-rerun.git
-   cd dotnet-test-rerun
-   ```
-
-3. Add the upstream repository:
-   ```bash
-   git remote add upstream https://github.com/joaoopereira/dotnet-test-rerun.git
-   ```
-
-### Build the Project
+The [dev container](https://github.com/joaoopereira/dotnet-test-rerun/tree/main/.devcontainer) installs .NET 10 and 8.
 
 ```bash
-# Restore dependencies
-dotnet restore
-
-# Build the solution
-dotnet build --configuration Release
-
-# Run tests
-dotnet test --configuration Release
+git clone https://github.com/joaoopereira/dotnet-test-rerun.git
+cd dotnet-test-rerun
+dotnet build
 ```
 
-Build should complete with no errors or warnings, and all 186 tests should pass.
+The first restore installs [Husky.Net](https://alirezanet.github.io/Husky.Net/) git hooks:
 
-## Making Changes
+- **pre-commit** runs the unit tests;
+- **commit-msg** checks the commit message format (see below).
 
-### Create a Branch
-
-Create a feature branch from `main`:
+## Running the tests
 
 ```bash
-git checkout -b feature/your-feature-name
+# Unit tests: fast, run them on every change
+dotnet test test/dotnet-test-rerun.UnitTests/dotnet-test-rerun.UnitTests.csproj
+
+# Integration tests: run the real tool against the fixture projects (several minutes)
+dotnet test test/dotnet-test-rerun.IntegrationTests/dotnet-test-rerun.IntegrationTests.csproj
 ```
 
-Or for bug fixes:
+Run the tool from source:
 
 ```bash
-git checkout -b fix/issue-description
+dotnet run --project src/dotnet-test-rerun.csproj --framework net10.0 -- path/to/MyTests.csproj
 ```
 
-### Code Style
+## Project layout
 
-Follow the existing code style in the project:
+| Folder | Contents |
+|---|---|
+| `src/Cli` | Command-line options (`RerunCliDefinition`) and the exit code mapping (`RerunRootCommand`) |
+| `src/Configuration` | `RerunOptions`, the parsed options |
+| `src/Execution` | The rerun loop (`RerunOrchestrator`) and the argument lists for `dotnet test` and `dotnet-coverage` |
+| `src/DotNetRunner` | Starts `dotnet test` and `dotnet-coverage`, and classifies how a run ended |
+| `src/Analyzers` | Reads TRX files and builds the rerun filters, one strategy per test framework |
+| `src/Logging` | Console output with Spectre.Console |
+| `test/dotnet-test-rerun.UnitTests` | Unit tests |
+| `test/dotnet-test-rerun.IntegrationTests` | Integration tests; the projects they run are in `Fixtures/` |
 
-- Use C# naming conventions
-- Keep methods focused and small
-- Add XML documentation comments for public APIs
-- Write clear, descriptive commit messages
-
-### Commit Messages
-
-Use [Conventional Commits](https://www.conventionalcommits.org/) format:
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-**Types:**
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `test`: Adding or updating tests
-- `refactor`: Code refactoring
-- `perf`: Performance improvements
-- `chore`: Build process or tooling changes
-- `ci`: CI/CD changes
-
-**Examples:**
-
-```
-feat(rerun): add delay option between retries
-
-Add a new --delay option that allows users to specify
-a delay in seconds between test retry attempts.
-
-Closes #123
-```
-
-```
-fix: handle null reference in test filter parsing
-
-Fixes NullReferenceException when test filter is empty.
-
-Fixes #456
-```
-
-```
-docs: update usage examples with new options
-```
-
-### Testing
-
-Always add or update tests for your changes:
-
-#### Unit Tests
-
-Add unit tests to `test/dotnet-test-rerun.UnitTests/`:
-
-```csharp
-[Fact]
-public void NewFeature_Should_BehaveCorrectly()
-{
-    // Arrange
-    var sut = new YourClass();
-    
-    // Act
-    var result = sut.MethodUnderTest();
-    
-    // Assert
-    result.Should().Be(expectedValue);
-}
-```
-
-#### Integration Tests
-
-Add integration tests to `test/dotnet-test-rerun.IntegrationTests/` if your change affects test execution:
-
-```csharp
-[Fact]
-public async Task NewFeature_Integration_Should_Work()
-{
-    // Test with actual test projects
-}
-```
-
-#### Run Tests Locally
-
-```bash
-# Run all tests
-dotnet test --configuration Release
-
-# Run specific test project
-dotnet test test/dotnet-test-rerun.UnitTests/
-
-# Run with coverage
-dotnet test /p:CollectCoverage=true
-```
-
-## Pull Request Process
-
-### Before Submitting
-
-1. **Update from upstream**:
-   ```bash
-   git fetch upstream
-   git rebase upstream/main
-   ```
-
-2. **Build and test**:
-   ```bash
-   dotnet build --configuration Release
-   dotnet test --configuration Release
-   ```
-
-3. **Update documentation** if needed:
-   - Update README.md
-   - Update relevant documentation pages in `docs/`
-   - Add examples if applicable
-
-4. **Update CHANGELOG.md** (if applicable):
-   Follow the existing format and add your changes under "Unreleased"
-
-### Submit Pull Request
-
-1. Push your changes to your fork:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-2. Go to GitHub and create a Pull Request
-
-3. Fill in the PR template with:
-   - Description of changes
-   - Related issues (if any)
-   - Testing performed
-   - Screenshots (for UI changes)
-
-4. Ensure CI checks pass:
-   - Build succeeds
-   - All tests pass
-   - Code coverage is maintained or improved
-   - Commit messages follow conventional format
-
-### PR Review Process
-
-- Maintainers will review your PR
-- Address any feedback or requested changes
-- Once approved, your PR will be merged
-
-## Reporting Issues
-
-### Bug Reports
-
-When reporting bugs, include:
-
-1. **Description**: Clear description of the bug
-2. **Steps to Reproduce**: Detailed steps to reproduce the issue
-3. **Expected Behavior**: What should happen
-4. **Actual Behavior**: What actually happens
-5. **Environment**:
-   - OS (Windows, Linux, macOS)
-   - .NET SDK version
-   - dotnet-test-rerun version
-6. **Test Project Details**:
-   - Test framework (xUnit, NUnit, MSTest)
-   - Target framework
-7. **Logs/Output**: Relevant error messages or logs
-
-### Feature Requests
-
-For feature requests, include:
-
-1. **Problem**: What problem does this solve?
-2. **Proposed Solution**: Your suggested approach
-3. **Alternatives**: Other approaches you've considered
-4. **Use Case**: Real-world scenario where this helps
-
-## Development Guidelines
-
-### Project Structure
-
-```
-dotnet-test-rerun/
-├── src/                          # Main application code
-│   ├── Analyzers/               # Test result analysis
-│   ├── Cli/                     # Command-line definition and root command
-│   ├── Configuration/           # Immutable options
-│   ├── Domain/                  # Domain models
-│   ├── DotNetRunner/            # Test execution
-│   ├── Enums/                   # Enumerations
-│   ├── Execution/               # Rerun loop, dotnet test arguments, filters
-│   ├── Extensions/              # Utility extensions
-│   ├── Logging/                 # Console output
-│   └── Program.cs               # Entry point
-├── test/                        # Test projects
-│   ├── dotnet-test-rerun.Common/
-│   ├── dotnet-test-rerun.UnitTests/
-│   └── dotnet-test-rerun.IntegrationTests/
-└── docs/                        # Documentation
-```
-
-### Key Components
-
-- **RerunOrchestrator**: Retry loop; returns a `RerunOutcome` that `RerunRootCommand` maps to the exit code
-- **DotNetTestRunner**: Executes `dotnet test` and captures results
-- **TestResultsAnalyzer**: Parses TRX files to identify failed tests
-- **TestFilter**: Builds test filters for rerunning specific tests
-- **Logger**: Handles console output with Spectre.Console
-
-### Adding New Options
-
-To add a new command-line option:
+## Adding a command-line option
 
 1. Add an init-only property to `src/Configuration/RerunOptions.cs`, with the same default as the CLI.
 2. Define the option in `src/Cli/RerunCliDefinition.cs`, register it in `AddTo` and map it in `ToOptions`.
 3. If `dotnet test` must receive it, add it to `src/Execution/DotNetTestArguments.cs`.
-4. Add tests for the new option
-5. Update documentation
+4. Add unit tests.
+5. Document it in the [command reference](usage) (`docs/usage.md`). If it needs more than one line, also add a section to `docs/configuration.md` (Guides). Add it to the "Main options" table of `README.md` only if most users need it.
 
-## Coding Standards
+## Commit messages
 
-### General Guidelines
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): subject`, at most 90 characters, no trailing period. The hook and CI reject other formats.
 
-- Follow SOLID principles
-- Write testable code
-- Use dependency injection
-- Avoid static state
-- Handle errors appropriately
+Types: `feat`, `fix`, `docs`, `test`, `refactor`, `perf`, `build`, `ci`, `chore`, `style`, `revert`.
 
-### Documentation
+```text
+feat(rerun): add --delay between reruns
+fix(analyzer): escape braces in NUnit test names
+docs: document the attempt-N results folders
+```
 
-- Add XML comments for public APIs
-- Update README.md for user-facing changes
-- Add examples for new features
-- Keep documentation clear and concise
+The CHANGELOG is generated from these messages at release time, so do not edit it or the version in pull requests.
 
-### Dependencies
+## Pull requests
 
-- Minimize external dependencies
-- Keep dependencies up to date
-- Document why each dependency is needed
+1. Create a branch and make your change, with tests.
+2. Update the documentation in `docs/` and, if needed, `README.md`.
+3. Run the unit tests (the integration tests too, if you changed how tests are run or rerun).
+4. Open a pull request and fill in the template. CI checks the commit messages and runs all tests.
 
-## Release Process
+Maintainers can add the `preview` label to a pull request to publish a preview package to NuGet, so the change can be tried before it is merged.
 
-Releases are managed by maintainers:
+## Editing this documentation
 
-1. Version is bumped using Versionize
-2. CHANGELOG.md is automatically updated
-3. Git tag is created
-4. NuGet package is published
-5. Docker images are built and pushed
-
-Contributors don't need to worry about releases, but should follow semantic versioning guidelines in commit messages.
-
-## Community Guidelines
-
-- Be respectful and inclusive
-- Welcome newcomers
-- Provide constructive feedback
-- Ask questions if unclear
-- Help others when possible
-
-## Getting Help
-
-- 🐛 [GitHub Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues) - Report bugs, request features
-- 📧 Contact maintainers via GitHub
-
-## Recognition
-
-Contributors will be:
-- Listed in the repository's contributors section
-- Mentioned in release notes (for significant contributions)
-- Credited in the README
+The site is built with [Jekyll](https://jekyllrb.com/) and the [Just the Docs](https://just-the-docs.com/) theme from the `docs/` folder. See [`docs/README.md`](https://github.com/joaoopereira/dotnet-test-rerun/blob/main/docs/README.md) to preview it locally.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the GNU General Public License v3.0.
-
-Thank you for contributing to dotnet-test-rerun! 🎉
+By contributing, you agree that your contributions are licensed under the [GNU General Public License v3.0](https://github.com/joaoopereira/dotnet-test-rerun/blob/main/LICENSE).
