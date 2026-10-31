@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="5.0.0-alpha.1"></a>
+## [5.0.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.0.0-alpha.1) (2026-10-31)
+
+### Bug Fixes
+
+* **cli:** reject unknown --loglevel values instead of falling back ([cb0a51b](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/cb0a51b3469e60daa9062f82b7409f88be8c5795))
+* **docker:** base the image on the SDK and use an absolute entrypoint ([a2cc313](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/a2cc313e323cfb485b9aa1ffcffb9b2c8d7a3e44))
+* **rerun:** apply --rerunFailedThreshold to the initial run only ([0c87b5f](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/0c87b5f4ccdc96583eaf110927f7f917504eca1f))
+
 <a name="5.0.0-alpha.0"></a>
 ## [5.0.0-alpha.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.0.0-alpha.0) (2026-10-30)
 
