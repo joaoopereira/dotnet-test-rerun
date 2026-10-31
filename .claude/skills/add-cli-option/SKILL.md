@@ -5,7 +5,7 @@ description: Checklist for adding a new command-line option/flag to dotnet-test-
 
 # Add a CLI option
 
-Reference implementations: `--logPassedTests` (forwarded to `dotnet test` as an extra logger) and `--generateTestCommand` (tool-only, never forwarded).
+Reference implementations: `--logPassedTests` (forwarded to `dotnet test` as an extra logger) and `--logTestResults` (tool-only, never forwarded).
 
 ## 1. Options and parsing
 
@@ -40,11 +40,11 @@ The rerun loop and end-of-run logic live in `src/Execution/RerunOrchestrator.cs`
   - Use `Substitute.For<ILogger>()` when you need to assert log output (`logger.Received(1).Information("...")`).
   - `ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests)` makes every attempt fail. `ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success)` makes the run pass on the second attempt.
 
-## 4. Docs (all three)
+## 4. Docs
 
-- `README.md`: the options table in the matching section (e.g. "Logging & Output").
-- `docs/usage.md`: a `**\`--myFlag\`**` bullet block with an example.
-- `docs/configuration.md`: a `###` section when the option needs explanation.
+- `docs/usage.md` (command reference): a row in the "Rerun options" table (tool-only) or the "Options passed to `dotnet test`" table. This is the only full list of options.
+- `docs/configuration.md` (Guides): a `##` section only when the option needs advice or an example.
+- `README.md`: the "Main options" table, only if most users need the option.
 
 ## 5. Validate
 

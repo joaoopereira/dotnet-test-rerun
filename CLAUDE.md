@@ -2,7 +2,7 @@
 
 `dotnet-test-rerun` wraps `dotnet test`. It reads the TRX results of failed tests, builds a `--filter` for them and reruns them up to `--rerunMaxAttempts` times.
 
-The full reference (layout, CI, dependencies) is in `.github/copilot-instructions.md`. Some numbers there are out of date: the SDK is 10.x and tests target `net10.0`. This file adds what is useful for working fast.
+The general reference (layout, CI, workflows) is in `.github/copilot-instructions.md`. User documentation is `README.md` and `docs/` (see `docs/README.md`; the option list lives only in `docs/usage.md`). This file adds what is useful for working fast.
 
 ## Setup in a cloud container
 
