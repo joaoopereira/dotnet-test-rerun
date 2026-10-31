@@ -45,8 +45,8 @@ RUN dotnet publish src/dotnet-test-rerun.csproj \
     --no-build \
     /p:DockerBuild=true
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/runtime:${TARGET_DOTNET_VERSION}
+# Final stage: test-rerun runs `dotnet test`, which needs the SDK, not only the runtime
+FROM mcr.microsoft.com/dotnet/sdk:${TARGET_DOTNET_VERSION}
 
 # Set working directory
 WORKDIR /app
@@ -57,5 +57,5 @@ COPY --from=build /app .
 # Make the binary executable
 RUN chmod +x test-rerun
 
-# Set entrypoint
-ENTRYPOINT ["./test-rerun"]
+# Absolute path, so the entrypoint still resolves when the working directory is changed (docker run -w)
+ENTRYPOINT ["/app/test-rerun"]
