@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🔄 dotnet-test-rerun
+# dotnet-test-rerun
 
-### Automatically rerun failed .NET tests until they pass
+**Rerun only the failed .NET tests, automatically, until they pass.**
 
 [![Build Status][1]][2]
 [![Coverage Status][6]][7]
@@ -10,285 +10,94 @@
 [![NuGet Downloads][5]][4]
 [![Docker Pulls][8]][9]
 
-[📖 Documentation](https://joaoopereira.github.io/dotnet-test-rerun/) • [🐛 Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
+[Documentation](https://joaoopereira.github.io/dotnet-test-rerun/) •
+[Command reference](https://joaoopereira.github.io/dotnet-test-rerun/usage) •
+[Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
 
 </div>
 
----
+`dotnet test` has no built-in way to retry failed tests. `dotnet-test-rerun` wraps it: it runs your tests, reads the TRX results to find the failed ones, and runs **only those** again, up to `--rerunMaxAttempts` times. It works with xUnit, NUnit and MSTest, and accepts the same options as `dotnet test`.
 
-## 🎯 Why dotnet-test-rerun?
+Use it to keep CI green when tests fail for reasons outside your code: a database that is still starting, a rate-limited API, a slow browser in a UI test.
 
-Ever had tests fail intermittently due to network issues, timing problems, or external service hiccups? **dotnet-test-rerun** solves this by automatically rerunning failed tests, making your test suites more resilient and your CI/CD pipelines more reliable.
-
-### ✨ Key Features
-
-| Feature | Description |
-|---------|-------------|
-| 🔄 **Smart Retry** | Automatically reruns only failed tests with configurable attempts |
-| 🎯 **Selective Execution** | Targets specific tests with filters instead of rerunning everything |
-| 📊 **Multiple Loggers** | Supports trx, junit, console, and custom test loggers |
-| 🐳 **Docker Ready** | Pre-built images for .NET 8.0, 9.0, and 10.0 |
-| ⚙️ **Highly Configurable** | Extensive options for filtering, delays, and test execution |
-| 📈 **Code Coverage** | Collect and merge coverage reports across retry attempts |
-| ⚡ **Performance First** | Efficient execution by targeting only failed tests |
-| 🔧 **CI/CD Optimized** | Built-in support for GitHub Actions, Azure DevOps, GitLab CI |
-
----
-
-## 🚀 Quick Start
-
-### Installation
+## Quick start
 
 ```bash
-# Install as a global .NET tool
 dotnet tool install --global dotnet-test-rerun
+
+# Run the tests, then rerun the failed ones up to 3 times (the default)
+test-rerun path/to/MyTests.csproj
+
+# Rerun up to 5 times, waiting 10 seconds before each rerun
+test-rerun path/to/MyTests.csproj --rerunMaxAttempts 5 --delay 10
 ```
 
-### Basic Usage
+The path can be anything `dotnet test` accepts: a project, a solution, a directory or a test `.dll`.
 
-```bash
-# Run tests with automatic retry (default: 3 attempts)
-test-rerun path/to/test.dll
+## How it works
 
-# Customize retry attempts
-test-rerun path/to/test.dll --rerunMaxAttempts 5
-
-# Add delay between retries (useful for external dependencies)
-test-rerun path/to/test.dll --rerunMaxAttempts 5 --delay 10
+```text
+attempt-0   dotnet test ...                                   → 120 passed, 3 failed
+attempt-1   dotnet test ... --filter "<the 3 failed tests>"   → 2 passed, 1 failed
+attempt-2   dotnet test ... --filter "<the 1 failed test>"    → 1 passed
+            exit code 0
 ```
 
-### Docker Usage
+- Each run writes its results to its own `attempt-N` folder under `--results-directory`.
+- If you pass `--filter`, it is kept on every rerun: `(your filter)&(failed tests)`.
+- Use `--rerunMaxFailedTests` or `--rerunFailedThreshold` to skip reruns when too many tests fail, because that usually means a real problem.
+- The exit code is `0` if every test passed in the end, and `1` otherwise.
 
-```bash
-# Use the latest stable version (.NET 10.0)
-docker run joaoopereira/dotnet-test-rerun:latest path/to/test.dll --rerunMaxAttempts 3
+More detail: [How it works](https://joaoopereira.github.io/dotnet-test-rerun/how-it-works).
 
-# Or specify a .NET version
-docker run joaoopereira/dotnet-test-rerun:4.0.0-net8 path/to/test.dll
-```
+## Main options
 
----
+| Option | Default | Description |
+|---|---|---|
+| `--rerunMaxAttempts` | `3` | Maximum number of reruns after the first run |
+| `--rerunMaxFailedTests` | `-1` (no limit) | Do not rerun if more tests than this failed |
+| `--rerunFailedThreshold` | `-1` (no limit) | Do not rerun if more than this percentage of tests failed |
+| `--delay`, `-d` | `0` | Seconds to wait before each rerun |
+| `--results-directory`, `-r` | `.` | Where results go; each run writes to an `attempt-N` subfolder |
+| `--mergeCoverageFormat` | — | Merge the coverage of all runs (`Coverage`, `Cobertura`, `Xml`); needs `dotnet-coverage` |
+| `--logTestResults` | `false` | Print the result of each test after every run |
+| `--deleteReports` | `false` | Delete the TRX files when finished |
 
-## 📚 Common Use Cases
+`--filter`, `--logger`, `--settings`, `--configuration`, `--framework`, `--no-build`, `--blame`, `--collect`, `-e`, `/p:` and inline run settings are passed to `dotnet test`. See the [command reference](https://joaoopereira.github.io/dotnet-test-rerun/usage) for all options.
 
-<details>
-<summary><b>🌐 Integration Tests with External Services</b></summary>
-
-```bash
-test-rerun IntegrationTests.dll \
-  --filter "Category=Integration" \
-  --rerunMaxAttempts 5 \
-  --delay 10 \
-  --rerunMaxFailedTests 15
-```
-
-Perfect for tests that interact with databases, APIs, or microservices that may have transient failures.
-
-</details>
-
-<details>
-<summary><b>🚀 CI/CD Pipeline Integration</b></summary>
+## Use in CI
 
 ```yaml
-# GitHub Actions example
-- name: Run Tests with Retry
-  run: |
-    test-rerun tests/**/*.dll \
-      --configuration Release \
-      --rerunMaxAttempts 3 \
-      --logger "trx;LogFileName=results.trx" \
-      --results-directory ./TestResults
+# GitHub Actions
+- run: dotnet tool install --global dotnet-test-rerun
+- run: dotnet build --configuration Release
+- run: test-rerun MySolution.sln --no-build --configuration Release --results-directory TestResults
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: test-results
+    path: TestResults/**/*.trx
 ```
 
-Make your CI/CD pipelines more resilient to intermittent failures.
+Azure DevOps and GitLab CI examples: [CI integration](https://joaoopereira.github.io/dotnet-test-rerun/ci).
 
-</details>
-
-<details>
-<summary><b>📊 Code Coverage Collection</b></summary>
+## Docker
 
 ```bash
-test-rerun MyTests.dll \
-  --collect "XPlat Code Coverage" \
-  --mergeCoverageFormat Cobertura \
-  --rerunMaxAttempts 3
+docker run --rm -v "$PWD:/src" joaoopereira/dotnet-test-rerun:latest /src/MyTests.csproj --results-directory /src/TestResults
 ```
 
-Collect and merge coverage reports even when tests need multiple attempts to pass.
+Tags: `latest` and `<version>` (.NET 10), `<version>-net10`, `<version>-net9`, `<version>-net8`. See the [Docker guide](https://joaoopereira.github.io/dotnet-test-rerun/docker).
 
-</details>
+## Contributing
 
-<details>
-<summary><b>🎭 UI/Selenium Tests</b></summary>
-
-```bash
-test-rerun UITests.dll \
-  --filter "Category=UI" \
-  --rerunMaxAttempts 10 \
-  --delay 3 \
-  --blame
-```
-
-Handle flaky UI tests with generous retry attempts and blame mode for debugging.
-
-</details>
-
----
-
-## 📦 Installation Options
-
-<table>
-<tr>
-<td width="50%">
-
-### Global Tool (Recommended)
-
-```bash
-dotnet tool install --global dotnet-test-rerun
-test-rerun --help
-```
-
-✅ Available system-wide  
-✅ Easy to update  
-✅ Simple command
-
-</td>
-<td width="50%">
-
-### Docker
-
-```bash
-docker pull joaoopereira/dotnet-test-rerun:latest
-docker run joaoopereira/dotnet-test-rerun:latest
-```
-
-✅ No installation needed  
-✅ Multiple .NET versions  
-✅ Isolated environment
-
-</td>
-</tr>
-</table>
-
-**Other options:** [Local Tool](https://joaoopereira.github.io/dotnet-test-rerun/installation#method-2-local-tool) • [NuGet Package](https://joaoopereira.github.io/dotnet-test-rerun/installation#method-4-nuget-package-reference)
-
----
-
-## 🎛️ Configuration Options
-
-### Core Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--rerunMaxAttempts` | `3` | Maximum number of retry attempts |
-| `--rerunMaxFailedTests` | `-1` | Maximum failed tests to rerun (no limit) |
-| `--rerunFailedThreshold` | `-1` | Max % of failed tests allowed to trigger a rerun (no limit) |
-| `--delay, -d` | - | Delay between retries in seconds |
-| `--filter` | - | Run tests matching the expression |
-| `--deleteReports` | `false` | Clean up report files after execution |
-
-### Test Execution
-
-| Option | Description |
-|--------|-------------|
-| `--configuration, -c` | Build configuration (Debug/Release) |
-| `--framework, -f` | Target framework to test |
-| `--no-build` | Skip building before testing |
-| `--blame` | Enable blame mode for diagnostics |
-| `--collect` | Enable data collectors (e.g., code coverage) |
-
-### Logging & Output
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--logger, -l` | `trx` | Test result logger (trx, junit, console) |
-| `--results-directory, -r` | `.` | Output directory for test results; each attempt writes to an `attempt-N` subdirectory |
-| `--loglevel` | `Verbose` | Tool log level |
-| `--verbosity, -v` | - | dotnet test verbosity level |
-| `--logPassedTests` | `false` | Log each passed test as it completes during execution |
-| `--logTestResults` | `false` | Log the result (passed/failed) of each individual test, independently of the dotnet test verbosity |
-
-📘 **[View All Options](https://joaoopereira.github.io/dotnet-test-rerun/usage)** • **[Configuration Guide](https://joaoopereira.github.io/dotnet-test-rerun/configuration)** • **[Examples](https://joaoopereira.github.io/dotnet-test-rerun/examples)**
-
----
-
-## 🐳 Docker Images
-
-| Tag Pattern | .NET Runtime | Use Case |
-|------------|--------------|----------|
-| `latest`, `{version}` | .NET 10.0 | Latest stable release |
-| `{version}-net10` | .NET 10.0 | Explicit .NET 10.0 |
-| `{version}-net9` | .NET 9.0 | .NET 9.0 projects |
-| `{version}-net8` | .NET 8.0 | .NET 8.0 projects (LTS) |
-
-**Example:**
-```bash
-docker run joaoopereira/dotnet-test-rerun:4.0.0-net8 tests/MyTests.dll --rerunMaxAttempts 3
-```
-
-🐳 **[Docker Hub Repository](https://hub.docker.com/r/joaoopereira/dotnet-test-rerun)** • **[Docker Guide](https://joaoopereira.github.io/dotnet-test-rerun/docker)**
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! We appreciate:
-
-- 🐛 Bug reports and fixes
-- ✨ New features and enhancements
-- 📖 Documentation improvements
-- 💡 Ideas and suggestions
-
-**Get Started:**
-1. Check the [Contributing Guide](https://joaoopereira.github.io/dotnet-test-rerun/contributing)
-2. Browse [Open Issues](https://github.com/joaoopereira/dotnet-test-rerun/issues)
-
----
-
-## 👥 Community
-
-<div align="center">
-
-### Author
-
-**João Pereira**  
-[🌐 Website](https://joaoopereira.com) • [💼 GitHub](https://github.com/joaoopereira)
-
-### Contributors
+Bug reports, ideas and pull requests are welcome. Read the [contributing guide](https://joaoopereira.github.io/dotnet-test-rerun/contributing) and browse the [open issues](https://github.com/joaoopereira/dotnet-test-rerun/issues).
 
 [![Contributors](https://contrib.rocks/image?repo=joaoopereira/dotnet-test-rerun)](https://github.com/joaoopereira/dotnet-test-rerun/graphs/contributors)
 
-### Show Your Support
+## License
 
-⭐ **Star this project** if it helped you!  
-🐦 **Share** with your network  
-💬 **Discuss** your use cases
-
-</div>
-
----
-
-## 📄 License
-
-Copyright © 2023-2024 [João Pereira](https://github.com/joaoopereira)
-
-This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## ⚠️ Language Support
-
-**Important:** This tool currently supports **English only**. The output of `dotnet test` may be localized, and if it is not in English, the tool may not function correctly.
-
----
-
-<div align="center">
-
-**Made with ❤️ for the .NET community**
-
-[Documentation](https://joaoopereira.github.io/dotnet-test-rerun/) • [NuGet](https://www.nuget.org/packages/dotnet-test-rerun) • [Docker Hub](https://hub.docker.com/r/joaoopereira/dotnet-test-rerun)
-
-</div>
+Copyright © 2023-2026 [João Pereira](https://joaoopereira.com). Licensed under the [GNU General Public License v3.0](LICENSE).
 
 [1]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/cd.yml/badge.svg
 [2]: https://github.com/joaoopereira/dotnet-test-rerun/actions/workflows/cd.yml

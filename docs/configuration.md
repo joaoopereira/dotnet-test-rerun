@@ -1,400 +1,156 @@
 ---
 layout: default
-title: Configuration
-nav_order: 4
+title: Guides
+nav_order: 5
 ---
 
-# Configuration Guide
+# Guides
+{: .no_toc }
 
-This guide covers advanced configuration options and settings for dotnet-test-rerun.
+Practical advice for the options that need more than one line. For the full list of options, see the [command reference](usage).
 
-## Run Settings Files
+<details open markdown="block">
+  <summary>Contents</summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
 
-You can use a run settings file (`.runsettings`) to configure test execution behavior. Specify it with the `--settings` option:
+## Choosing how many reruns
+
+`--rerunMaxAttempts` is the number of reruns after the first run. Start low and raise it only for suites that need it:
+
+| Tests | Suggested setup |
+|---|---|
+| Unit tests | Usually no reruns. If one is flaky, fix it rather than retry it. |
+| Integration tests (database, HTTP APIs, queues) | `--rerunMaxAttempts 3 --delay 5` |
+| UI / end-to-end tests | `--rerunMaxAttempts 3` to `5`, with `--blame` while investigating |
+
+Retries hide flakiness. Use `--logTestResults` and keep the `attempt-N` reports, so you can see which tests needed a rerun and fix them.
+
+## Stopping early when too many tests fail
+
+When many tests fail at once, the cause is usually a real regression or a broken environment, and rerunning only makes the pipeline slower. Two options stop the reruns:
 
 ```bash
-test-rerun test.dll --settings myconfig.runsettings
+# Do not rerun when more than 10 tests failed
+test-rerun MyTests.csproj --rerunMaxFailedTests 10
+
+# Do not rerun when more than 20 % of the tests failed
+test-rerun MyTests.csproj --rerunFailedThreshold 20
 ```
 
-### Example Run Settings File
+- The limits are checked before every rerun, against the run before it.
+- The percentage is the number of failed tests divided by the number of tests in that run's TRX files.
+
+{: .warning }
+On the second and later reruns, "the run before it" only contains the rerun tests, so the percentage is usually high (for example, 2 of 3 rerun tests still failing is 67 %). With `--rerunFailedThreshold`, expect the reruns to stop after the first one unless almost all rerun tests pass.
+
+- When a limit stops the reruns, the tool exits with `1`.
+- You can use both. The rerun is skipped if either limit is exceeded.
+
+## Waiting between reruns
+
+`--delay <seconds>` waits before each rerun. Use it when a failure is likely to go away with time: a service that is starting, a rate limit, a connection pool that needs to recover.
+
+```bash
+test-rerun IntegrationTests.csproj --delay 10
+```
+
+The delay is not applied when there is nothing to rerun or a limit stops the reruns.
+
+## Filtering tests
+
+`--filter` uses the normal [`dotnet test` filter syntax](https://learn.microsoft.com/dotnet/core/testing/selective-unit-tests):
+
+```bash
+test-rerun MyTests.csproj --filter "Category=Integration"
+test-rerun MyTests.csproj --filter "FullyQualifiedName~MyNamespace.Api&Priority=1"
+test-rerun MyTests.csproj --filter "Category!=Slow"
+```
+
+Your filter is kept on every rerun, so a rerun never runs tests your filter excluded. See [The rerun filter](how-it-works#the-rerun-filter).
+
+## Seeing what happened
+
+| You want to see | Use |
+|---|---|
+| The result of every test after each run, and the error of failed ones | `--logTestResults` |
+| Each test as it passes, live (for example, to find the last test before a hang) | `--logPassedTests` |
+| More or less output from `dotnet test` itself | `--verbosity Minimal` … `Diagnostic` |
+| The exact `dotnet test` commands the tool runs | `--loglevel Debug` |
+| Only warnings and errors from the tool | `--loglevel Warning` |
+
+## Test loggers and reports
+
+The tool needs TRX files to find failed tests, so it adds `--logger trx` when none of your loggers is a TRX logger. You can add any other logger:
+
+```bash
+# JUnit for GitLab or Jenkins (needs the JunitXml.TestLogger package in the test project)
+test-rerun MyTests.csproj --logger "junit;LogFileName=junit.xml"
+
+# A named TRX file
+test-rerun MyTests.csproj --logger "trx;LogFileName=results.trx"
+```
+
+Each run writes its reports to its own `attempt-N` folder, so a report from an earlier run is not overwritten. See [Results folders](how-it-works#results-folders).
+
+`--deleteReports` deletes the TRX files of all runs at the end. Use it when you only need the exit code.
+
+## Code coverage
+
+Collect coverage as you would with `dotnet test`:
+
+```bash
+test-rerun MyTests.csproj --collect "XPlat Code Coverage"
+```
+
+Each run produces its own coverage file, and a rerun only covers the tests that were rerun. To get one file for the whole run, add `--mergeCoverageFormat`. The tool then calls [`dotnet-coverage merge`](https://learn.microsoft.com/dotnet/core/additional-tools/dotnet-coverage) on the `*.coverage` and `*.cobertura*` files of all `attempt-N` folders:
+
+```bash
+dotnet tool install --global dotnet-coverage
+
+test-rerun MyTests.csproj \
+  --collect "XPlat Code Coverage" \
+  --mergeCoverageFormat Cobertura \
+  --results-directory TestResults
+```
+
+| Format | Output file |
+|---|---|
+| `Cobertura` | `TestResults/merged.cobertura.xml` |
+| `Xml` | `TestResults/merged.xml` |
+| `Coverage` | `TestResults/merged.coverage` |
+
+If `dotnet-coverage` is missing or fails, the tool exits with `1`.
+
+## Run settings
+
+Use a `.runsettings` file for settings you would otherwise repeat:
+
+```bash
+test-rerun MyTests.csproj --settings ci.runsettings
+```
 
 ```xml
-<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <RunConfiguration>
     <MaxCpuCount>1</MaxCpuCount>
-    <ResultsDirectory>./TestResults</ResultsDirectory>
-    <TargetPlatform>x64</TargetPlatform>
-    <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
     <TestSessionTimeout>3600000</TestSessionTimeout>
   </RunConfiguration>
-
-  <DataCollectionRunSettings>
-    <DataCollectors>
-      <DataCollector friendlyName="Code Coverage">
-        <Configuration>
-          <Format>Cobertura</Format>
-        </Configuration>
-      </DataCollector>
-    </DataCollectors>
-  </DataCollectionRunSettings>
-
-  <LoggerRunSettings>
-    <Loggers>
-      <Logger friendlyName="trx" />
-    </Loggers>
-  </LoggerRunSettings>
 </RunSettings>
 ```
 
-## Inline Run Settings
-
-For simple configurations, you can use inline run settings without a file:
+Or pass single settings inline, at the end of the command:
 
 ```bash
-test-rerun test.dll -- RunConfiguration.MaxCpuCount=1 RunConfiguration.TargetPlatform=x64
+test-rerun MyTests.csproj -- RunConfiguration.MaxCpuCount=1
 ```
 
-Note: Inline run settings must be specified after `--` and must be the last arguments.
-
-## Environment Variables
-
-Set environment variables for your test execution:
+## Environment variables
 
 ```bash
-test-rerun test.dll -e "ASPNETCORE_ENVIRONMENT=Testing" -e "LOG_LEVEL=Debug"
+test-rerun MyTests.csproj -e ASPNETCORE_ENVIRONMENT=Testing -e API_TIMEOUT=30
 ```
 
-Multiple environment variables can be set by repeating the `-e` or `--environment` flag.
-
-## Retry Configuration
-
-### Maximum Attempts
-
-Control how many times failed tests are retried:
-
-```bash
-# Default is 3 attempts
-test-rerun test.dll --rerunMaxAttempts 5
-```
-
-**Choosing the Right Value:**
-- For occasional flaky tests: 2-3 attempts
-- For highly intermittent tests: 5-10 attempts
-- For tests with external dependencies: 3-5 attempts with delays
-
-### Maximum Failed Tests Limit
-
-Prevent excessive reruns when too many tests fail:
-
-```bash
-# Don't rerun if more than 10 tests fail
-test-rerun test.dll --rerunMaxFailedTests 10
-```
-
-This is useful to:
-- Fail fast when there's a systemic issue
-- Avoid wasting CI/CD time on widespread failures
-- Distinguish between isolated flaky tests and real problems
-
-**Recommended Values:**
-- Small test suites (< 100 tests): 5-10
-- Medium test suites (100-500 tests): 10-20
-- Large test suites (> 500 tests): 20-50
-
-### Maximum Failed Tests Percentage Threshold
-
-Skip reruns entirely when the percentage of failed tests exceeds a threshold:
-
-```bash
-# Don't rerun if more than 20% of tests fail
-test-rerun test.dll --rerunFailedThreshold 20
-```
-
-The failure percentage is calculated from the total number of tests executed and the number of failed tests in the initial run. This is useful to:
-- Avoid unnecessary reruns when failures are caused by a broader issue (infrastructure, environment, widespread regressions)
-- Reduce pipeline execution time in large failure scenarios
-- Give more control over the rerun strategy alongside `--rerunMaxFailedTests`
-
-**Recommended Values:**
-- Strict environments (fail fast on systemic issues): 10-20%
-- Balanced environments: 20-30%
-- Lenient environments (tolerate more failures before skipping reruns): 30-50%
-
-### Retry Delay
-
-Add delays between retry attempts to allow external resources to recover:
-
-```bash
-# Wait 5 seconds between retry attempts
-test-rerun test.dll --delay 5
-```
-
-The delay is applied only before an actual rerun. It is skipped when the analysis finds nothing to rerun or a failure threshold stops the rerun.
-
-**Use Cases:**
-- Database connection pooling issues
-- Rate limiting from external APIs
-- Service warm-up time
-- Cache synchronization
-
-## Test Filtering
-
-Use the `--filter` option to target specific tests:
-
-### Filter by Category
-
-```bash
-test-rerun test.dll --filter "Category=Integration"
-```
-
-### Filter by Namespace
-
-```bash
-test-rerun test.dll --filter "FullyQualifiedName~MyNamespace.IntegrationTests"
-```
-
-### Filter by Test Name
-
-```bash
-test-rerun test.dll --filter "Name~DatabaseTest"
-```
-
-### Complex Filters
-
-Combine multiple criteria:
-
-```bash
-# AND operation
-test-rerun test.dll --filter "Category=Integration&Priority=High"
-
-# OR operation
-test-rerun test.dll --filter "Category=Integration|Category=EndToEnd"
-
-# NOT operation
-test-rerun test.dll --filter "Category!=Unit"
-```
-
-### How Failed Tests Are Rerun
-
-On each attempt, test-rerun builds a filter with one clause per failed test (for example `FullyQualifiedName=MyNamespace.MyClass.MyTest`). If you passed `--filter`, it is combined as `(your filter)&(failed tests)`.
-
-When many tests fail, the rerun filter is split into batches of at most 8,000 characters. Each batch runs as its own `dotnet test` invocation within the same attempt. This keeps the command line under the Windows limit and filters fast to parse. The attempt fails if any batch still has failing tests. Use `--rerunMaxFailedTests` or `--rerunFailedThreshold` if you would rather not rerun at all when many tests fail.
-
-## Logging Configuration
-
-### Tool Log Level
-
-Control dotnet-test-rerun's own logging:
-
-```bash
-test-rerun test.dll --loglevel Minimal
-```
-
-Options: `Quiet`, `Minimal`, `Normal`, `Verbose`, `Debug`
-
-### Test Execution Verbosity
-
-Control the verbosity of the underlying `dotnet test` command:
-
-```bash
-test-rerun test.dll --verbosity detailed
-```
-
-Options: `quiet`, `minimal`, `normal`, `detailed`, `diagnostic`
-
-### Test Loggers
-
-Specify which loggers to use for test results:
-
-```bash
-# Single logger
-test-rerun test.dll --logger "trx;LogFileName=results.trx"
-
-# Multiple loggers
-test-rerun test.dll --logger trx --logger "console;verbosity=detailed"
-
-# JUnit format (useful for Jenkins, GitLab CI)
-test-rerun test.dll --logger "junit;LogFileName=junit-results.xml"
-```
-
-test-rerun reads the TRX results to know which tests failed, so it always adds `--logger trx` when none of your loggers is a TRX logger.
-
-Common logger formats:
-- `trx` - Visual Studio Test Results File
-- `junit` - JUnit XML format
-- `html` - HTML report (requires additional package)
-- `console` - Console output
-
-### Logging Passed Tests
-
-By default, `dotnet-test-rerun` only surfaces failures and summary information. To see each test logged as soon as it passes (useful for monitoring long-running suites, spotting the last test executed before a hang or crash, or confirming a flaky test eventually passed), enable the opt-in `--logPassedTests` flag:
-
-```bash
-test-rerun test.dll --logPassedTests
-```
-
-This appends a `console;verbosity=detailed` logger to the underlying `dotnet test` invocation, in addition to any loggers already configured. Because this can produce a lot of output, it is disabled by default.
-
-### Logging Individual Test Results
-
-`--logTestResults` logs the outcome of every individual test (✓ passed / ✗ failed), independently of the `--verbosity` passed to `dotnet test`:
-
-```bash
-test-rerun test.dll --logTestResults
-```
-
-Unlike `--logPassedTests`, this does not change the underlying `dotnet test` invocation or rely on console output. Instead, it reads the trx report generated after each run (including reruns) and logs each test's result. Failed tests also include the error message and stack trace.
-
-## Code Coverage Configuration
-
-### Basic Coverage Collection
-
-```bash
-test-rerun test.dll --collect "XPlat Code Coverage"
-```
-
-### Merge Coverage Reports
-
-When using retries, coverage reports can be merged:
-
-```bash
-test-rerun test.dll \
-  --collect "XPlat Code Coverage" \
-  --mergeCoverageFormat Cobertura
-```
-
-**Prerequisites:** Install `dotnet-coverage` tool:
-```bash
-dotnet tool install --global dotnet-coverage
-```
-
-### Coverage Formats
-
-- `Coverage` - Binary Microsoft code coverage format
-- `Cobertura` - XML format (widely supported by CI/CD systems)
-- `Xml` - Alternative XML format
-
-## Build Configuration
-
-### Skip Build
-
-When tests are already built:
-
-```bash
-test-rerun test.dll --no-build
-```
-
-### Skip Restore
-
-When dependencies are already restored:
-
-```bash
-test-rerun test.dll --no-restore
-```
-
-### Configuration and Framework
-
-```bash
-test-rerun test.dll --configuration Release --framework net8.0
-```
-
-### MSBuild Properties
-
-Pass properties to MSBuild:
-
-```bash
-test-rerun test.dll /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
-```
-
-## Results Directory
-
-Specify where test results are stored:
-
-```bash
-test-rerun test.dll --results-directory ./TestResults
-```
-
-Each attempt gets its own subdirectory, so the results of one attempt are never mixed up with another's:
-
-```
-TestResults/
-  attempt-0/            # initial run
-  attempt-1/            # first rerun (all its dotnet test invocations)
-  attempt-2/
-  merged.cobertura.xml  # --mergeCoverageFormat output
-```
-
-`attempt-N` directories left by a previous run in the same results directory are deleted when test-rerun starts.
-
-> **Migrating from 4.x:** reports used to be written directly to the results directory. Point CI steps that publish or read TRX/JUnit files at a recursive pattern, for example `TestResults/**/*.trx`. The final results are in the `attempt-N` directory with the highest N.
-
-Clean up results after execution:
-
-```bash
-test-rerun test.dll --deleteReports
-```
-
-## Blame Mode
-
-Enable blame mode to identify problematic tests:
-
-```bash
-test-rerun test.dll --blame
-```
-
-Blame mode will:
-- Create a sequence file showing test execution order
-- Capture a crash dump if the test host crashes
-- Help identify tests that cause hangs or crashes
-
-## Complete Configuration Example
-
-Here's a comprehensive example combining multiple options:
-
-```bash
-test-rerun MyProject.Tests.dll \
-  --configuration Release \
-  --framework net8.0 \
-  --no-restore \
-  --filter "Category=Integration|Category=EndToEnd" \
-  --rerunMaxAttempts 5 \
-  --rerunMaxFailedTests 15 \
-  --rerunFailedThreshold 20 \
-  --delay 3 \
-  --logger "trx;LogFileName=test-results.trx" \
-  --logger "console;verbosity=minimal" \
-  --results-directory ./TestResults \
-  --collect "XPlat Code Coverage" \
-  --mergeCoverageFormat Cobertura \
-  --loglevel Normal \
-  --verbosity minimal \
-  --environment "TEST_ENV=CI" \
-  --environment "DATABASE_TIMEOUT=30" \
-  --blame \
-  /p:CollectCoverage=true
-```
-
-## Configuration Best Practices
-
-1. **Start Conservative**: Begin with low retry attempts (2-3) and increase only if needed
-
-2. **Use Filters Wisely**: Only rerun tests that are known to be flaky; use filters to target them
-
-3. **Set Failure Limits**: Always set `--rerunMaxFailedTests` and/or `--rerunFailedThreshold` to prevent excessive reruns
-
-4. **Add Delays for External Dependencies**: Use `--delay` when tests depend on external services
-
-5. **Clean Up Artifacts**: Use `--deleteReports` in CI/CD pipelines to avoid accumulating files
-
-6. **Appropriate Verbosity**: Use lower verbosity in CI/CD, higher when debugging locally
-
-7. **Collect Coverage Carefully**: Coverage collection adds overhead; only enable when needed
-
-8. **Use Run Settings Files**: For complex configurations, use `.runsettings` files for maintainability
-
-## Next Steps
-
-- [Examples](examples) - See complete real-world examples
-- [Usage](usage) - Review all available options
-- [Docker](docker) - Configure Docker deployments
+The variables are set on every run, including reruns.

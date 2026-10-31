@@ -4,160 +4,86 @@ title: Installation
 nav_order: 2
 ---
 
-# Installation Guide
+# Installation
+{: .no_toc }
 
-dotnet-test-rerun can be installed in multiple ways depending on your needs and environment.
+<details open markdown="block">
+  <summary>Contents</summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
 
-## Prerequisites
+## Requirements
 
-- .NET SDK 8.0, 9.0, or 10.0
-  (this is what runs the tool; the projects you test can still target older frameworks, such as `net6.0` or .NET Framework, as long as the SDK can build and run them)
-- A .NET test project (compatible with `dotnet test`)
+- A .NET SDK, version 8.0 or later. The tool runs on .NET 8, 9 and 10.
+- Test projects that run with `dotnet test` (xUnit, NUnit or MSTest on VSTest).
 
-## Method 1: Global Tool (Recommended)
+The SDK runs the tool; your test projects can target other frameworks, as long as that SDK can build and run them.
 
-Install dotnet-test-rerun as a global .NET tool:
+## Global tool
+
+Recommended for local use. The command is available in every folder:
 
 ```bash
 dotnet tool install --global dotnet-test-rerun
-```
-
-After installation, the tool will be available globally as `test-rerun`:
-
-```bash
 test-rerun --help
 ```
 
-### Updating the Global Tool
-
-To update to the latest version:
+Update or remove it:
 
 ```bash
 dotnet tool update --global dotnet-test-rerun
-```
-
-### Uninstalling the Global Tool
-
-To remove the tool:
-
-```bash
 dotnet tool uninstall --global dotnet-test-rerun
 ```
 
-## Method 2: Local Tool
+## Local tool
 
-Install as a local tool in your project or solution:
-
-### Step 1: Initialize a tool manifest (if not already present)
+Recommended for CI and teams. The version is pinned in `.config/dotnet-tools.json`, which you commit:
 
 ```bash
-dotnet new tool-manifest
-```
-
-### Step 2: Install the local tool
-
-```bash
+dotnet new tool-manifest      # once per repository, if there is no manifest yet
 dotnet tool install dotnet-test-rerun
 ```
 
-### Step 3: Run the local tool
+Run it with `dotnet` in front:
 
 ```bash
-dotnet tool run test-rerun -- --help
-```
-
-Or use the shorter form:
-
-```bash
+dotnet tool restore           # on a fresh clone or in CI
 dotnet test-rerun --help
 ```
 
-## Method 3: Docker
+## A specific or pre-release version
 
-Use the pre-built Docker images for containerized environments:
+```bash
+dotnet tool install --global dotnet-test-rerun --version 4.2.0
+
+# Pre-releases and preview builds of pull requests
+dotnet tool install --global dotnet-test-rerun --version 5.0.0-alpha.0
+```
+
+The versions are listed on [NuGet](https://www.nuget.org/packages/dotnet-test-rerun#versions-body-tab).
+
+## Docker
 
 ```bash
 docker pull joaoopereira/dotnet-test-rerun:latest
 ```
 
-See the [Docker Guide](docker) for more details on using Docker images.
+See the [Docker guide](docker).
 
-## Method 4: NuGet Package Reference
-
-While not typically needed for end-users, you can also reference the NuGet package directly in your project if you want to programmatically integrate the tool:
-
-```xml
-<ItemGroup>
-  <PackageReference Include="dotnet-test-rerun" Version="*" />
-</ItemGroup>
-```
-
-## Verifying Installation
-
-After installation, verify the tool is working correctly:
+## Check the installed version
 
 ```bash
-test-rerun --help
+dotnet tool list --global dotnet-test-rerun   # global tool
+dotnet tool list dotnet-test-rerun            # local tool
 ```
 
-You should see output showing all available options and usage information.
+## `test-rerun: command not found`
 
-## Version Check
+Global tools are installed in a folder that must be on your `PATH`:
 
-To check which version is installed:
+- Windows: `%USERPROFILE%\.dotnet\tools`
+- Linux and macOS: `$HOME/.dotnet/tools`
 
-```bash
-dotnet tool list --global | grep dotnet-test-rerun
-```
-
-Or for local tools:
-
-```bash
-dotnet tool list
-```
-
-## Troubleshooting
-
-### "Command not found" Error
-
-If you get a "command not found" error after installing as a global tool:
-
-1. Ensure the .NET tools directory is in your PATH:
-   - **Windows**: `%USERPROFILE%\.dotnet\tools`
-   - **Linux/macOS**: `$HOME/.dotnet/tools`
-
-2. Restart your terminal/shell
-
-3. Check if the tool is installed:
-   ```bash
-   dotnet tool list --global
-   ```
-
-### Permission Issues
-
-If you encounter permission issues on Linux/macOS:
-
-```bash
-sudo dotnet tool install --global dotnet-test-rerun
-```
-
-Or install to a user directory without requiring sudo.
-
-### .NET SDK Version Mismatch
-
-If you get errors about .NET SDK versions:
-
-1. Check your installed SDK versions:
-   ```bash
-   dotnet --list-sdks
-   ```
-
-2. Ensure you have .NET 8.0, 9.0, or 10.0 installed
-
-3. Update your .NET SDK if necessary from [dotnet.microsoft.com](https://dotnet.microsoft.com/download)
-
-## Next Steps
-
-- [Usage Guide](usage) - Learn how to use the tool
-- [Configuration](configuration) - Configure advanced options
-- [Examples](examples) - See real-world examples
+Open a new terminal after the first install. In containers and CI images, add the folder yourself, for example `export PATH="$PATH:$HOME/.dotnet/tools"`.

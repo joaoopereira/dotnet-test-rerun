@@ -1,273 +1,109 @@
 ---
 layout: default
-title: Usage
+title: Command reference
 nav_order: 3
 ---
 
-# Usage Guide
+# Command reference
+{: .no_toc }
 
-This guide covers the basic and advanced usage of dotnet-test-rerun.
+<details open markdown="block">
+  <summary>Contents</summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
 
-## Basic Usage
-
-The simplest way to use dotnet-test-rerun is to provide the path to your test DLL:
-
-```bash
-test-rerun path/to/your/test.dll
-```
-
-This will:
-1. Run all tests in the DLL
-2. Identify any failed tests
-3. Automatically rerun failed tests up to 3 times (default)
-4. Report final results
-
-## Command Syntax
+## Syntax
 
 ```bash
-test-rerun <path> [OPTIONS]
+test-rerun [<path>] [options] [MSBuild arguments] [-- <inline run settings>]
 ```
 
-### Arguments
+`<path>` is passed to `dotnet test` unchanged: a project, a solution, a directory or a test `.dll`. Without it, `dotnet test` looks for a project or solution in the current directory. Only one path is accepted.
 
-| Argument | Description |
-|----------|-------------|
-| `path` | Path to a test project .dll file |
+Run `test-rerun --help` to see the options of the installed version.
 
-## Common Options
+## Rerun options
 
-### Retry Configuration
+These options control the tool itself and are not passed to `dotnet test`.
 
-**`--rerunMaxAttempts <number>`**
-- Maximum number of retry attempts
-- Default: `3`
-- Example: `test-rerun test.dll --rerunMaxAttempts 5`
+| Option | Default | Description |
+|---|---|---|
+| `--rerunMaxAttempts <n>` | `3` | Maximum number of reruns after the first run. With `3`, `dotnet test` runs at most 4 times. |
+| `--rerunMaxFailedTests <n>` | `-1` | Do not rerun when more than `n` tests failed. `-1` (or `0`) means no limit. |
+| `--rerunFailedThreshold <percent>` | `-1` | Do not rerun when more than this percentage of the tests failed. Accepts decimals (`12.5`). `-1` means no limit; `0` means never rerun. |
+| `--delay`, `-d <seconds>` | `0` | Wait this many seconds before each rerun. Not applied when nothing is rerun. |
+| `--deleteReports` | off | Delete the TRX files of every run at the end, and the `attempt-N` folders left empty. Files from other loggers (for example JUnit) are kept. |
+| `--mergeCoverageFormat <format>` | — | Merge the coverage files of all runs into one file: `Coverage`, `Cobertura` or `Xml`. Requires the [`dotnet-coverage`](https://learn.microsoft.com/dotnet/core/additional-tools/dotnet-coverage) tool. See [Code coverage](configuration#code-coverage). |
+| `--loglevel <level>` | `Verbose` | Output of the tool itself: `Debug`, `Verbose`, `Information`, `Warning`, `Error`. `Debug` also prints the `dotnet test` command lines. An unknown value falls back to `Verbose`. |
+| `--logTestResults` | off | After each run, print every test with ✓ or ✗, and the error message and stack trace of failed tests. Reads the TRX file, so it does not depend on `--verbosity`. |
+| `--logPassedTests` | off | Add a `console;verbosity=detailed` logger so `dotnet test` prints each test as it passes. Ignored when `--logTestResults` is set. Can produce a lot of output. |
 
-**`--rerunMaxFailedTests <number>`**
-- Maximum number of failed tests to rerun
-- If exceeded, no tests will be rerun
-- Default: `-1` (no limit)
-- Example: `test-rerun test.dll --rerunMaxFailedTests 10`
+## Options passed to `dotnet test`
 
-**`--rerunFailedThreshold <percentage>`**
-- Maximum percentage of failed tests allowed to trigger a rerun
-- Calculated as the percentage of failed tests out of the total tests executed in the initial run
-- If exceeded, no tests will be rerun, since a high failure rate usually indicates a broader issue (infrastructure, environment, widespread regression) rather than isolated flaky tests
-- Default: `-1` (no limit)
-- Example: `test-rerun test.dll --rerunFailedThreshold 20` (skips reruns when more than 20% of tests fail)
+These options mean the same as in [`dotnet test`](https://learn.microsoft.com/dotnet/core/tools/dotnet-test) and are passed on every run.
 
-**`--delay, -d <seconds>`**
-- Delay between test runs in seconds
-- Useful for allowing external resources to recover
-- Example: `test-rerun test.dll --delay 5`
+| Option | Default | Description |
+|---|---|---|
+| `--filter <expression>` | — | Run only the tests that match. On reruns it is combined with the failed tests: `(your filter)&(failed tests)`. |
+| `--logger`, `-l <logger>` | `trx` | Logger for test results. Repeat for several loggers. A `trx` logger is always added if none of yours is TRX, because the tool reads TRX files. |
+| `--results-directory`, `-r <dir>` | `.` | Base folder for results. Each run writes to `<dir>/attempt-N`. See [Results folders](how-it-works#results-folders). |
+| `--settings`, `-s <file>` | — | A `.runsettings` file. |
+| `--configuration`, `-c <name>` | — | Build configuration, for example `Release`. |
+| `--framework`, `-f <tfm>` | — | Target framework, for example `net8.0`. |
+| `--no-build` | off | Do not build before testing. Implies `--no-restore`. |
+| `--no-restore` | off | Do not restore before building. |
+| `--verbosity`, `-v <level>` | — | Verbosity of `dotnet test`: `Quiet`, `Minimal`, `Normal`, `Detailed`, `Diagnostic`. |
+| `--blame` | off | Run in blame mode, to find the test that crashes the test host. |
+| `--collect <name>` | — | Enable a data collector, for example `"XPlat Code Coverage"` or `"Code Coverage"`. Only one collector. |
+| `--environment`, `-e <NAME=value>` | — | Set an environment variable for the test run. Repeat for several variables. |
 
-### Test Filtering
+### MSBuild arguments
 
-**`--filter <expression>`**
-- Run tests that match the given expression
-- Uses standard dotnet test filter syntax
-- Example: `test-rerun test.dll --filter "FullyQualifiedName~Integration"`
-
-### Output Configuration
-
-**`--logger, -l <logger>`**
-- Specifies a logger for test results
-- Multiple values allowed
-- Default: `trx`
-- Example: `test-rerun test.dll --logger "trx;LogFileName=results.trx"`
-
-**`--results-directory, -r <path>`**
-- Directory where test results are placed
-- Directory is created if it doesn't exist
-- Each attempt writes to its own subdirectory: `attempt-0` (initial run), `attempt-1` (first rerun), ... Merged coverage (`--mergeCoverageFormat`) is written to the directory itself
-- Example: `test-rerun test.dll --results-directory ./TestResults`
-
-**`--loglevel <level>`**
-- Log level for the tool output
-- Values: `Quiet`, `Minimal`, `Normal`, `Verbose`, `Debug`
-- Default: `Verbose`
-- Example: `test-rerun test.dll --loglevel Minimal`
-
-**`--deleteReports`**
-- Delete the TRX files generated by every attempt after execution (empty `attempt-N` directories are removed too)
-- Useful for CI/CD pipelines
-- Example: `test-rerun test.dll --deleteReports`
-
-**`--logPassedTests`**
-- Log each passed test as it completes during execution
-- Opt-in flag; can produce a lot of output on large test suites
-- Useful for monitoring progress of long-running suites, identifying the last executed test if the process hangs, or investigating flaky tests
-- Example: `test-rerun test.dll --logPassedTests`
-
-**`--logTestResults`**
-- Logs the result (passed/failed) of each individual test, independently of the `dotnet test` verbosity
-- Reads the generated trx report after each run (including reruns), so it does not depend on `--verbosity` or `--logPassedTests`
-- Failed tests also print the error message and stack trace
-- Example: `test-rerun test.dll --logTestResults`
-
-### Build Configuration
-
-**`--configuration, -c <config>`**
-- Build configuration to use
-- Common values: `Debug`, `Release`
-- Example: `test-rerun test.dll --configuration Release`
-
-**`--framework, -f <framework>`**
-- Target framework
-- Example: `test-rerun test.dll --framework net8.0`
-
-**`--no-build`**
-- Skip building the project before testing
-- Implies `--no-restore`
-- Example: `test-rerun test.dll --no-build`
-
-**`--no-restore`**
-- Skip restoring dependencies before building
-- Example: `test-rerun test.dll --no-restore`
-
-### Test Execution
-
-**`--verbosity, -v <level>`**
-- Verbosity level of the dotnet test command
-- Values: `quiet`, `minimal`, `normal`, `detailed`, `diagnostic`
-- Example: `test-rerun test.dll --verbosity detailed`
-
-**`--blame`**
-- Run tests in blame mode
-- Helps identify problematic tests
-- Example: `test-rerun test.dll --blame`
-
-**`--environment, -e <variable=value>`**
-- Set environment variables
-- Can be specified multiple times
-- Example: `test-rerun test.dll -e "ENV=Production" -e "DEBUG=false"`
-
-### Code Coverage
-
-**`--collect <collector>`**
-- Enable data collector for the test run
-- Example: `test-rerun test.dll --collect "Code Coverage"`
-- Example: `test-rerun test.dll --collect "XPlat Code Coverage"`
-
-**`--mergeCoverageFormat <format>`**
-- Output format for merged coverage
-- Values: `Coverage`, `Cobertura`, `Xml`
-- Requires `dotnet-coverage` tool to be installed
-- Example: `test-rerun test.dll --collect "Code Coverage" --mergeCoverageFormat Cobertura`
-
-### Advanced Options
-
-**`--settings, -s <file>`**
-- Run settings file to use
-- Example: `test-rerun test.dll --settings test.runsettings`
-
-**`--inlineRunSettings, -- <settings>`**
-- Inline run settings configuration
-- Must be the last option
-- Example: `test-rerun test.dll -- RunConfiguration.MaxCpuCount=1`
-
-## MSBuild Arguments
-
-MSBuild arguments can be passed through using:
-- `/p:` or `-p:` or `--property:` for properties
-- `-m:` or `/m:` for max CPU count
-
-Examples:
-```bash
-test-rerun test.dll /p:CollectCoverage=true
-test-rerun test.dll -m:3
-```
-
-## Usage Examples
-
-### Example 1: Basic Retry with Custom Attempts
+Arguments that start with `/p:`, `-p:`, `--property:`, `/property:`, `-property:`, `/m:`, `-m:` or `--maxCpuCount:` (and `/maxCpuCount:`, `-maxCpuCount:`) are passed to `dotnet test` as they are:
 
 ```bash
-test-rerun MyTests.dll --rerunMaxAttempts 5
+test-rerun MyTests.csproj /p:CollectCoverage=true -m:1
 ```
 
-### Example 2: Filter Specific Tests
+### Inline run settings
+
+Everything after `--` is passed to `dotnet test` as [inline run settings](https://learn.microsoft.com/dotnet/core/testing/selective-unit-tests#runsettings-arguments). Put it at the end of the command:
 
 ```bash
-test-rerun MyTests.dll --filter "Category=Integration" --rerunMaxAttempts 3
+test-rerun MyTests.csproj --rerunMaxAttempts 2 -- RunConfiguration.MaxCpuCount=1 NUnit.NumberOfTestWorkers=1
 ```
 
-### Example 3: CI/CD Pipeline
+{: .warning }
+Any other argument the tool does not recognise is also treated as an inline run setting. Check the spelling of options: a mistyped option does not fail, it is passed to `dotnet test` after `--`.
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| `0` | All tests passed, on the first run or after reruns. |
+| `1` | Tests still failed after the last rerun, reruns were skipped by `--rerunMaxFailedTests` / `--rerunFailedThreshold`, no TRX file was found, or `dotnet test` (or `dotnet-coverage`) failed for another reason, such as a build error. |
+| `130` | The run was cancelled (Ctrl+C). |
+
+## Examples
 
 ```bash
-test-rerun MyTests.dll \
-  --configuration Release \
-  --no-build \
-  --logger "trx;LogFileName=results.trx" \
-  --results-directory ./TestResults \
-  --rerunMaxAttempts 3 \
-  --deleteReports
+# Release build, built in a previous step
+test-rerun MySolution.sln --configuration Release --no-build
+
+# Only integration tests; wait 10 s before each rerun; give up if more than 15 fail
+test-rerun IntegrationTests.csproj --filter "Category=Integration" --delay 10 --rerunMaxFailedTests 15
+
+# Keep results in ./TestResults and print every test result
+test-rerun MyTests.csproj --results-directory TestResults --logTestResults
+
+# JUnit report for GitLab, plus the TRX the tool needs (added automatically)
+test-rerun MyTests.csproj --logger "junit;LogFileName=junit.xml"
+
+# Merged Cobertura coverage of all runs
+test-rerun MyTests.csproj --collect "XPlat Code Coverage" --mergeCoverageFormat Cobertura
+
+# Environment variables and a run settings file
+test-rerun MyTests.csproj -e ASPNETCORE_ENVIRONMENT=Testing --settings ci.runsettings
 ```
-
-### Example 4: With Code Coverage
-
-```bash
-test-rerun MyTests.dll \
-  --collect "XPlat Code Coverage" \
-  --mergeCoverageFormat Cobertura \
-  --rerunMaxAttempts 3
-```
-
-### Example 5: With Delay Between Retries
-
-```bash
-test-rerun MyTests.dll \
-  --rerunMaxAttempts 5 \
-  --delay 10 \
-  --filter "Category=External"
-```
-
-### Example 6: Blame Mode for Debugging
-
-```bash
-test-rerun MyTests.dll \
-  --blame \
-  --verbosity detailed \
-  --rerunMaxAttempts 3
-```
-
-### Example 7: Multiple Test Filters
-
-```bash
-test-rerun MyTests.dll \
-  --filter "FullyQualifiedName~MyNamespace&Category=Flaky" \
-  --rerunMaxAttempts 10 \
-  --delay 5
-```
-
-## Exit Codes
-
-The tool returns different exit codes based on execution results:
-
-- `0`: All tests passed (or passed after retries)
-- `1`: Tests failed after maximum retry attempts
-- `2`: Error during execution
-
-## Tips and Best Practices
-
-1. **Use `--delay` for External Dependencies**: Add delays when tests depend on external services that may need time to recover
-
-2. **Limit Reruns with `--rerunMaxFailedTests`**: In large test suites, limit how many failed tests will be rerun to avoid excessive execution time
-
-3. **Limit Reruns with `--rerunFailedThreshold`**: Skip reruns entirely when a large percentage of tests fail, since this usually signals a broader issue rather than isolated flaky tests
-
-4. **Use Filters**: Target specific flaky tests with `--filter` to avoid rerunning all tests unnecessarily
-
-5. **CI/CD Integration**: Use `--deleteReports` in CI/CD to keep artifacts clean
-
-6. **Code Coverage**: When collecting coverage, use `--mergeCoverageFormat` to get a single consolidated report
-
-7. **Blame Mode**: Use `--blame` when debugging intermittent failures to identify which tests are problematic
-
-8. **Log Levels**: Use `--loglevel Minimal` in CI/CD for cleaner logs, and `Verbose` or `Debug` when troubleshooting
-
-## Next Steps
-
-- [Configuration](configuration) - Learn about advanced configuration options
-- [Examples](examples) - See more real-world scenarios
-- [Docker](docker) - Use the tool with Docker
