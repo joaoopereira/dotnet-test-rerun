@@ -21,32 +21,36 @@ Images are published on Docker Hub as [`joaoopereira/dotnet-test-rerun`](https:/
 
 ## Running tests
 
-Mount your repository and pass paths inside the container. The image's working directory is `/app`, where the tool is installed, so use absolute paths:
+Mount your repository and make it the working directory. Paths are then relative to the repository:
 
 ```bash
 docker run --rm \
-  -v "$PWD:/src" \
-  joaoopereira/dotnet-test-rerun:4.2.0-net8 \
-  /src/tests/MyTests/MyTests.csproj \
+  -v "$PWD:/src" -w /src \
+  joaoopereira/dotnet-test-rerun:5.0.0-net8 \
+  tests/MyTests/MyTests.csproj \
   --rerunMaxAttempts 3 \
-  --results-directory /src/TestResults
+  --results-directory TestResults
 ```
 
-Choose the image whose .NET version matches the target framework of your test projects.
+The images are based on the .NET SDK image of the same version, because the tool runs `dotnet test`. Choose the image whose .NET version matches the target framework of your test projects.
+
+{: .warning }
+Images up to 5.0.0-alpha.0 are based on the .NET runtime image, which cannot run `dotnet test`. Use a later version.
 
 ## Docker Compose
 
 ```yaml
 services:
   tests:
-    image: joaoopereira/dotnet-test-rerun:4.2.0
+    image: joaoopereira/dotnet-test-rerun:5.0.0
     volumes:
       - .:/src
+    working_dir: /src
     command: >
-      /src/MySolution.sln
+      MySolution.sln
       --rerunMaxAttempts 3
       --filter "Category=Integration"
-      --results-directory /src/TestResults
+      --results-directory TestResults
 ```
 
 ```bash
