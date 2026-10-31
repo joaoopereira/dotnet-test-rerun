@@ -636,6 +636,36 @@ public class RerunOrchestratorTests
         await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
         testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>());
     }
+
+    [Fact]
+    public async Task Run_PercentageThreshold_OnlyAppliesToTheInitialRun()
+    {
+        // Arrange
+        var config = InitialConfigurationSetup(extraParams: "--rerunFailedThreshold 20");
+        var dotNetTestRunner = CreateTestRunner();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(new Logger(), dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        // Initial run: 5 of 100 failed (5%). First rerun: 2 of the 5 rerun tests still fail (40% of that run)
+        var initialRun = new TestFilterCollection { TotalTests = 100 };
+        initialRun.Add(new TestFilter("net8.0", Enumerable.Range(1, 5).Select(i => $"test{i}").ToList()));
+        var firstRerun = new TestFilterCollection { TotalTests = 5 };
+        firstRerun.Add(new TestFilter("net8.0", new List<string> { "test1", "test2" }));
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(initialRun, firstRerun, new TestFilterCollection());
+
+        // Act
+        var outcome = await command.RunAsync(config);
+
+        // Assert
+        outcome.Should().Be(RerunOutcome.PassedAfterRerun);
+        await dotNetTestRunner.Received(3).Test(config, Arg.Any<RunRequest>(), Arg.Any<CancellationToken>());
+    }
+
     [Theory]
     [InlineData("", new[] { ErrorCode.Success }, 1, RerunOutcome.Passed)]
     [InlineData("", new[] { ErrorCode.FailedTests, ErrorCode.Success }, 1, RerunOutcome.PassedAfterRerun)]

@@ -78,8 +78,9 @@ public class RerunOrchestrator
                     break;
                 }
 
-                // Check if the percentage of failed tests exceeds the threshold
-                if (options.RerunFailedThreshold >= 0 && testsToRerun.TotalTests > 0)
+                // Check if the percentage of failed tests exceeds the threshold. Only the initial run has all
+                // the tests; a rerun only has the failed ones, so its percentage would be meaningless.
+                if (attempt == 1 && options.RerunFailedThreshold >= 0 && testsToRerun.TotalTests > 0)
                 {
                     var failedPercentage = testsToRerun.TotalFailedTests * 100d / testsToRerun.TotalTests;
                     if (failedPercentage > options.RerunFailedThreshold)

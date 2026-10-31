@@ -32,7 +32,7 @@ These options control the tool itself and are not passed to `dotnet test`.
 |---|---|---|
 | `--rerunMaxAttempts <n>` | `3` | Maximum number of reruns after the first run. With `3`, `dotnet test` runs at most 4 times. |
 | `--rerunMaxFailedTests <n>` | `-1` | Do not rerun when more than `n` tests failed. `-1` (or `0`) means no limit. |
-| `--rerunFailedThreshold <percent>` | `-1` | Do not rerun when more than this percentage of the tests failed. Accepts decimals (`12.5`). `-1` means no limit; `0` means never rerun. |
+| `--rerunFailedThreshold <percent>` | `-1` | Do not rerun when more than this percentage of the tests failed in the first run. Accepts decimals (`12.5`). `-1` means no limit; `0` means never rerun. |
 | `--delay`, `-d <seconds>` | `0` | Wait this many seconds before each rerun. Not applied when nothing is rerun. |
 | `--deleteReports` | off | Delete the TRX files of every run at the end, and the `attempt-N` folders left empty. Files from other loggers (for example JUnit) are kept. |
 | `--mergeCoverageFormat <format>` | — | Merge the coverage files of all runs into one file: `Coverage`, `Cobertura` or `Xml`. Requires the [`dotnet-coverage`](https://learn.microsoft.com/dotnet/core/additional-tools/dotnet-coverage) tool. See [Code coverage](configuration#code-coverage). |
