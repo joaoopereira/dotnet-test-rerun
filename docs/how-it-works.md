@@ -19,7 +19,7 @@ nav_order: 4
 1. **First run.** `dotnet test` runs with your arguments and writes its results to `attempt-0`.
 2. **Check the result.** If `dotnet test` exits with `0`, the tool stops with exit code `0`.
 3. **Find the failed tests.** The tool reads the TRX files of the last run and builds a `--filter` with one clause per failed test.
-4. **Check the limits.** If more tests failed than `--rerunMaxFailedTests`, or a higher percentage than `--rerunFailedThreshold`, the tool stops without rerunning and exits with `1`.
+4. **Check the limits.** If more tests failed than `--rerunMaxFailedTests`, or (after the first run only) a higher percentage than `--rerunFailedThreshold`, the tool stops without rerunning and exits with `1`.
 5. **Rerun.** After `--delay` seconds, `dotnet test` runs again with that filter and writes to `attempt-1`.
 6. **Repeat** steps 3 to 5 until every test passes or `--rerunMaxAttempts` reruns are done.
 

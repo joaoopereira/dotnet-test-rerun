@@ -40,12 +40,8 @@ test-rerun MyTests.csproj --rerunMaxFailedTests 10
 test-rerun MyTests.csproj --rerunFailedThreshold 20
 ```
 
-- The limits are checked before every rerun, against the run before it.
-- The percentage is the number of failed tests divided by the number of tests in that run's TRX files.
-
-{: .warning }
-On the second and later reruns, "the run before it" only contains the rerun tests, so the percentage is usually high (for example, 2 of 3 rerun tests still failing is 67 %). With `--rerunFailedThreshold`, expect the reruns to stop after the first one unless almost all rerun tests pass.
-
+- `--rerunFailedThreshold` is checked once, after the first run: the percentage is the number of failed tests divided by the number of tests in that run's TRX files. Reruns only contain the failed tests, so they are not checked.
+- `--rerunMaxFailedTests` is checked before every rerun, against the run before it.
 - When a limit stops the reruns, the tool exits with `1`.
 - You can use both. The rerun is skipped if either limit is exceeded.
 
