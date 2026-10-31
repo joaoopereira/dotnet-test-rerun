@@ -36,7 +36,7 @@ These options control the tool itself and are not passed to `dotnet test`.
 | `--delay`, `-d <seconds>` | `0` | Wait this many seconds before each rerun. Not applied when nothing is rerun. |
 | `--deleteReports` | off | Delete the TRX files of every run at the end, and the `attempt-N` folders left empty. Files from other loggers (for example JUnit) are kept. |
 | `--mergeCoverageFormat <format>` | — | Merge the coverage files of all runs into one file: `Coverage`, `Cobertura` or `Xml`. Requires the [`dotnet-coverage`](https://learn.microsoft.com/dotnet/core/additional-tools/dotnet-coverage) tool. See [Code coverage](configuration#code-coverage). |
-| `--loglevel <level>` | `Verbose` | Output of the tool itself: `Debug`, `Verbose`, `Information`, `Warning`, `Error`. `Debug` also prints the `dotnet test` command lines. An unknown value falls back to `Verbose`. |
+| `--loglevel <level>` | `Verbose` | Output of the tool itself: `Debug`, `Verbose`, `Information`, `Warning`, `Error`. `Debug` also prints the `dotnet test` command lines. Any other value is an error. |
 | `--logTestResults` | off | After each run, print every test with ✓ or ✗, and the error message and stack trace of failed tests. Reads the TRX file, so it does not depend on `--verbosity`. |
 | `--logPassedTests` | off | Add a `console;verbosity=detailed` logger so `dotnet test` prints each test as it passes. Ignored when `--logTestResults` is set. Can produce a lot of output. |
 

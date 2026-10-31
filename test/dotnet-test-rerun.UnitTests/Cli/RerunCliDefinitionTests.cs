@@ -115,6 +115,38 @@ public class RerunCliDefinitionTests
         options.LogTestResults.Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData("warning", LogLevel.Warning)]
+    [InlineData("DEBUG", LogLevel.Debug)]
+    [InlineData("Information", LogLevel.Information)]
+    public void RerunCliDefinition_ToOptions_LogLevel_IsCaseInsensitive(string value, LogLevel expected)
+    {
+        //Arrange
+        _cli.AddTo(Command);
+        var result = Command.Parse($"path --loglevel {value}");
+
+        //Act
+        var options = _cli.ToOptions(result);
+
+        //Assert
+        result.Errors.Should().BeEmpty();
+        options.LogLevel.Should().Be(expected);
+    }
+
+    [Fact]
+    public void RerunCliDefinition_Parse_InvalidLogLevel_ShouldFail()
+    {
+        //Arrange
+        _cli.AddTo(Command);
+
+        //Act
+        var result = Command.Parse("path --loglevel Minimal");
+
+        //Assert
+        result.Errors.Should().ContainSingle()
+            .Which.Message.Should().Contain("Minimal");
+    }
+
     [Fact]
     public void RerunCliDefinition_ToOptions_LogPassedTests_ShouldBeTrueWhenPassed()
     {

@@ -1,5 +1,4 @@
-﻿using System.CommandLine.Parsing;
-using Spectre.Console;
+﻿using Spectre.Console;
 
 namespace dotnet.test.rerun.Logging
 {
@@ -128,25 +127,6 @@ namespace dotnet.test.rerun.Logging
         /// <param name="msg">message to be escaped</param>
         /// <returns>escaped message</returns>
         private static string EscapeMarkup(string? msg) => Markup.Escape(msg ?? string.Empty);
-
-        /// <summary>
-        /// LogLevel Parser
-        /// </summary>
-        public static Func<ArgumentResult, LogLevel> ParseLogLevel = argResult =>
-        {
-            var loglevel = LogLevel.Verbose;
-            string loglevelStr = "verbose";
-            if (argResult.Tokens.Any())
-            {
-                loglevelStr = argResult.Tokens[0].Value;
-            }
-
-            if (Enum.TryParse(typeof(LogLevel), loglevelStr, ignoreCase: true, out var loglevelObj))
-            {
-                loglevel = (LogLevel)loglevelObj!;
-            }
-            return loglevel;
-        };
     }
 
     public enum LogLevel

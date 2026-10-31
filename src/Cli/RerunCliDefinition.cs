@@ -65,8 +65,7 @@ public class RerunCliDefinition
     private readonly Option<LogLevel> LogLevelOption = new("--loglevel")
     {
         Description = "Log Level",
-        DefaultValueFactory = _ => LogLevel.Verbose,
-        CustomParser = Logging.Logger.ParseLogLevel
+        DefaultValueFactory = _ => LogLevel.Verbose
     };
 
     private readonly Option<bool> NoBuildOption = new("--no-build")
