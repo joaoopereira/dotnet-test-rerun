@@ -638,6 +638,33 @@ public class RerunOrchestratorTests
     }
 
     [Fact]
+    public async Task Run_TestsFailOnFirstRun_LogsNumberOfFailedTests()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = InitialConfigurationSetup(filter: string.Empty);
+        var dotNetTestRunner = CreateTestRunner();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(logger, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        var failedTests = new TestFilterCollection();
+        failedTests.Add(new TestFilter(string.Empty,
+            new List<string> { "FullyQualifiedName=Tests.TestA", "FullyQualifiedName=Tests.TestB" }));
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(failedTests, new TestFilterCollection());
+
+        // Act
+        await command.RunAsync(config);
+
+        // Assert
+        logger.Received(1).Warning("Found 2 failed test(s) to rerun");
+    }
+
+    [Fact]
     public async Task Run_PercentageThreshold_OnlyAppliesToTheInitialRun()
     {
         // Arrange

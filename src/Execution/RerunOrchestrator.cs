@@ -94,7 +94,7 @@ public class RerunOrchestrator
                 // Only wait when there is something to rerun
                 await Task.Delay(options.Delay, cancellationToken);
                 Log.Information($"Rerun attempt {attempt}/{options.RerunMaxAttempts}");
-                Log.Warning($"Found Failed tests: {testsToRerun}");
+                Log.Warning($"Found {testsToRerun.TotalFailedTests} failed test(s) to rerun");
                 attemptDirectory = NewAttemptDirectory(resultsDirectory, attempt, attemptDirectories);
 
                 var attemptResults = new List<ErrorCode>();
