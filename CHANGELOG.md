@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file. See [versio
 
 * drop the net6.0 target framework ([edb8136](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/edb81369eb5d9aebc5c619ee7a3b9481e374296d))
 * **results:** write each attempt to its own attempt-N directory ([84d3a6f](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/84d3a6f038356d5af83d02ab47210fb9dd2860a0))
+
 <a name="4.3.0"></a>
 ## [4.3.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v4.3.0) (2026-11-04)
 
