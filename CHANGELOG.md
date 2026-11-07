@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="5.0.0-alpha.2"></a>
+## [5.0.0-alpha.2](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.0.0-alpha.2) (2026-11-07)
+
+### Bug Fixes
+
+* **rerun:** log the number of failed tests in RerunOrchestrator ([2eb28b7](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/2eb28b7298e3b39c0e4d1a66892cf694ae020475))
+
 <a name="5.0.0-alpha.1"></a>
 ## [5.0.0-alpha.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.0.0-alpha.1) (2026-10-31)
 
