@@ -815,6 +815,118 @@ public class RerunOrchestratorTests
         testResultsAnalyzer.Received().GetTrxFiles(Arg.Is<IDirectoryInfo>(d => d.FullName == Path.Combine(resultsDirectory, "attempt-0")));
     }
 
+    [Fact]
+    public async Task Run_TestsFailOnAllAttempts_WithGenerateTestCommand_LogsDotnetTestCommand()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = InitialConfigurationSetup("--generateTestCommand", filter: string.Empty);
+        var dotNetTestRunner = CreateTestRunner();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(logger, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        var failedTests = new TestFilterCollection();
+        failedTests.Add(new TestFilter(string.Empty,
+            new List<string> { "FullyQualifiedName=Tests.TestA", "FullyQualifiedName=Tests.TestB" }));
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(failedTests);
+
+        // Act
+        await command.RunAsync(config);
+
+        // Assert
+        await dotNetTestRunner.Received(3).Test(config, Arg.Any<RunRequest>(), Arg.Any<CancellationToken>());
+        logger.Received(1).Information("To run the failed tests:");
+        logger.Received(1).Information(
+            "dotnet test path --filter \"FullyQualifiedName=Tests.TestA | FullyQualifiedName=Tests.TestB\" --settings settings");
+    }
+
+    [Fact]
+    public async Task Run_TestsFailExceedingThreshold_WithGenerateTestCommand_LogsDotnetTestCommand()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = InitialConfigurationSetup("--rerunMaxFailedTests 1 --generateTestCommand", filter: string.Empty);
+        var dotNetTestRunner = CreateTestRunner();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(logger, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        var failedTests = new TestFilterCollection();
+        failedTests.Add(new TestFilter(string.Empty,
+            new List<string> { "FullyQualifiedName=Tests.TestA", "FullyQualifiedName=Tests.TestB" }));
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(failedTests);
+
+        // Act
+        await command.RunAsync(config);
+
+        // Assert
+        await dotNetTestRunner.Received(1).Test(config, Arg.Any<RunRequest>(), Arg.Any<CancellationToken>());
+        logger.Received(1).Information("To run the failed tests:");
+        logger.Received(1).Information(Arg.Is<string>(message => message.StartsWith("dotnet test path --filter")));
+    }
+
+    [Fact]
+    public async Task Run_TestsFailOnAllAttempts_WithoutGenerateTestCommand_DoesNotLogDotnetTestCommand()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = InitialConfigurationSetup(filter: string.Empty);
+        var dotNetTestRunner = CreateTestRunner();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(logger, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        var failedTests = new TestFilterCollection();
+        failedTests.Add(new TestFilter(string.Empty, new List<string> { "FullyQualifiedName=Tests.TestA" }));
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(failedTests);
+
+        // Act
+        await command.RunAsync(config);
+
+        // Assert
+        logger.DidNotReceive().Information("To run the failed tests:");
+        logger.DidNotReceive().Information(Arg.Is<string>(message => message.StartsWith("dotnet test")));
+    }
+
+    [Fact]
+    public async Task Run_TestsFailOnFirstRun_PassOnSecond_WithGenerateTestCommand_DoesNotLogDotnetTestCommand()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = InitialConfigurationSetup("--generateTestCommand", filter: string.Empty);
+        var dotNetTestRunner = CreateTestRunner();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(logger, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        var failedTests = new TestFilterCollection();
+        failedTests.Add(new TestFilter(string.Empty, new List<string> { "FullyQualifiedName=Tests.TestA" }));
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(failedTests, new TestFilterCollection());
+
+        // Act
+        await command.RunAsync(config);
+
+        // Assert
+        logger.DidNotReceive().Information("To run the failed tests:");
+    }
+
     private static IDotNetTestRunner CreateTestRunner()
     {
         var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();

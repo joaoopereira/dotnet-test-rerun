@@ -39,6 +39,7 @@ These options control the tool itself and are not passed to `dotnet test`.
 | `--loglevel <level>` | `Verbose` | Output of the tool itself: `Debug`, `Verbose`, `Information`, `Warning`, `Error`. `Debug` also prints the `dotnet test` command lines. Any other value is an error. |
 | `--logTestResults` | off | After each run, print every test with ✓ or ✗, and the error message and stack trace of failed tests. Reads the TRX file, so it does not depend on `--verbosity`. |
 | `--logPassedTests` | off | Add a `console;verbosity=detailed` logger so `dotnet test` prints each test as it passes. Ignored when `--logTestResults` is set. Can produce a lot of output. |
+| `--generateTestCommand` | off | When tests still fail at the end, print a standalone `dotnet test` command that runs only those tests, to reproduce them without the tool. Nothing is printed when all tests pass. See [Reproducing failed tests](configuration#reproducing-failed-tests). |
 
 ## Options passed to `dotnet test`
 
