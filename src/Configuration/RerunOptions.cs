@@ -33,4 +33,5 @@ public sealed record RerunOptions
     public IReadOnlyList<string> EnvironmentVariables { get; init; } = Array.Empty<string>();
     public bool LogPassedTests { get; init; }
     public bool LogTestResults { get; init; }
+    public bool GenerateTestCommand { get; init; }
 }

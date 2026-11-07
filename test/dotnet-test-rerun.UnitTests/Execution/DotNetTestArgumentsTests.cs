@@ -93,6 +93,16 @@ public class DotNetTestArgumentsTests
     }
 
     [Fact]
+    public void Build_WithGenerateTestCommand_ShouldNotForwardOptionToDotnetTest()
+    {
+        //Act
+        var args = Build(Parse("path --generateTestCommand"));
+
+        //Assert
+        args.Should().Be("test path --logger trx");
+    }
+
+    [Fact]
     public void Build_WithNoArguments()
     {
         //Act
