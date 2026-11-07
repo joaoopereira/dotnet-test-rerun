@@ -61,6 +61,7 @@ More detail: [How it works](https://joaoopereira.github.io/dotnet-test-rerun/how
 | `--results-directory`, `-r` | `.` | Where results go; each run writes to an `attempt-N` subfolder |
 | `--mergeCoverageFormat` | — | Merge the coverage of all runs (`Coverage`, `Cobertura`, `Xml`); needs `dotnet-coverage` |
 | `--logTestResults` | `false` | Print the result of each test after every run |
+| `--generateTestCommand` | `false` | At the end, print a `dotnet test` command that runs only the tests still failing |
 | `--deleteReports` | `false` | Delete the TRX files when finished |
 
 `--filter`, `--logger`, `--settings`, `--configuration`, `--framework`, `--no-build`, `--blame`, `--collect`, `-e`, `/p:` and inline run settings are passed to `dotnet test`. See the [command reference](https://joaoopereira.github.io/dotnet-test-rerun/usage) for all options.

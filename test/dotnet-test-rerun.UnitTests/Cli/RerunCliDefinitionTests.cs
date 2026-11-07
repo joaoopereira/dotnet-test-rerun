@@ -26,6 +26,7 @@ public class RerunCliDefinitionTests
     [InlineData("--loglevel", "Log Level")]
     [InlineData("--logPassedTests", "Logs each passed test as it completes during execution. This can produce a lot of output.")]
     [InlineData("--logTestResults", "Logs the result (passed/failed) of each individual test, independently of the dotnet test verbosity.")]
+    [InlineData("--generateTestCommand", "Prints a dotnet test command to run the tests that are still failing at the end of the execution.")]
     public void RerunCliDefinition_AddTo_ShouldConfigureOptions(string optionName, string description)
     {
         //Act
@@ -113,6 +114,7 @@ public class RerunCliDefinitionTests
         options.MergeCoverageFormat.Should().BeNull();
         options.LogPassedTests.Should().BeFalse();
         options.LogTestResults.Should().BeFalse();
+        options.GenerateTestCommand.Should().BeFalse();
     }
 
     [Theory]
@@ -173,6 +175,20 @@ public class RerunCliDefinitionTests
 
         //Assert
         options.LogTestResults.Should().BeTrue();
+    }
+
+    [Fact]
+    public void RerunCliDefinition_ToOptions_GenerateTestCommand_ShouldBeTrueWhenPassed()
+    {
+        //Arrange
+        _cli.AddTo(Command);
+        var result = Command.Parse("path --generateTestCommand");
+
+        //Act
+        var options = _cli.ToOptions(result);
+
+        //Assert
+        options.GenerateTestCommand.Should().BeTrue();
     }
 
     [Fact]

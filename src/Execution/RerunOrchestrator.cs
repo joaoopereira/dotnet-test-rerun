@@ -121,6 +121,10 @@ public class RerunOrchestrator
             }
         }
 
+        // Before --deleteReports removes the TRX files of the last attempt
+        if (errorCode == ErrorCode.FailedTests && options.GenerateTestCommand)
+            LogFailedTestsCommand(options, attemptDirectory);
+
         if (options.MergeCoverageFormat.HasValue)
         {
             await DotNetCoverageRunner.Merge(options,
@@ -181,6 +185,24 @@ public class RerunOrchestrator
             if (directory.Exists && !directory.EnumerateFileSystemInfos().Any())
                 directory.Delete();
         }
+    }
+
+    /// <summary>
+    /// Prints a standalone dotnet test command per target framework for the tests that still fail.
+    /// </summary>
+    private void LogFailedTestsCommand(RerunOptions options, IDirectoryInfo attemptDirectory)
+    {
+        var trxFiles = TestResultsAnalyzer.GetTrxFiles(attemptDirectory);
+        if (trxFiles.Length == 0)
+            return;
+
+        var failedTests = TestResultsAnalyzer.GetFailedTestsFilter(trxFiles);
+        if (failedTests.HasTestsToReRun is false)
+            return;
+
+        Log.Information("To run the failed tests:");
+        foreach (var filter in failedTests.Filters.Values)
+            Log.Information(FailedTestsCommand.Build(options, filter.Filter));
     }
 
     private void LogTestResults(RerunOptions options, IDirectoryInfo attemptDirectory, HashSet<string> reportFiles)

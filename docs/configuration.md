@@ -77,6 +77,21 @@ Your filter is kept on every rerun, so a rerun never runs tests your filter excl
 | The exact `dotnet test` commands the tool runs | `--loglevel Debug` |
 | Only warnings and errors from the tool | `--loglevel Warning` |
 
+## Reproducing failed tests
+
+With `--generateTestCommand`, when tests still fail after the last rerun (or the rerun was skipped by `--rerunMaxFailedTests` or `--rerunFailedThreshold`), the tool prints a `dotnet test` command that runs only those tests:
+
+```bash
+test-rerun MyTests.csproj --generateTestCommand
+```
+
+```text
+To run the failed tests:
+dotnet test MyTests.csproj --filter "FullyQualifiedName=MyTests.TestA | FullyQualifiedName=MyTests.TestB"
+```
+
+The command uses the same filter as a rerun, keeps your `--filter` as `(original)&(failed)`, and carries over `--settings`, `--configuration` and `--framework`, so you can run it with `dotnet test` alone. Nothing is printed when all tests pass.
+
 ## Test loggers and reports
 
 The tool needs TRX files to find failed tests, so it adds `--logger trx` when none of your loggers is a TRX logger. You can add any other logger:

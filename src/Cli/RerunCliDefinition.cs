@@ -146,6 +146,12 @@ public class RerunCliDefinition
         Arity = ArgumentArity.Zero
     };
 
+    private readonly Option<bool> GenerateTestCommandOption = new("--generateTestCommand")
+    {
+        Description = "Prints a dotnet test command to run the tests that are still failing at the end of the execution.",
+        Arity = ArgumentArity.Zero
+    };
+
     #endregion Options
 
     private static readonly string[] MsBuildArgumentPrefixes =
@@ -179,6 +185,7 @@ public class RerunCliDefinition
         cmd.Options.Add(EnvironmentVariablesOption);
         cmd.Options.Add(LogPassedTestsOption);
         cmd.Options.Add(LogTestResultsOption);
+        cmd.Options.Add(GenerateTestCommandOption);
     }
 
     public RerunOptions ToOptions(ParseResult parseResult)
@@ -209,7 +216,8 @@ public class RerunCliDefinition
                 .ToArray(),
             EnvironmentVariables = (parseResult.GetValue(EnvironmentVariablesOption) ?? Array.Empty<string>()).ToArray(),
             LogPassedTests = parseResult.GetValue(LogPassedTestsOption),
-            LogTestResults = parseResult.GetValue(LogTestResultsOption)
+            LogTestResults = parseResult.GetValue(LogTestResultsOption),
+            GenerateTestCommand = parseResult.GetValue(GenerateTestCommandOption)
         };
 
     private static bool IsMsBuildArgument(string token)
