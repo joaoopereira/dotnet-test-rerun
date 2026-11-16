@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="5.0.0"></a>
+## [5.0.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.0.0) (2026-11-16)
+
+### Features
+
+* add --generateTestCommand option to print a dotnet test command for failed tests ([c62a828](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/c62a82829d70dce0661edc1e59a35b29f8790743))
+
+### Breaking Changes
+
+* drop the net9.0 target framework ([7945284](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/79452842d835d73a1e920311e31487baee86d30c))
+
+### Reverts
+
+* **results:** write reports to the results directory again, as in 4.x ([792bc49](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/792bc49c28d53abb0beb965040537064334957e7)). The `attempt-N` folders from 5.0.0-alpha.0 are not part of 5.0.0.
+
 <a name="5.0.0-alpha.2"></a>
 ## [5.0.0-alpha.2](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.0.0-alpha.2) (2026-11-07)
 
