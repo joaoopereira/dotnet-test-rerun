@@ -16,7 +16,7 @@ nav_order: 2
 
 ## Requirements
 
-- A .NET SDK, version 8.0 or later. The tool runs on .NET 8, 9 and 10.
+- A .NET SDK, version 8.0 or later. The tool runs on .NET 8 and .NET 10.
 - Test projects that run with `dotnet test` (xUnit, NUnit or MSTest on VSTest).
 
 The SDK runs the tool; your test projects can target other frameworks, as long as that SDK can build and run them.
