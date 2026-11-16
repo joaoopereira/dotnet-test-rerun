@@ -22,6 +22,13 @@ public static class VsTestFilter
         => value.Replace("\"", "%22");
 
     /// <summary>
+    /// For a test assembly (.dll or .exe), dotnet test hands the filter to VSTest directly, without MSBuild,
+    /// so nothing decodes %22: the literal quote must be passed instead.
+    /// </summary>
+    public static string? DecodeQuotes(string? value)
+        => value?.Replace("%22", "\"");
+
+    /// <summary>
     /// Exact match on the method, without parameters. Spaces are escaped.
     /// </summary>
     public static string FullyQualifiedNameEquals(string fullyQualifiedName)
