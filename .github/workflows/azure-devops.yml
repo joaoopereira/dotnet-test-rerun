@@ -5,6 +5,11 @@ name: Azure DevOps task
 # (Trusted Publishing policy of publisher joaoopereira), so keep the name and the publish job here.
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish to the Marketplace again (for example v5.1.0). Empty only runs the checks.
+        required: false
+        default: ""
   pull_request:
     paths: ["azure-devops/**", ".github/workflows/azure-devops.yml"]
   release:
@@ -52,7 +57,7 @@ jobs:
   publish:
     name: 🚀 Publish to the Marketplace
     needs: task
-    if: github.event_name == 'release' && !github.event.release.prerelease
+    if: (github.event_name == 'release' && !github.event.release.prerelease) || inputs.tag != ''
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -72,7 +77,7 @@ jobs:
       - name: Set versions
         working-directory: azure-devops
         env:
-          TAG: ${{ github.event.release.tag_name }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
           jq --argjson patch "$RUN_NUMBER" '.version.Patch = $patch' TestRerunV1/task.json > task.tmp && mv task.tmp TestRerunV1/task.json
