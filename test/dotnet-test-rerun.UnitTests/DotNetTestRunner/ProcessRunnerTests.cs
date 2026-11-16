@@ -2,6 +2,7 @@
 using dotnet.test.rerun.DotNetRunner;
 using dotnet.test.rerun.Logging;
 using AwesomeAssertions;
+using NSubstitute;
 using Xunit;
 
 namespace dotnet_test_rerun.UnitTest.DotNetTestRunner;
@@ -81,6 +82,48 @@ public class ProcessRunnerTests
         // Assert
         await act.Should().ThrowAsync<OperationCanceledException>();
         stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(30));
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenCancelled_KillsTheRunningProcess()
+    {
+        // shortcut: needs a POSIX shell to report the pid of the process to kill; CI runs on Linux
+        if (OperatingSystem.IsWindows())
+            return;
+
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var processId = new TaskCompletionSource<int>();
+        logger.When(log => log.Verbose(Arg.Any<string>())).Do(call =>
+        {
+            // Cancel once the process is running, as Ctrl+C would
+            if (int.TryParse(call.Arg<string>(), out var id) && processId.TrySetResult(id))
+                cancellation.Cancel();
+        });
+        var processRunner = new ProcessRunner(logger);
+
+        // Act
+        var act = () => processRunner.RunAsync(new ProcessStartInfo("sh", new[] { "-c", "echo $$; exec sleep 60" }), cancellation.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        logger.Received(1).Warning("Cancellation requested. Stopping the running process...");
+        ProcessHasExited(await processId.Task).Should().BeTrue();
+    }
+
+    private static bool ProcessHasExited(int id)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(id);
+            return process.WaitForExit(TimeSpan.FromSeconds(10));
+        }
+        catch (ArgumentException)
+        {
+            // No process with this id anymore
+            return true;
+        }
     }
 
     private static Logger QuietLogger()

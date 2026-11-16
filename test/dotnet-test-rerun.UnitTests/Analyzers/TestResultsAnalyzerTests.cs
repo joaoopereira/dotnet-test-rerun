@@ -213,7 +213,7 @@ public class TestResultsAnalyzerTests
 
         //Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(13);
+        result.Should().HaveCount(14);
     }
     
     [Fact]
@@ -357,4 +357,106 @@ public class TestResultsAnalyzerTests
         logger.Received(1).TestResult("XUnitExample.SimpleTest.SimpleNumberCompare(number: 1, expectedNumber: 1)", true, null, null);
     }
 
+    [Fact]
+    public void GetFailedTestsFilter_TestHostFailedToLaunch_ReturnsNothingToRerun()
+    {
+        //Arrange: real TRX written when the testhost could not start (missing runtime): no results, no definitions
+        var logger = Substitute.For<ILogger>();
+        var testResultsAnalyzer = new TestResultsAnalyzer(logger);
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithTestHostLaunchFailure.trx").Single();
+
+        //Act
+        var result = testResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile });
+
+        //Assert
+        result.HasTestsToReRun.Should().BeFalse();
+        result.TotalTests.Should().Be(0);
+        logger.Received(1).Warning($"No tests found with the Outcome Failed in file {trxFile.Name}");
+    }
+
+    [Fact]
+    public void LogTestResults_TestHostFailedToLaunch_LogsNothing()
+    {
+        //Arrange
+        var logger = Substitute.For<ILogger>();
+        var testResultsAnalyzer = new TestResultsAnalyzer(logger);
+        var trxFile = ResultsDirectory.EnumerateFiles("XUnitTrxFileWithTestHostLaunchFailure.trx").Single();
+
+        //Act
+        testResultsAnalyzer.LogTestResults(new[] { trxFile });
+
+        //Assert
+        logger.DidNotReceiveWithAnyArgs().TestResult(default!, default);
+    }
+
+    [Fact]
+    public void GetFailedTestsFilter_AbortedRunWithoutTestDefinitions_ReturnsNothingToRerun()
+    {
+        //Arrange
+        var logger = Substitute.For<ILogger>();
+        var testResultsAnalyzer = new TestResultsAnalyzer(logger);
+        var trxFile = WriteTrx("""
+            <TestRun>
+              <ResultSummary outcome="Aborted"><Counters total="0" /></ResultSummary>
+            </TestRun>
+            """);
+
+        //Act
+        var result = testResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile });
+
+        //Assert
+        // There are no classes to rerun, so the caller sees nothing to rerun and keeps the failed outcome
+        result.HasTestsToReRun.Should().BeFalse();
+        logger.Received(1).Warning($"Test run was aborted in file {trxFile.Name}. Will retry all tests from this assembly.");
+    }
+
+    [Fact]
+    public void GetFailedTestsFilter_ResultWithoutTestDefinition_UsesTheResultTestName()
+    {
+        //Arrange
+        var trxFile = WriteTrx("""
+            <TestRun>
+              <Results>
+                <UnitTestResult testId="unknown-id" testName="Ns.Tests.Method" outcome="Failed" />
+              </Results>
+            </TestRun>
+            """);
+
+        //Act
+        var result = TestResultsAnalyzer.GetFailedTestsFilter(new[] { trxFile });
+
+        //Assert
+        result.TotalTests.Should().Be(0);
+        result.Filters.Should().ContainSingle();
+        result.Filters.Single().Key.Should().Be(dotnet.test.rerun.Domain.TestFilter.NoFrameworkName);
+        result.Filters.Single().Value.Filter.Should().Be("FullyQualifiedName=Ns.Tests.Method");
+    }
+
+    [Fact]
+    public void LogTestResults_ResultWithoutTestDefinition_LogsTheResultTestName()
+    {
+        //Arrange
+        var logger = Substitute.For<ILogger>();
+        var testResultsAnalyzer = new TestResultsAnalyzer(logger);
+        var trxFile = WriteTrx("""
+            <TestRun>
+              <Results>
+                <UnitTestResult testId="unknown-id" testName="Ns.Tests.Method(x: 1)" outcome="Passed" />
+              </Results>
+            </TestRun>
+            """);
+
+        //Act
+        testResultsAnalyzer.LogTestResults(new[] { trxFile });
+
+        //Assert
+        logger.Received(1).TestResult("Ns.Tests.Method(x: 1)", true, null, null);
+    }
+
+    private static IFileInfo WriteTrx(string content)
+    {
+        var path = Path.Combine(TestUtilities.GetTmpDirectory(), "results.trx");
+        File.WriteAllText(path, content);
+        return FileSystem.FileInfo.New(path);
+    }
 }

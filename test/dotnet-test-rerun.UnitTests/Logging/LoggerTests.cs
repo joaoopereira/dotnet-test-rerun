@@ -208,4 +208,40 @@ public class LoggerTests
             // Assert
             stringWriter.ToString().Trim().Should().Be(message);
         }
+
+        [Theory]
+        [InlineData("value [x] and [/]")]
+        [InlineData("[red]not markup[/]")]
+        public void LoggerTests_OnATerminal_WritesMarkupAndKeepsBracketsAsIs(string message)
+        {
+            // Arrange
+            var testConsole = new TestConsole();
+            testConsole.Profile.Out = new TerminalOutput(testConsole.Profile.Out);
+            // A terminal output resets the width, and the StringWriter behind it has none
+            testConsole.Profile.Width = 120;
+            var logger = new Logger(testConsole);
+
+            // Act
+            logger.Error(message);
+            logger.TestResult("Tests.Method(\"[a]\")", false, message, "at [b]");
+
+            // Assert
+            testConsole.Lines.Should().Equal(
+                $"  {message}",
+                "  ✗ Tests.Method(\"[a]\")",
+                $"      {message}",
+                "      at [b]");
+        }
+
+        /// <summary>
+        /// Reports itself as a terminal, which a redirected test run never is, so the markup path is taken.
+        /// </summary>
+        private sealed class TerminalOutput(IAnsiConsoleOutput output) : IAnsiConsoleOutput
+        {
+            public TextWriter Writer => output.Writer;
+            public bool IsTerminal => true;
+            public int Width => output.Width;
+            public int Height => output.Height;
+            public void SetEncoding(System.Text.Encoding encoding) => output.SetEncoding(encoding);
+        }
 }
