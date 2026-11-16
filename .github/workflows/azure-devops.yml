@@ -1,10 +1,14 @@
 name: Azure DevOps task
 
 # Runs the Azure DevOps task outside an agent (inputs come from INPUT_* variables) and packages the extension.
+# On a stable release it also publishes the extension. The Marketplace trusts this workflow file by name
+# (Trusted Publishing policy of publisher joaoopereira), so keep the name and the publish job here.
 on:
   workflow_dispatch:
   pull_request:
     paths: ["azure-devops/**", ".github/workflows/azure-devops.yml"]
+  release:
+    types: [published]
 
 jobs:
   task:
@@ -44,3 +48,46 @@ jobs:
       - name: Package the extension
         working-directory: azure-devops
         run: npx -y tfx-cli@0.24.2 extension create --manifest-globs vss-extension.json --output-path ${{ runner.temp }}/vsix --no-prompt
+
+  publish:
+    name: 🚀 Publish to the Marketplace
+    needs: task
+    if: github.event_name == 'release' && !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Marketplace Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+
+      - name: Install task dependencies
+        working-directory: azure-devops/TestRerunV1
+        run: npm ci --omit=dev
+
+      # Agents cache tasks by version, so every publish needs a higher task version; the run number always grows.
+      - name: Set versions
+        working-directory: azure-devops
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          jq --argjson patch "$RUN_NUMBER" '.version.Patch = $patch' TestRerunV1/task.json > task.tmp && mv task.tmp TestRerunV1/task.json
+          jq --arg v "${TAG#v}" '.version = $v' vss-extension.json > ext.tmp && mv ext.tmp vss-extension.json
+
+      # tfx has no OIDC support, so exchange the GitHub OIDC token for a 15-minute Marketplace credential
+      # the same way vsce --oidc does, and pass it to tfx as the token.
+      - name: Publish
+        working-directory: azure-devops
+        run: |
+          oidc=$(curl -sSf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=marketplace.visualstudio.com" | jq -r .value)
+          credential=$(curl -sSf -X POST "https://marketplace.visualstudio.com/_apis/gallery/token?api-version=7.2-preview.1" \
+            -H "Authorization: FederatedToken $oidc" -H "Content-Type: application/json" -H "Accept: application/json" \
+            -d '{"publisherName":"joaoopereira"}' | jq -r .credential)
+          test -n "$credential" && test "$credential" != null
+          echo "::add-mask::$credential"
+          npx -y tfx-cli@0.24.2 extension publish --manifest-globs vss-extension.json --token "$credential" --no-prompt
