@@ -14,7 +14,6 @@ Images are published on Docker Hub as [`joaoopereira/dotnet-test-rerun`](https:/
 |---|---|---|
 | `latest` | 10.0 | Latest stable release. Pre-releases do not move it. |
 | `<version>`, `<version>-net10`, `<version>-dotnet10` | 10.0 | |
-| `<version>-net9`, `<version>-dotnet9` | 9.0 | |
 | `<version>-net8`, `<version>-dotnet8` | 8.0 | |
 
 `<version>` is a NuGet version such as `4.2.0` or `5.0.0-alpha.0`. Pin a version in CI instead of using `latest`.

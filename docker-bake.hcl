@@ -2,7 +2,7 @@ variable "IMAGE" {default = "joaoopereira/dotnet-test-rerun"}
 variable "VERSION" {default = "0.0.0"}
 
 group "default" {
-  targets = ["8", "9", "10"]
+  targets = ["8", "10"]
 }
 
 target "8" {
@@ -17,21 +17,6 @@ target "8" {
     "maintainer" = "mail@joaoopereira.com"
     "org.opencontainers.image.version" = "${VERSION}"
     "org.opencontainers.image.target" = "net8.0"
-  }
-}
-
-target "9" {
-  tags = [
-    "${IMAGE}:${VERSION}-net9",
-    "${IMAGE}:${VERSION}-dotnet9"
-  ]
-  args = {
-    TARGET_DOTNET_VERSION = "9.0"
-  }
-  labels = {
-    "maintainer" = "mail@joaoopereira.com"
-    "org.opencontainers.image.version" = "${VERSION}"
-    "org.opencontainers.image.target" = "net9.0"
   }
 }
 

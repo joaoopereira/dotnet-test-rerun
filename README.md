@@ -88,7 +88,7 @@ Azure DevOps and GitLab CI examples: [CI integration](https://joaoopereira.githu
 docker run --rm -v "$PWD:/src" -w /src joaoopereira/dotnet-test-rerun:latest MyTests.csproj
 ```
 
-Tags: `latest` and `<version>` (.NET 10), `<version>-net10`, `<version>-net9`, `<version>-net8`. See the [Docker guide](https://joaoopereira.github.io/dotnet-test-rerun/docker).
+Tags: `latest` and `<version>` (.NET 10), `<version>-net10`, `<version>-net8`. See the [Docker guide](https://joaoopereira.github.io/dotnet-test-rerun/docker).
 
 ## Contributing
 

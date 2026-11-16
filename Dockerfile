@@ -1,11 +1,8 @@
 # Multi-target Dockerfile for dotnet-test-rerun
-# Supports .NET 8.0, .NET 9.0, and .NET 10.0
+# Supports .NET 8.0 and .NET 10.0
 #
 # Build for .NET 8.0:
 #   docker build --build-arg TARGET_DOTNET_VERSION=8.0 -t dotnet-test-rerun:net8 .
-#
-# Build for .NET 9.0:
-#   docker build --build-arg TARGET_DOTNET_VERSION=9.0 -t dotnet-test-rerun:net9 .
 #
 # Build for .NET 10.0 (default):
 #   docker build --build-arg TARGET_DOTNET_VERSION=10.0 -t dotnet-test-rerun:net10 .
@@ -14,7 +11,6 @@
 # Build all targets using bake:
 #   docker buildx bake
 #   docker buildx bake 8  # build only .NET 8
-#   docker buildx bake 9  # build only .NET 9
 #   docker buildx bake 10  # build only .NET 10
 #   docker buildx bake --set "*.version=1.0.0"  # with custom version
 
