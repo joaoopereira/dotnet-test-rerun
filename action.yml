@@ -1,0 +1,97 @@
+name: dotnet-test-rerun
+description: Run dotnet test and rerun the failed tests with dotnet-test-rerun.
+author: joaoopereira
+branding:
+  icon: refresh-cw
+  color: purple
+
+inputs:
+  path:
+    description: Solution, project or folder to test. Empty runs dotnet test in the working directory.
+    required: false
+    default: ""
+  arguments:
+    description: Other test-rerun options, for example "--configuration Release --rerunMaxAttempts 3". See https://joaoopereira.github.io/dotnet-test-rerun/usage
+    required: false
+    default: ""
+  version:
+    description: dotnet-test-rerun version to install. Empty uses the action's own version when it is pinned to a vX.Y.Z tag, otherwise the latest release.
+    required: false
+    default: ""
+  results-directory:
+    description: Folder for the TRX files. Defaults to TestResults in the runner temp folder.
+    required: false
+    default: ""
+  working-directory:
+    description: Folder to run from.
+    required: false
+    default: "."
+  upload-results:
+    description: Upload the results directory as a workflow artifact, even when tests fail.
+    required: false
+    default: "false"
+  artifact-name:
+    description: Name of the uploaded artifact.
+    required: false
+    default: test-results
+
+outputs:
+  results-directory:
+    description: Folder that holds the TRX files of every run.
+    value: ${{ steps.paths.outputs.results-directory }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve version and folders
+      id: paths
+      shell: bash
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_RESULTS: ${{ inputs.results-directory }}
+        ACTION_REF: ${{ github.action_ref }}
+        WORKDIR: ${{ inputs.working-directory }}
+      run: |
+        version="$INPUT_VERSION"
+        if [[ -z "$version" && "$ACTION_REF" =~ ^v([0-9]+\.[0-9]+\.[0-9]+.*)$ ]]; then
+          version="${BASH_REMATCH[1]}"
+        fi
+        results="${INPUT_RESULTS:-$RUNNER_TEMP/TestResults}"
+        # Make a relative path absolute, so the output and the upload step find it from any folder.
+        [[ "$results" = /* || "$results" =~ ^[A-Za-z]: ]] || results="$(cd "$WORKDIR" && pwd)/$results"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "results-directory=$results" >> "$GITHUB_OUTPUT"
+        echo "tool-path=$RUNNER_TEMP/dotnet-test-rerun/${version:-latest}" >> "$GITHUB_OUTPUT"
+
+    - name: Install dotnet-test-rerun
+      shell: bash
+      env:
+        VERSION: ${{ steps.paths.outputs.version }}
+        TOOL_PATH: ${{ steps.paths.outputs.tool-path }}
+      run: |
+        if [[ -x "$TOOL_PATH/test-rerun" || -x "$TOOL_PATH/test-rerun.exe" ]]; then
+          echo "dotnet-test-rerun already installed in $TOOL_PATH"
+        else
+          dotnet tool install dotnet-test-rerun --tool-path "$TOOL_PATH" ${VERSION:+--version "$VERSION"}
+        fi
+
+    - name: Run test-rerun
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        TOOL_PATH: ${{ steps.paths.outputs.tool-path }}
+        TEST_PATH: ${{ inputs.path }}
+        ARGUMENTS: ${{ inputs.arguments }}
+        RESULTS: ${{ steps.paths.outputs.results-directory }}
+      run: |
+        # The arguments come from the workflow author; eval splits them like a shell, honouring quotes.
+        eval "extra=($ARGUMENTS)"
+        "$TOOL_PATH/test-rerun" ${TEST_PATH:+"$TEST_PATH"} --results-directory "$RESULTS" "${extra[@]}"
+
+    - name: Upload test results
+      if: always() && inputs.upload-results == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ steps.paths.outputs.results-directory }}
+        if-no-files-found: ignore

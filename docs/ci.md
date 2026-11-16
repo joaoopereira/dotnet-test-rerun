@@ -25,6 +25,38 @@ For reproducible builds, install the tool as a [local tool](installation#local-t
 
 ## GitHub Actions
 
+### With the action
+
+The `joaoopereira/dotnet-test-rerun` action installs the tool and runs it. Set up .NET first.
+
+```yaml
+- uses: actions/setup-dotnet@v4
+  with:
+    dotnet-version: '10.0.x'
+
+- run: dotnet build MySolution.sln --configuration Release
+
+- uses: joaoopereira/dotnet-test-rerun@v5
+  with:
+    path: MySolution.sln
+    arguments: --no-build --configuration Release --rerunMaxAttempts 3
+    upload-results: true
+```
+
+| Input | Default | Description |
+|---|---|---|
+| `path` | — | Solution, project or folder to test. |
+| `arguments` | — | Any other [option](usage), quoted as in a shell. |
+| `version` | the action's tag | Tool version. `@v5.0.0` installs 5.0.0; `@v5` or a branch installs the latest release. |
+| `results-directory` | `$RUNNER_TEMP/TestResults` | Folder for the TRX files. Don't pass `--results-directory` in `arguments`. |
+| `working-directory` | `.` | Folder to run from. |
+| `upload-results` | `false` | Upload the results directory as an artifact, even when tests fail. |
+| `artifact-name` | `test-results` | Name of that artifact. |
+
+The `results-directory` output holds the folder, for steps that publish the reports. The step fails when tests still fail after the reruns.
+
+### With a script
+
 ```yaml
 name: Tests
 
