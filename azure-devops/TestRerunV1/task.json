@@ -3,28 +3,123 @@
   "id": "ab342ba2-7bea-4793-aad6-c27c878c452a",
   "name": "TestRerun",
   "friendlyName": "dotnet-test-rerun",
-  "description": "Run dotnet test and rerun the failed tests with dotnet-test-rerun.",
+  "description": "Run tests on any agent OS, rerun the failed ones and publish the results. Inputs follow the Visual Studio Test (VSTest@3) task.",
   "helpMarkDown": "[Documentation](https://joaoopereira.github.io/dotnet-test-rerun/ci)",
   "category": "Test",
   "author": "joaoopereira",
-  "version": { "Major": 1, "Minor": 0, "Patch": 0 },
+  "version": { "Major": 1, "Minor": 1, "Patch": 0 },
   "minimumAgentVersion": "3.232.1",
-  "instanceNameFormat": "test-rerun $(path)",
+  "instanceNameFormat": "Test with reruns",
+  "groups": [
+    { "name": "testSelection", "displayName": "Test selection", "isExpanded": true },
+    { "name": "executionOptions", "displayName": "Execution options", "isExpanded": true },
+    { "name": "reportingOptions", "displayName": "Reporting options", "isExpanded": true },
+    { "name": "toolOptions", "displayName": "Tool options", "isExpanded": false }
+  ],
   "inputs": [
-    { "name": "path", "type": "string", "label": "Path", "defaultValue": "", "required": false,
-      "helpMarkDown": "Solution, project or folder to test. Empty runs dotnet test in the working directory." },
-    { "name": "arguments", "type": "string", "label": "Arguments", "defaultValue": "", "required": false,
-      "helpMarkDown": "Other test-rerun options, for example `--configuration Release --rerunMaxAttempts 3`. Don't pass `--results-directory` here. See [usage](https://joaoopereira.github.io/dotnet-test-rerun/usage)." },
-    { "name": "version", "type": "string", "label": "Tool version", "defaultValue": "", "required": false,
-      "helpMarkDown": "dotnet-test-rerun version to install. Empty installs the latest release on every run." },
-    { "name": "resultsDirectory", "type": "string", "label": "Results directory", "defaultValue": "$(Agent.TempDirectory)/TestResults", "required": false,
-      "helpMarkDown": "Folder for the TRX files of every run." },
-    { "name": "workingDirectory", "type": "filePath", "label": "Working directory", "defaultValue": "", "required": false,
-      "helpMarkDown": "Folder to run from. Defaults to the sources folder." },
-    { "name": "publishTestResults", "type": "boolean", "label": "Publish test results", "defaultValue": "true", "required": false,
-      "helpMarkDown": "Publish the TRX files to the Tests tab, even when tests fail." },
-    { "name": "testRunTitle", "type": "string", "label": "Test run title", "defaultValue": "", "required": false,
-      "visibleRule": "publishTestResults = true", "helpMarkDown": "Title of the published test run." }
+    {
+      "name": "testAssemblyVer2", "aliases": ["path"], "type": "multiLine", "label": "Test files", "groupName": "testSelection", "required": true,
+      "defaultValue": "**/bin/**/*test.dll\n**/bin/**/*tests.dll\n!**/obj/**",
+      "properties": { "rows": "3", "resizable": "true" },
+      "helpMarkDown": "Test assemblies, projects or solutions to run, one minimatch pattern per line, relative to the search folder. Lines starting with `!` exclude files. Each match runs separately."
+    },
+    {
+      "name": "searchFolder", "aliases": ["workingDirectory"], "type": "string", "label": "Search folder", "groupName": "testSelection", "required": true,
+      "defaultValue": "$(System.DefaultWorkingDirectory)",
+      "helpMarkDown": "Folder to search for the test files. Tests also run from this folder."
+    },
+    {
+      "name": "resultsFolder", "aliases": ["resultsDirectory"], "type": "string", "label": "Test results folder", "groupName": "testSelection", "required": false,
+      "defaultValue": "$(Agent.TempDirectory)/TestResults",
+      "helpMarkDown": "Folder for the TRX files of every run. Each test file gets its own subfolder."
+    },
+    {
+      "name": "testFiltercriteria", "type": "string", "label": "Test filter criteria", "groupName": "testSelection", "required": false, "defaultValue": "",
+      "helpMarkDown": "Run only the tests that match, for example `TestCategory!=Integration`. Reruns combine it with the failed tests."
+    },
+    {
+      "name": "runSettingsFile", "type": "filePath", "label": "Settings file", "groupName": "executionOptions", "required": false, "defaultValue": "",
+      "helpMarkDown": "A `.runsettings` file."
+    },
+    {
+      "name": "overrideTestrunParameters", "type": "multiLine", "label": "Override test run parameters", "groupName": "executionOptions", "required": false, "defaultValue": "",
+      "properties": { "rows": "3", "resizable": "true" },
+      "helpMarkDown": "Override the `TestRunParameters` of the settings file, for example `-webAppUrl $(appUrl) -userName \"Test User\"`."
+    },
+    {
+      "name": "codeCoverageEnabled", "type": "boolean", "label": "Code coverage enabled", "groupName": "executionOptions", "required": false, "defaultValue": "false",
+      "helpMarkDown": "Collect code coverage with the `Code Coverage` data collector."
+    },
+    {
+      "name": "diagnosticsEnabled", "type": "boolean", "label": "Collect advanced diagnostics in case of catastrophic failures", "groupName": "executionOptions", "required": false, "defaultValue": "false",
+      "helpMarkDown": "Run in blame mode, to find the test that crashes the test host."
+    },
+    {
+      "name": "otherConsoleOptions", "aliases": ["arguments"], "type": "string", "label": "Other console options", "groupName": "executionOptions", "required": false, "defaultValue": "",
+      "helpMarkDown": "Other [test-rerun options](https://joaoopereira.github.io/dotnet-test-rerun/usage), quoted as in a shell, for example `--framework net8.0 --delay 5`."
+    },
+    {
+      "name": "rerunFailedTests", "type": "boolean", "label": "Rerun failed tests", "groupName": "executionOptions", "required": false, "defaultValue": "true",
+      "helpMarkDown": "Rerun the tests that failed until they pass or the maximum number of attempts is reached."
+    },
+    {
+      "name": "rerunType", "type": "pickList", "label": "Do not rerun if test failures exceed specified threshold", "groupName": "executionOptions", "required": false,
+      "defaultValue": "basedOnTestFailurePercentage", "visibleRule": "rerunFailedTests = true",
+      "options": { "basedOnTestFailurePercentage": "% failure", "basedOnTestFailureCount": "# of failed tests" },
+      "helpMarkDown": "Skip the reruns when too many tests failed in the first run, by percentage or by count."
+    },
+    {
+      "name": "rerunFailedThreshold", "type": "string", "label": "% failure", "groupName": "executionOptions", "required": false, "defaultValue": "30",
+      "visibleRule": "rerunFailedTests = true && rerunType = basedOnTestFailurePercentage",
+      "helpMarkDown": "Do not rerun when more than this percentage of the tests failed. `-1` means no limit."
+    },
+    {
+      "name": "rerunFailedTestCasesMaxLimit", "type": "string", "label": "# of failed tests", "groupName": "executionOptions", "required": false, "defaultValue": "5",
+      "visibleRule": "rerunFailedTests = true && rerunType = basedOnTestFailureCount",
+      "helpMarkDown": "Do not rerun when more than this number of tests failed. `-1` means no limit."
+    },
+    {
+      "name": "rerunMaxAttempts", "type": "string", "label": "Maximum # of attempts", "groupName": "executionOptions", "required": false, "defaultValue": "3",
+      "visibleRule": "rerunFailedTests = true",
+      "helpMarkDown": "Maximum number of reruns after the first run."
+    },
+    {
+      "name": "testRunTitle", "type": "string", "label": "Test run title", "groupName": "reportingOptions", "required": false, "defaultValue": "",
+      "helpMarkDown": "Title of the published test run."
+    },
+    {
+      "name": "platform", "type": "string", "label": "Build platform", "groupName": "reportingOptions", "required": false, "defaultValue": "",
+      "helpMarkDown": "Build platform to report the tests against, for example `$(BuildPlatform)`."
+    },
+    {
+      "name": "configuration", "type": "string", "label": "Build configuration", "groupName": "reportingOptions", "required": false, "defaultValue": "",
+      "helpMarkDown": "Build configuration to report the tests against, for example `$(BuildConfiguration)`."
+    },
+    {
+      "name": "customLoggerConfig", "type": "string", "label": "Test logger", "groupName": "reportingOptions", "required": false, "defaultValue": "",
+      "helpMarkDown": "An extra logger, for example `junit;LogFileName={assembly}.junit.xml`. A TRX logger is always added."
+    },
+    {
+      "name": "publishRunAttachments", "type": "boolean", "label": "Upload test attachments", "groupName": "reportingOptions", "required": false, "defaultValue": "true",
+      "helpMarkDown": "Upload the files attached to the test run."
+    },
+    {
+      "name": "donotPublishTestResults", "type": "boolean", "label": "Disable publishing test results", "groupName": "reportingOptions", "required": false, "defaultValue": "false",
+      "helpMarkDown": "Do not publish the TRX files to the Tests tab."
+    },
+    {
+      "name": "failOnMinTestsNotRun", "type": "boolean", "label": "Fail the task if a minimum number of tests are not run", "groupName": "reportingOptions", "required": false, "defaultValue": "false",
+      "helpMarkDown": "Fail when fewer distinct tests than the minimum ran."
+    },
+    {
+      "name": "minimumExpectedTests", "type": "string", "label": "Minimum # of tests", "groupName": "reportingOptions", "required": false, "defaultValue": "1",
+      "visibleRule": "failOnMinTestsNotRun = true",
+      "helpMarkDown": "Minimum number of distinct tests that must run."
+    },
+    {
+      "name": "version", "type": "string", "label": "dotnet-test-rerun version", "groupName": "toolOptions", "required": false, "defaultValue": "",
+      "helpMarkDown": "Tool version to install. Empty installs the latest release on every run; a pinned version is cached on the agent."
+    }
   ],
   "outputVariables": [
     { "name": "resultsDirectory", "description": "Folder that holds the TRX files of every run." }
