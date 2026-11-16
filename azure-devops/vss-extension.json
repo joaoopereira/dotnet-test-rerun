@@ -1,0 +1,28 @@
+{
+  "manifestVersion": 1,
+  "id": "dotnet-test-rerun",
+  "name": "dotnet-test-rerun",
+  "version": "1.0.0",
+  "publisher": "joaoopereira",
+  "description": "Run dotnet test and rerun the failed tests with dotnet-test-rerun.",
+  "public": true,
+  "categories": ["Azure Pipelines"],
+  "tags": ["dotnet", "test", "rerun", "flaky", "trx"],
+  "targets": [{ "id": "Microsoft.VisualStudio.Services" }],
+  "content": { "details": { "path": "overview.md" } },
+  "links": {
+    "home": { "uri": "https://joaoopereira.github.io/dotnet-test-rerun/" },
+    "repository": { "uri": "https://github.com/joaoopereira/dotnet-test-rerun" },
+    "issues": { "uri": "https://github.com/joaoopereira/dotnet-test-rerun/issues" }
+  },
+  "repository": { "type": "git", "uri": "https://github.com/joaoopereira/dotnet-test-rerun" },
+  "files": [{ "path": "TestRerunV1" }],
+  "contributions": [
+    {
+      "id": "test-rerun-task",
+      "type": "ms.vss-distributed-task.task",
+      "targets": ["ms.vss-distributed-task.tasks"],
+      "properties": { "name": "TestRerunV1" }
+    }
+  ]
+}

@@ -100,6 +100,40 @@ jobs:
 
 ## Azure DevOps
 
+### With the task
+
+Install the [dotnet-test-rerun extension](https://marketplace.visualstudio.com/items?itemName=joaoopereira.dotnet-test-rerun) in your organization. The `TestRerun@1` task installs the tool, runs it, and publishes the TRX files of every run to the **Tests** tab, even when tests fail.
+
+```yaml
+steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: sdk
+      version: 10.0.x
+
+  - script: dotnet build MySolution.sln --configuration Release
+    displayName: Build
+
+  - task: TestRerun@1
+    inputs:
+      path: MySolution.sln
+      arguments: --no-build --configuration Release --rerunMaxAttempts 3
+```
+
+| Input | Default | Description |
+|---|---|---|
+| `path` | — | Solution, project or folder to test. |
+| `arguments` | — | Any other [option](usage), quoted as in a shell. Don't pass `--results-directory` here. |
+| `version` | latest | Tool version. A pinned version is cached on the agent. |
+| `resultsDirectory` | `$(Agent.TempDirectory)/TestResults` | Folder for the TRX files. |
+| `workingDirectory` | `$(System.DefaultWorkingDirectory)` | Folder to run from. |
+| `publishTestResults` | `true` | Publish the TRX files. |
+| `testRunTitle` | — | Title of the published test run. |
+
+The task also sets the `resultsDirectory` output variable.
+
+### With a script
+
 ```yaml
 trigger:
   - main
