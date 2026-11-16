@@ -221,6 +221,22 @@ public class DotNetTestArgumentsTests
         args.Should().Equal("test", "--filter", filter, "--logger", "trx");
     }
 
+    [Theory]
+    [InlineData("Tests.dll")]
+    [InlineData("bin/Release/net8.0/My.Tests.DLL")]
+    [InlineData("Tests.exe")]
+    public void Build_PassesLiteralQuotesInTheFilterOfATestAssembly(string path)
+    {
+        //Arrange
+        var filter = "FullyQualifiedName=A.Test1&DisplayName~_: %22Test \\(2%22";
+
+        //Act
+        var args = DotNetTestArguments.Build(new RerunOptions { Path = path }, new RunRequest(filter, null, string.Empty));
+
+        //Assert
+        args.Should().Equal("test", path, "--filter", "FullyQualifiedName=A.Test1&DisplayName~_: \"Test \\(2\"", "--logger", "trx");
+    }
+
     [Fact]
     public void Build_KeepsInlineRunSettingsWithQuotesAndSpacesAsSingleArguments()
     {

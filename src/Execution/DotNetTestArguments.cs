@@ -1,3 +1,4 @@
+using dotnet.test.rerun.Analyzers.Filters;
 using dotnet.test.rerun.Configuration;
 using dotnet.test.rerun.TestLogger;
 
@@ -21,7 +22,7 @@ public static class DotNetTestArguments
     {
         var args = new List<string> { "test" };
         AddIfNotBlank(args, options.Path);
-        AddOption(args, "--filter", request.Filter);
+        AddOption(args, "--filter", IsAssembly(options.Path) ? VsTestFilter.DecodeQuotes(request.Filter) : request.Filter);
         AddOption(args, "--settings", options.Settings);
         foreach (var logger in options.Loggers)
             AddOption(args, "--logger", logger);
@@ -77,4 +78,8 @@ public static class DotNetTestArguments
         if (value)
             args.Add(name);
     }
+
+    // dotnet test passes the filter of a test assembly straight to VSTest, without MSBuild.
+    private static bool IsAssembly(string? path)
+        => path is not null && (path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase));
 }
