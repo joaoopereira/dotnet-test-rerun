@@ -1,5 +1,4 @@
 using System.IO.Abstractions;
-using System.Text.RegularExpressions;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Configuration;
 using dotnet.test.rerun.DotNetRunner;
@@ -13,8 +12,6 @@ namespace dotnet.test.rerun.Execution;
 /// </summary>
 public class RerunOrchestrator
 {
-    private const string AttemptDirectoryPrefix = "attempt-";
-    private static readonly Regex AttemptDirectoryName = new(@"^attempt-\d+$");
     private readonly ILogger Log;
     private readonly IDotNetTestRunner DotNetTestRunner;
     private readonly IDotNetCoverageRunner DotNetCoverageRunner;
@@ -36,15 +33,13 @@ public class RerunOrchestrator
 
     public async Task<RerunOutcome> RunAsync(RerunOptions options, CancellationToken cancellationToken = default)
     {
+        var startOfProcess = DateTime.Now;
+        var startOfDotnetRun = DateTime.Now;
         var reportFiles = new HashSet<string>();
         IDirectoryInfo resultsDirectory = FileSystem.DirectoryInfo.New(options.ResultsDirectory);
-        RemovePreviousAttemptDirectories(resultsDirectory);
-        var attemptDirectories = new List<IDirectoryInfo>();
-        // Each attempt writes to its own directory, so its results are found without relying on timestamps
-        var attemptDirectory = NewAttemptDirectory(resultsDirectory, 0, attemptDirectories);
 
-        var result = await DotNetTestRunner.Test(options, new RunRequest(options.Filter, options.Framework, attemptDirectory.FullName), cancellationToken);
-        LogTestResults(options, attemptDirectory, reportFiles);
+        var result = await DotNetTestRunner.Test(options, new RunRequest(options.Filter, options.Framework, resultsDirectory.FullName), cancellationToken);
+        LogTestResults(options, resultsDirectory, startOfDotnetRun, reportFiles);
         var errorCode = result.Outcome;
         var stoppedEarly = (RerunOutcome?)null;
         var attempt = 1;
@@ -53,11 +48,11 @@ public class RerunOrchestrator
         {
             while (attempt <= options.RerunMaxAttempts)
             {
-                var trxFiles = TestResultsAnalyzer.GetTrxFiles(attemptDirectory);
+                var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startOfDotnetRun);
 
                 if (trxFiles.Length == 0)
                 {
-                    Log.Information($"No trx file found in {attemptDirectory.FullName}");
+                    Log.Information($"No trx file found in {resultsDirectory.FullName}");
                     stoppedEarly = RerunOutcome.NoTestResults;
                     break;
                 }
@@ -95,7 +90,7 @@ public class RerunOrchestrator
                 await Task.Delay(options.Delay, cancellationToken);
                 Log.Information($"Rerun attempt {attempt}/{options.RerunMaxAttempts}");
                 Log.Warning($"Found {testsToRerun.TotalFailedTests} failed test(s) to rerun");
-                attemptDirectory = NewAttemptDirectory(resultsDirectory, attempt, attemptDirectories);
+                startOfDotnetRun = DateTime.Now;
 
                 var attemptResults = new List<ErrorCode>();
                 foreach (var tests in testsToRerun.Filters)
@@ -109,35 +104,33 @@ public class RerunOrchestrator
                         var request = new RunRequest(
                             FilterComposer.Combine(options.Filter, batch),
                             options.Framework,
-                            attemptDirectory.FullName);
+                            resultsDirectory.FullName);
 
                         Log.Warning($"Rerun filter: {request.Filter}");
                         attemptResults.Add((await DotNetTestRunner.Test(options, request, cancellationToken)).Outcome);
                     }
                 }
                 errorCode = AggregateErrorCodes(attemptResults);
-                LogTestResults(options, attemptDirectory, reportFiles);
+                LogTestResults(options, resultsDirectory, startOfDotnetRun, reportFiles);
                 attempt++;
             }
         }
 
         // Before --deleteReports removes the TRX files of the last attempt
         if (errorCode == ErrorCode.FailedTests && options.GenerateTestCommand)
-            LogFailedTestsCommand(options, attemptDirectory);
+            LogFailedTestsCommand(options, resultsDirectory, startOfDotnetRun);
 
+        // Before --deleteReports, so a merge failure does not lose the reports
         if (options.MergeCoverageFormat.HasValue)
         {
-            await DotNetCoverageRunner.Merge(options,
-                attemptDirectories.Select(directory => directory.FullName), resultsDirectory.FullName, cancellationToken);
+            await DotNetCoverageRunner.Merge(options, resultsDirectory.FullName, startOfProcess, cancellationToken);
         }
 
         if (options.DeleteReportFiles)
         {
-            foreach (var directory in attemptDirectories)
-                reportFiles.UnionWith(TestResultsAnalyzer.GetTrxFiles(directory).Select(file => file.FullName));
+            reportFiles.UnionWith(TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startOfDotnetRun).Select(file => file.FullName));
             foreach (var file in reportFiles)
                 FileSystem.File.Delete(file);
-            RemoveEmptyDirectories(attemptDirectories);
         }
 
         if (errorCode != ErrorCode.FailedTests)
@@ -154,45 +147,12 @@ public class RerunOrchestrator
             ? ErrorCode.FailedTests
             : errorCodes.LastOrDefault(ErrorCode.Success);
 
-    private IDirectoryInfo NewAttemptDirectory(IDirectoryInfo resultsDirectory, int attempt, List<IDirectoryInfo> attemptDirectories)
-    {
-        var directory = FileSystem.DirectoryInfo.New(FileSystem.Path.Combine(resultsDirectory.FullName, $"{AttemptDirectoryPrefix}{attempt}"));
-        attemptDirectories.Add(directory);
-        return directory;
-    }
-
-    /// <summary>
-    /// Results of a previous test-rerun in the same results directory would be mistaken for this run's.
-    /// </summary>
-    private void RemovePreviousAttemptDirectories(IDirectoryInfo resultsDirectory)
-    {
-        if (!resultsDirectory.Exists)
-            return;
-
-        foreach (var directory in resultsDirectory.EnumerateDirectories($"{AttemptDirectoryPrefix}*")
-                     .Where(directory => AttemptDirectoryName.IsMatch(directory.Name)))
-        {
-            Log.Debug($"Removing results of a previous run: {directory.FullName}");
-            directory.Delete(recursive: true);
-        }
-    }
-
-    private static void RemoveEmptyDirectories(IEnumerable<IDirectoryInfo> directories)
-    {
-        foreach (var directory in directories)
-        {
-            directory.Refresh();
-            if (directory.Exists && !directory.EnumerateFileSystemInfos().Any())
-                directory.Delete();
-        }
-    }
-
     /// <summary>
     /// Prints a standalone dotnet test command per target framework for the tests that still fail.
     /// </summary>
-    private void LogFailedTestsCommand(RerunOptions options, IDirectoryInfo attemptDirectory)
+    private void LogFailedTestsCommand(RerunOptions options, IDirectoryInfo resultsDirectory, DateTime startOfLastRun)
     {
-        var trxFiles = TestResultsAnalyzer.GetTrxFiles(attemptDirectory);
+        var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startOfLastRun);
         if (trxFiles.Length == 0)
             return;
 
@@ -205,12 +165,12 @@ public class RerunOrchestrator
             Log.Information(FailedTestsCommand.Build(options, filter.Filter));
     }
 
-    private void LogTestResults(RerunOptions options, IDirectoryInfo attemptDirectory, HashSet<string> reportFiles)
+    private void LogTestResults(RerunOptions options, IDirectoryInfo resultsDirectory, DateTime startSearchTime, HashSet<string> reportFiles)
     {
         if (options.LogTestResults is false)
             return;
 
-        var trxFiles = TestResultsAnalyzer.GetTrxFiles(attemptDirectory);
+        var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startSearchTime);
         reportFiles.UnionWith(trxFiles.Select(file => file.FullName));
         TestResultsAnalyzer.LogTestResults(trxFiles);
     }

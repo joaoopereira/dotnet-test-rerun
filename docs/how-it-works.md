@@ -16,11 +16,11 @@ nav_order: 4
 
 ## The rerun loop
 
-1. **First run.** `dotnet test` runs with your arguments and writes its results to `attempt-0`.
+1. **First run.** `dotnet test` runs with your arguments and writes its TRX files to `--results-directory`.
 2. **Check the result.** If `dotnet test` exits with `0`, the tool stops with exit code `0`.
 3. **Find the failed tests.** The tool reads the TRX files of the last run and builds a `--filter` with one clause per failed test.
 4. **Check the limits.** If more tests failed than `--rerunMaxFailedTests`, or (after the first run only) a higher percentage than `--rerunFailedThreshold`, the tool stops without rerunning and exits with `1`.
-5. **Rerun.** After `--delay` seconds, `dotnet test` runs again with that filter and writes to `attempt-1`.
+5. **Rerun.** After `--delay` seconds, `dotnet test` runs again with that filter and writes its TRX files to the same folder.
 6. **Repeat** steps 3 to 5 until every test passes or `--rerunMaxAttempts` reruns are done.
 
 Each rerun only contains the tests that failed in the run before it, so it gets smaller each time.
@@ -61,24 +61,21 @@ When many tests fail, the filter is split into batches of at most 8,000 characte
 
 If the test run was aborted (for example, the test host crashed) and the TRX file lists no failed tests, the tool cannot know which test caused it. It reruns every test class of that run instead.
 
-## Results folders
+## Results folder
 
-Each run writes to its own folder under `--results-directory` (default: the current directory):
+Every run, including reruns, writes its TRX files directly to `--results-directory` (default: the current directory), as `dotnet test` does:
 
 ```text
 TestResults/
-├── attempt-0/              # first run
-├── attempt-1/              # first rerun (all its dotnet test calls)
-├── attempt-2/
-└── merged.cobertura.xml    # with --mergeCoverageFormat Cobertura
+├── user_machine_2026-11-16_10_00_00.trx   # first run
+├── user_machine_2026-11-16_10_01_12.trx   # first rerun
+├── user_machine_2026-11-16_10_01_40.trx   # second rerun
+└── merged.cobertura.xml                   # with --mergeCoverageFormat Cobertura
 ```
 
-- The final result of a test is in the `attempt-N` folder with the highest `N` that contains it.
-- `attempt-N` folders from a previous run in the same results directory are deleted when the tool starts.
-- In CI, publish the reports with a recursive pattern, such as `TestResults/**/*.trx`. See [CI integration](ci).
-
-{: .note }
-> **Upgrading from 4.x:** reports used to be written directly to the results directory. Change CI steps that read TRX or JUnit files to a recursive pattern such as `TestResults/**/*.trx`. See [Upgrading from 4.x](upgrading).
+- After each run, the tool only reads the TRX files that run created (by their creation time), so files from earlier runs in the same folder are ignored.
+- Files from earlier runs are never deleted. `--deleteReports` only deletes the TRX files of the current run.
+- A test that failed and then passed has a report in more than one file. The newest file has its final result.
 
 ## Exit codes
 

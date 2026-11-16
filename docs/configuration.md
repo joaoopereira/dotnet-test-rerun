@@ -26,7 +26,7 @@ Practical advice for the options that need more than one line. For the full list
 | Integration tests (database, HTTP APIs, queues) | `--rerunMaxAttempts 3 --delay 5` |
 | UI / end-to-end tests | `--rerunMaxAttempts 3` to `5`, with `--blame` while investigating |
 
-Retries hide flakiness. Use `--logTestResults` and keep the `attempt-N` reports, so you can see which tests needed a rerun and fix them.
+Retries hide flakiness. Use `--logTestResults` and keep the TRX reports, so you can see which tests needed a rerun and fix them.
 
 ## Stopping early when too many tests fail
 
@@ -104,7 +104,7 @@ test-rerun MyTests.csproj --logger "junit;LogFileName=junit.xml"
 test-rerun MyTests.csproj --logger "trx;LogFileName=results.trx"
 ```
 
-Each run writes its reports to its own `attempt-N` folder, so a report from an earlier run is not overwritten. See [Results folders](how-it-works#results-folders).
+Each run writes its own report files to the results directory, so a report from an earlier run is not overwritten. See [Results folder](how-it-works#results-folder).
 
 `--deleteReports` deletes the TRX files of all runs at the end. Use it when you only need the exit code.
 
@@ -116,7 +116,7 @@ Collect coverage as you would with `dotnet test`:
 test-rerun MyTests.csproj --collect "XPlat Code Coverage"
 ```
 
-Each run produces its own coverage file, and a rerun only covers the tests that were rerun. To get one file for the whole run, add `--mergeCoverageFormat`. The tool then calls [`dotnet-coverage merge`](https://learn.microsoft.com/dotnet/core/additional-tools/dotnet-coverage) on the `*.coverage` and `*.cobertura*` files of all `attempt-N` folders:
+Each run produces its own coverage file, and a rerun only covers the tests that were rerun. To get one file for the whole run, add `--mergeCoverageFormat`. The tool then calls [`dotnet-coverage merge`](https://learn.microsoft.com/dotnet/core/additional-tools/dotnet-coverage) on the `*.coverage` and `*.cobertura*` files that this execution created under the results directory:
 
 ```bash
 dotnet tool install --global dotnet-coverage
