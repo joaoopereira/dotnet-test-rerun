@@ -44,12 +44,20 @@ jobs:
         with:
           path-to-lcov: test/dotnet-test-rerun.UnitTests/coverage/lcov.info
           flag-name: UnitTests
+          parallel: true
 
       - name: Coveralls IntegrationTests
         uses: coverallsapp/github-action@v2.3.8
         with:
           path-to-lcov: test/dotnet-test-rerun.IntegrationTests/coverage/lcov.info
           flag-name: IntegrationTests
+          parallel: true
+
+      # Two reports go to one Coveralls build, so it must be parallel and closed explicitly.
+      - name: Coveralls finished
+        uses: coverallsapp/github-action@v2.3.8
+        with:
+          parallel-finished: true
 
   nuget:
     name: 📦 Pack and Push nuget
