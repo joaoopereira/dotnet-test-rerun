@@ -46,6 +46,7 @@ The path can be anything `dotnet test` accepts: a project, a solution, a directo
 | [Guides](configuration) | Tune reruns, logging, code coverage and run settings |
 | [CI integration](ci) | Copy a GitHub Actions, Azure DevOps or GitLab CI setup |
 | [Docker](docker) | Run the tool from a container image |
+| [Upgrading from 4.x](upgrading) | See what changed in 5.0 and update your CI |
 | [Troubleshooting](troubleshooting) | Fix common problems |
 | [Contributing](contributing) | Build, test and change the tool |
 
