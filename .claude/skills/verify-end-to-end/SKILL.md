@@ -14,7 +14,7 @@ Fixtures live in `test/dotnet-test-rerun.IntegrationTests/Fixtures/`. Pick one t
 | NUnit parameterised, passes on 2nd run | `NUnitTestParameterizedPassOnSecondRunExample` |
 | NUnit, passes on 2nd run | `NUnitTestPassOnSecondRunExample` |
 | MSTest, failing | `FailingMSTestExample` |
-| Multiple target frameworks | `FailingXUnitWithMultipleFrameworksExample` (needs the .NET 9 runtime, which is missing locally) |
+| Multiple target frameworks | `FailingXUnitWithMultipleFrameworksExample` (`net8.0` and `net10.0`) |
 
 ## Steps
 
@@ -32,4 +32,4 @@ dotnet /home/user/dotnet-test-rerun/src/bin/Debug/net10.0/test-rerun.dll <Fixtur
 
 - Always work on a copy. "Pass on second run" fixtures keep state on disk and only work once per copy.
 - If a filter is printed, paste it into a plain `dotnet test --filter "..."` and check that the expected tests (and only those) run. `No test matches the given testcase filter` means the filter is wrong.
-- The full integration suite (`dotnet test test/dotnet-test-rerun.IntegrationTests/...`) takes about 6 minutes. 26/27 is the expected local result (the .NET 9 runtime is missing).
+- The full integration suite (`dotnet test test/dotnet-test-rerun.IntegrationTests/...`) takes about 6 minutes. All tests are expected to pass locally.
