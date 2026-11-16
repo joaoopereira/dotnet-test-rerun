@@ -10,7 +10,7 @@ redirect_from:
 # CI integration
 {: .no_toc }
 
-In every CI system the steps are the same: install the tool, build, run `test-rerun`, and publish the reports from all `attempt-N` folders. The step fails when tests still fail after the reruns, because the tool exits with `1`.
+In every CI system the steps are the same: install the tool, build, run `test-rerun`, and publish the reports from the results directory. The step fails when tests still fail after the reruns, because the tool exits with `1`.
 
 <details open markdown="block">
   <summary>Contents</summary>
@@ -104,7 +104,7 @@ steps:
 ```
 
 {: .note }
-`PublishTestResults@2` publishes every TRX file it finds, so a test that failed and then passed appears once as failed (in `attempt-0`) and once as passed (in a later `attempt-N`). If you only want the final outcome, publish the `attempt-N` folder with the highest `N`, or use `--logTestResults` to read the outcome in the log.
+`PublishTestResults@2` publishes every TRX file it finds, so a test that failed and then passed appears once as failed (in the first run's file) and once as passed (in a later file). If you only want the final outcome, use `--logTestResults` to read it in the log.
 
 ## GitLab CI
 

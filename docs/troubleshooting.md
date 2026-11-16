@@ -37,7 +37,7 @@ Arguments the tool does not recognise are passed to `dotnet test` as inline run 
 
 ## Reports are not found in CI
 
-Since 5.0, each run writes to its own `attempt-N` folder under `--results-directory`. Use a recursive pattern such as `TestResults/**/*.trx`. See [Results folders](how-it-works#results-folders).
+Every run writes its TRX files to `--results-directory`, and `dotnet test` may put coverage files in subfolders. Point the publish step at that folder, and use a recursive pattern such as `TestResults/**/*.xml` for coverage. See [Results folder](how-it-works#results-folder).
 
 ## Output of `dotnet test` in another language
 

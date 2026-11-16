@@ -14,8 +14,5 @@ public interface ITestResultsAnalyzer
     /// <param name="trxFiles">The trx files to read the test results from.</param>
     void LogTestResults(IFileInfo[] trxFiles);
 
-    /// <summary>
-    /// The TRX files in the directory and its subdirectories.
-    /// </summary>
-    IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory);
+    IFileInfo[] GetTrxFiles(IDirectoryInfo resultsDirectory, DateTime startSearchTime);
 }

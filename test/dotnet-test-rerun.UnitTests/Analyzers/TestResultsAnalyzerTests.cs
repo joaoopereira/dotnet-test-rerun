@@ -190,12 +190,13 @@ public class TestResultsAnalyzerTests
     public void GetTrxFiles_FromValidDirectory_ReturnFile()
     {
         //Arrange
+        DateTime start = DateTime.MinValue;
         var testDirPath = TestUtilities.GetTmpDirectory();
         IDirectoryInfo testDir = FileSystem.DirectoryInfo.New(testDirPath);
         TestUtilities.CopyFixtureFile("RerunCommand", "XUnitTrxFileWithSeveralFailedTests.trx", new DirectoryInfo(testDirPath));
         
         //Act
-        var result = TestResultsAnalyzer.GetTrxFiles(testDir);
+        var result = TestResultsAnalyzer.GetTrxFiles(testDir, start);
 
         //Assert
         result.Should().NotBeNull();
@@ -205,26 +206,10 @@ public class TestResultsAnalyzerTests
     
     
     [Fact]
-    public void GetTrxFiles_IncludesSubdirectories()
-    {
-        //Arrange
-        var testDirPath = TestUtilities.GetTmpDirectory();
-        var subDirectory = Directory.CreateDirectory(Path.Combine(testDirPath, "attempt-1"));
-        TestUtilities.CopyFixtureFile("RerunCommand", "XUnitTrxFileWithSeveralFailedTests.trx", new DirectoryInfo(testDirPath));
-        TestUtilities.CopyFixtureFile("RerunCommand", "XUnitTrxFileWithOneFailedTest.trx", subDirectory);
-
-        //Act
-        var result = TestResultsAnalyzer.GetTrxFiles(FileSystem.DirectoryInfo.New(testDirPath));
-
-        //Assert
-        result.Select(file => file.Name).Should().BeEquivalentTo("XUnitTrxFileWithSeveralFailedTests.trx", "XUnitTrxFileWithOneFailedTest.trx");
-    }
-
-    [Fact]
     public void GetTrxFiles_FromValidDirectory_ReturnFiles()
     {
         //Act
-        var result = TestResultsAnalyzer.GetTrxFiles(ResultsDirectory);
+        var result = TestResultsAnalyzer.GetTrxFiles(ResultsDirectory, DateTime.MinValue);
 
         //Assert
         result.Should().NotBeNull();
@@ -235,10 +220,11 @@ public class TestResultsAnalyzerTests
     public void GetTrxFiles_FromDirectoryWithoutFiles_ReturnNoFile()
     {
         //Arrange
-        IDirectoryInfo dir = FileSystem.DirectoryInfo.New(TestUtilities.GetTmpDirectory());
-
+        IDirectoryInfo dir = FileSystem.DirectoryInfo.New(".");
+        DateTime start = DateTime.MinValue;
+        
         //Act
-        var result = TestResultsAnalyzer.GetTrxFiles(dir);
+        var result = TestResultsAnalyzer.GetTrxFiles(dir, start);
 
         //Assert
         result.Should().BeEmpty();
@@ -295,7 +281,7 @@ public class TestResultsAnalyzerTests
         var nonExistentDir = FileSystem.DirectoryInfo.New("/tmp/non-existent-directory-12345");
 
         //Act
-        var result = TestResultsAnalyzer.GetTrxFiles(nonExistentDir);
+        var result = TestResultsAnalyzer.GetTrxFiles(nonExistentDir, DateTime.MinValue);
 
         //Assert
         result.Should().BeEmpty();
@@ -311,7 +297,7 @@ public class TestResultsAnalyzerTests
             var dir = FileSystem.DirectoryInfo.New(tempDir);
 
             //Act
-            var result = TestResultsAnalyzer.GetTrxFiles(dir);
+            var result = TestResultsAnalyzer.GetTrxFiles(dir, DateTime.MinValue);
 
             //Assert
             result.Should().BeEmpty();

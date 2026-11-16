@@ -37,13 +37,13 @@ The path can be anything `dotnet test` accepts: a project, a solution, a directo
 ## How it works
 
 ```text
-attempt-0   dotnet test ...                                   → 120 passed, 3 failed
-attempt-1   dotnet test ... --filter "<the 3 failed tests>"   → 2 passed, 1 failed
-attempt-2   dotnet test ... --filter "<the 1 failed test>"    → 1 passed
-            exit code 0
+run 1   dotnet test ...                                   → 120 passed, 3 failed
+run 2   dotnet test ... --filter "<the 3 failed tests>"   → 2 passed, 1 failed
+run 3   dotnet test ... --filter "<the 1 failed test>"    → 1 passed
+        exit code 0
 ```
 
-- Each run writes its results to its own `attempt-N` folder under `--results-directory`.
+- Every run writes its TRX files to `--results-directory`. Each run only reads the files it created.
 - If you pass `--filter`, it is kept on every rerun: `(your filter)&(failed tests)`.
 - Use `--rerunMaxFailedTests` or `--rerunFailedThreshold` to skip reruns when too many tests fail, because that usually means a real problem.
 - The exit code is `0` if every test passed in the end, and `1` otherwise.
@@ -58,7 +58,7 @@ More detail: [How it works](https://joaoopereira.github.io/dotnet-test-rerun/how
 | `--rerunMaxFailedTests` | `-1` (no limit) | Do not rerun if more tests than this failed |
 | `--rerunFailedThreshold` | `-1` (no limit) | Do not rerun if more than this percentage of tests failed |
 | `--delay`, `-d` | `0` | Seconds to wait before each rerun |
-| `--results-directory`, `-r` | `.` | Where results go; each run writes to an `attempt-N` subfolder |
+| `--results-directory`, `-r` | `.` | Where results go |
 | `--mergeCoverageFormat` | — | Merge the coverage of all runs (`Coverage`, `Cobertura`, `Xml`); needs `dotnet-coverage` |
 | `--logTestResults` | `false` | Print the result of each test after every run |
 | `--generateTestCommand` | `false` | At the end, print a `dotnet test` command that runs only the tests still failing |

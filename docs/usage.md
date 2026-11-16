@@ -34,7 +34,7 @@ These options control the tool itself and are not passed to `dotnet test`.
 | `--rerunMaxFailedTests <n>` | `-1` | Do not rerun when more than `n` tests failed. `-1` (or `0`) means no limit. |
 | `--rerunFailedThreshold <percent>` | `-1` | Do not rerun when more than this percentage of the tests failed in the first run. Accepts decimals (`12.5`). `-1` means no limit; `0` means never rerun. |
 | `--delay`, `-d <seconds>` | `0` | Wait this many seconds before each rerun. Not applied when nothing is rerun. |
-| `--deleteReports` | off | Delete the TRX files of every run at the end, and the `attempt-N` folders left empty. Files from other loggers (for example JUnit) are kept. |
+| `--deleteReports` | off | Delete the TRX files of every run at the end. Files from other loggers (for example JUnit) are kept. |
 | `--mergeCoverageFormat <format>` | — | Merge the coverage files of all runs into one file: `Coverage`, `Cobertura` or `Xml`. Requires the [`dotnet-coverage`](https://learn.microsoft.com/dotnet/core/additional-tools/dotnet-coverage) tool. See [Code coverage](configuration#code-coverage). |
 | `--loglevel <level>` | `Verbose` | Output of the tool itself: `Debug`, `Verbose`, `Information`, `Warning`, `Error`. `Debug` also prints the `dotnet test` command lines. Any other value is an error. |
 | `--logTestResults` | off | After each run, print every test with ✓ or ✗, and the error message and stack trace of failed tests. Reads the TRX file, so it does not depend on `--verbosity`. |
@@ -49,7 +49,7 @@ These options mean the same as in [`dotnet test`](https://learn.microsoft.com/do
 |---|---|---|
 | `--filter <expression>` | — | Run only the tests that match. On reruns it is combined with the failed tests: `(your filter)&(failed tests)`. |
 | `--logger`, `-l <logger>` | `trx` | Logger for test results. Repeat for several loggers. A `trx` logger is always added if none of yours is TRX, because the tool reads TRX files. |
-| `--results-directory`, `-r <dir>` | `.` | Base folder for results. Each run writes to `<dir>/attempt-N`. See [Results folders](how-it-works#results-folders). |
+| `--results-directory`, `-r <dir>` | `.` | Folder for results. Every run writes its TRX files here. See [Results folder](how-it-works#results-folder). |
 | `--settings`, `-s <file>` | — | A `.runsettings` file. |
 | `--configuration`, `-c <name>` | — | Build configuration, for example `Release`. |
 | `--framework`, `-f <tfm>` | — | Target framework, for example `net8.0`. |

@@ -7,7 +7,7 @@ nav_order: 8
 # Upgrading from 4.x
 {: .no_toc }
 
-Version 5.0 has two breaking changes: reports are written to one folder per run, and the tool needs the .NET 8 or .NET 10 runtime. Most setups only need to change the pattern that publishes test reports in CI.
+Version 5.0 has one breaking change: the tool needs the .NET 8 or .NET 10 runtime. Report files are still written directly to `--results-directory`, as in 4.x, so CI steps that publish them do not change.
 
 <details open markdown="block">
   <summary>Contents</summary>
@@ -20,26 +20,10 @@ Version 5.0 has two breaking changes: reports are written to one folder per run,
 
 1. Make sure the machine that runs `test-rerun` has the .NET 8 or .NET 10 runtime.
 2. If you use the `-net9` or `-dotnet9` Docker images, switch to `-net8` or `-net10`.
-3. In CI, publish TRX, JUnit and coverage files with a recursive pattern, such as `TestResults/**/*.trx`.
-4. If you added extra quotes or backslashes to arguments so they survived the tool, remove them.
-5. Check that `--loglevel` is one of `Debug`, `Verbose`, `Information`, `Warning` or `Error`.
+3. If you added extra quotes or backslashes to arguments so they survived the tool, remove them.
+4. Check that `--loglevel` is one of `Debug`, `Verbose`, `Information`, `Warning` or `Error`.
 
-## Breaking changes
-
-### Reports are written to `attempt-N` folders
-
-In 4.x, every run wrote its reports directly to `--results-directory`. In 5.0, each run writes to its own subfolder: `attempt-0` for the first run, `attempt-1` for the first rerun, and so on. See [Results folders](how-it-works#results-folders).
-
-Change CI steps that read reports to a recursive pattern:
-
-| CI system | 4.x | 5.0 |
-|---|---|---|
-| GitHub Actions, GitLab CI | `TestResults/*.trx` | `TestResults/**/*.trx` |
-| Azure DevOps `PublishTestResults@2` | `testResultsFiles: '*.trx'` | `testResultsFiles: '**/*.trx'` |
-
-- `attempt-N` folders left by a previous run in the same results directory are deleted when the tool starts. Copy them elsewhere first if you need to keep them.
-- `--deleteReports` deletes the TRX files in the `attempt-N` folders.
-- The merged coverage file from `--mergeCoverageFormat` is still written to the results directory itself, not to an `attempt-N` folder.
+## Breaking change
 
 ### The tool needs .NET 8 or .NET 10
 

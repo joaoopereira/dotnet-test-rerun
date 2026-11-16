@@ -32,7 +32,6 @@ The path can be anything `dotnet test` accepts: a project, a solution, a directo
 - **Only failed tests are rerun.** A filter is built from the TRX results, so a rerun takes seconds, not the whole suite.
 - **xUnit, NUnit and MSTest**, including parameterised tests, and projects that target several frameworks.
 - **Safety limits.** Skip reruns when too many tests fail (`--rerunMaxFailedTests`, `--rerunFailedThreshold`).
-- **Separate results per run.** Each run writes to its own `attempt-N` folder.
 - **Merged code coverage** across all runs (`--mergeCoverageFormat`).
 - **A clear exit code**: `0` when every test passed in the end, `1` otherwise.
 

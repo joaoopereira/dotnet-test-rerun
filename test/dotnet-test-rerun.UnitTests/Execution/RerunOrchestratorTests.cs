@@ -2,7 +2,6 @@
 using System.CommandLine.Parsing;
 using System.IO.Abstractions;
 using dotnet.test.rerun;
-using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Cli;
 using dotnet.test.rerun.Configuration;
@@ -37,7 +36,7 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
+        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -54,15 +53,15 @@ public class RerunOrchestratorTests
         var command = new RerunOrchestrator(logger, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var trxFile = fileSystem.FileInfo.New("First.trx");
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { trxFile });
 
         // Act
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).LogTestResults(Arg.Is<IFileInfo[]>(files => files[0] == trxFile));
     }
 
@@ -84,7 +83,7 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
+        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
         testResultsAnalyzer.DidNotReceive().LogTestResults(Arg.Any<IFileInfo[]>());
     }
 
@@ -107,7 +106,7 @@ public class RerunOrchestratorTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() { filterToRerun }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile }, new[] { firstTrxFile }, new[] { secondTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns(testFilterCollection);
@@ -118,7 +117,7 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
+        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
         testResultsAnalyzer.Received(1).LogTestResults(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
         testResultsAnalyzer.Received(1).LogTestResults(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
     }
@@ -138,15 +137,15 @@ public class RerunOrchestratorTests
         var command = new RerunOrchestrator(logger, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(Array.Empty<IFileInfo>());
 
         // Act
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
 
     [Fact]
@@ -164,7 +163,7 @@ public class RerunOrchestratorTests
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var trxFile = fileSystem.FileInfo.New("Second.trx");
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { trxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile))
             .Returns(new TestFilterCollection());
@@ -173,8 +172,8 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == trxFile));
     }
 
@@ -197,7 +196,7 @@ public class RerunOrchestratorTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() {filterToRerun }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns(testFilterCollection);
@@ -208,9 +207,9 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert       
-        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
+        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
         await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.Filter == filterToRerun), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
     }
@@ -234,7 +233,7 @@ public class RerunOrchestratorTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() {filterToRerun }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns(testFilterCollection);
@@ -245,9 +244,9 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert       
-        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
+        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
         await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.Filter == string.Concat("(filter)&(", filterToRerun, ")")), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
     }
@@ -270,7 +269,7 @@ public class RerunOrchestratorTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter(string.Empty, new List<string>() {"filterToRerun" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile, secondTrxFile }, Array.Empty<IFileInfo>());
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile))
             .Returns(testFilterCollection);
@@ -279,8 +278,8 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile && files[1] == secondTrxFile));
     }
 
@@ -302,7 +301,7 @@ public class RerunOrchestratorTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter("net6.0", new List<string>() {"filterToRerun" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new []{ firstTrxFile },new [] { secondTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns(testFilterCollection);
@@ -313,9 +312,9 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        // two attempts, plus listing the TRX files of both attempt directories to delete them
-        testResultsAnalyzer.Received(4).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        // two attempts, plus listing the last TRX files to delete them
+        testResultsAnalyzer.Received(3).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile));
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == secondTrxFile));
         firstTrxFile.Exists.Should().BeFalse();
@@ -340,7 +339,7 @@ public class RerunOrchestratorTests
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter("net6.0", new List<string>() {"filterToRerun" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new [] {firstTrxFile},new [] {secondTrxFile});
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(testFilterCollection);
@@ -349,8 +348,8 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert
-        await dotNetTestRunner.Received(3).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(3).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(2).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
     }
 
@@ -369,7 +368,7 @@ public class RerunOrchestratorTests
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests,
             ErrorCode.FailedTests, ErrorCode.Success,
             ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(MultipleFrameworksFilter());
@@ -408,7 +407,7 @@ public class RerunOrchestratorTests
         await command.RunAsync(config);
 
         // Assert
-        await dotNetCoverageRunner.Received(1).Merge(config, Arg.Any<IEnumerable<string>>(), directoryInfo.FullName, Arg.Any<CancellationToken>());
+        await dotNetCoverageRunner.Received(1).Merge(config, directoryInfo.FullName, Arg.Any<DateTime>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -426,7 +425,7 @@ public class RerunOrchestratorTests
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         var merge = new TaskCompletionSource();
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.Success);
-        dotNetCoverageRunner.Merge(config, Arg.Any<IEnumerable<string>>(), directoryInfo.FullName, Arg.Any<CancellationToken>())
+        dotNetCoverageRunner.Merge(config, directoryInfo.FullName, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(merge.Task);
 
         // Act
@@ -452,7 +451,7 @@ public class RerunOrchestratorTests
         var command = new RerunOrchestrator(logger, dotNetTestRunner,
             dotNetCoverageRunner, fileSystem, testResultsAnalyzer);
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.Success);
-        dotNetCoverageRunner.Merge(config, Arg.Any<IEnumerable<string>>(), directoryInfo.FullName, Arg.Any<CancellationToken>())
+        dotNetCoverageRunner.Merge(config, directoryInfo.FullName, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new RerunException("merge failed")));
 
         // Act
@@ -480,7 +479,7 @@ public class RerunOrchestratorTests
         // Add 3 failed tests, which exceeds the threshold of 2
         testFilterCollection.Add(new TestFilter("net6.0", new List<string>() { "test1", "test2", "test3" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new [] { firstTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(testFilterCollection);
@@ -490,8 +489,8 @@ public class RerunOrchestratorTests
 
         // Assert
         // Should only run the initial test, not any reruns
-        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
     }
 
@@ -514,7 +513,7 @@ public class RerunOrchestratorTests
         // Add 3 failed tests, which is within the threshold of 5
         testFilterCollection.Add(new TestFilter("net6.0", new List<string>() { "test1", "test2", "test3" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new [] { firstTrxFile }, new [] { secondTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns(testFilterCollection);
@@ -526,8 +525,8 @@ public class RerunOrchestratorTests
 
         // Assert
         // Should run initial test plus one rerun
-        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
 
     [Fact]
@@ -551,7 +550,7 @@ public class RerunOrchestratorTests
         var manyTests = Enumerable.Range(1, 100).Select(i => $"test{i}").ToList();
         testFilterCollection.Add(new TestFilter("net6.0", manyTests));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new [] { firstTrxFile }, new [] { secondTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns(testFilterCollection);
@@ -563,8 +562,8 @@ public class RerunOrchestratorTests
 
         // Assert
         // Should run initial test plus one rerun even with many failures
-        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
 
     [Fact]
@@ -586,7 +585,7 @@ public class RerunOrchestratorTests
         testFilterCollection.Add(new TestFilter("net6.0", Enumerable.Range(1, 35).Select(i => $"test{i}").ToList()));
         testFilterCollection.TotalTests = 100;
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(testFilterCollection);
@@ -596,8 +595,8 @@ public class RerunOrchestratorTests
 
         // Assert
         // Should only run the initial test, not any reruns
-        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(1).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(1).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
         testResultsAnalyzer.Received(1).GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
     }
 
@@ -621,7 +620,7 @@ public class RerunOrchestratorTests
         testFilterCollection.Add(new TestFilter("net6.0", Enumerable.Range(1, 8).Select(i => $"test{i}").ToList()));
         testFilterCollection.TotalTests = 100;
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { firstTrxFile }, new[] { secondTrxFile });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Is<IFileInfo[]>(files => files[0] == firstTrxFile))
             .Returns(testFilterCollection);
@@ -633,8 +632,8 @@ public class RerunOrchestratorTests
 
         // Assert
         // Should run initial test plus one rerun
-        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory.StartsWith(directoryInfo.FullName)), Arg.Any<CancellationToken>());
-        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>());
+        await dotNetTestRunner.Received(2).Test(config, Arg.Is<RunRequest>(r => r.ResultsDirectory == directoryInfo.FullName), Arg.Any<CancellationToken>());
+        testResultsAnalyzer.Received(2).GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>());
     }
 
     [Fact]
@@ -652,7 +651,7 @@ public class RerunOrchestratorTests
         failedTests.Add(new TestFilter(string.Empty,
             new List<string> { "FullyQualifiedName=Tests.TestA", "FullyQualifiedName=Tests.TestB" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(failedTests, new TestFilterCollection());
@@ -680,7 +679,7 @@ public class RerunOrchestratorTests
         var firstRerun = new TestFilterCollection { TotalTests = 5 };
         firstRerun.Add(new TestFilter("net8.0", new List<string> { "test1", "test2" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(initialRun, firstRerun, new TestFilterCollection());
@@ -712,7 +711,7 @@ public class RerunOrchestratorTests
             Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
         var failedTestsFilter = new TestFilterCollection { TotalTests = 4 };
         failedTestsFilter.Add(new TestFilter("net8.0", Enumerable.Range(1, failedTests).Select(i => $"test{i}").ToList()));
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(failedTests == 0 ? Array.Empty<IFileInfo>() : new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(failedTestsFilter, new TestFilterCollection());
@@ -735,7 +734,7 @@ public class RerunOrchestratorTests
         var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
         var command = new RerunOrchestrator(new Logger(), dotNetTestRunner,
             Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(new TestFilterCollection());
@@ -762,7 +761,7 @@ public class RerunOrchestratorTests
         var failedTests = Enumerable.Range(1, 2000).Select(i => $"FullyQualifiedName=My.Namespace.MyClass.Test{i}").ToList();
         var testFilterCollection = new TestFilterCollection();
         testFilterCollection.Add(new TestFilter("net8.0", failedTests));
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(testFilterCollection, new TestFilterCollection());
@@ -781,41 +780,6 @@ public class RerunOrchestratorTests
     }
 
     [Fact]
-    public async Task RunAsync_UsesOneDirectoryPerAttempt_AndRemovesPreviousAttempts()
-    {
-        // Arrange
-        var resultsDirectory = TestUtilities.GetTmpDirectory();
-        var staleAttempt = Directory.CreateDirectory(Path.Combine(resultsDirectory, "attempt-7"));
-        File.WriteAllText(Path.Combine(staleAttempt.FullName, "stale.trx"), "<TestRun />");
-        var unrelated = Directory.CreateDirectory(Path.Combine(resultsDirectory, "attempt-notes"));
-        var config = InitialConfigurationSetup(filter: string.Empty) with { ResultsDirectory = resultsDirectory };
-        var dotNetTestRunner = CreateTestRunner();
-        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        var fileSystem = new FileSystem();
-        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
-        var command = new RerunOrchestrator(new Logger(), dotNetTestRunner,
-            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
-        var testFilterCollection = new TestFilterCollection();
-        testFilterCollection.Add(new TestFilter("net8.0", new List<string> { "FullyQualifiedName=A.Test" }));
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
-            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
-        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
-            .Returns(testFilterCollection, new TestFilterCollection());
-        var directories = new List<string>();
-        dotNetTestRunner.When(x => x.Test(Arg.Any<RerunOptions>(), Arg.Any<RunRequest>(), Arg.Any<CancellationToken>()))
-            .Do(call => directories.Add(call.Arg<RunRequest>().ResultsDirectory));
-
-        // Act
-        await command.RunAsync(config);
-
-        // Assert
-        directories.Should().Equal(Path.Combine(resultsDirectory, "attempt-0"), Path.Combine(resultsDirectory, "attempt-1"));
-        Directory.Exists(staleAttempt.FullName).Should().BeFalse();
-        Directory.Exists(unrelated.FullName).Should().BeTrue();
-        testResultsAnalyzer.Received().GetTrxFiles(Arg.Is<IDirectoryInfo>(d => d.FullName == Path.Combine(resultsDirectory, "attempt-0")));
-    }
-
-    [Fact]
     public async Task Run_TestsFailOnAllAttempts_WithGenerateTestCommand_LogsDotnetTestCommand()
     {
         // Arrange
@@ -830,7 +794,7 @@ public class RerunOrchestratorTests
         failedTests.Add(new TestFilter(string.Empty,
             new List<string> { "FullyQualifiedName=Tests.TestA", "FullyQualifiedName=Tests.TestB" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(failedTests);
@@ -860,7 +824,7 @@ public class RerunOrchestratorTests
         failedTests.Add(new TestFilter(string.Empty,
             new List<string> { "FullyQualifiedName=Tests.TestA", "FullyQualifiedName=Tests.TestB" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(failedTests);
@@ -888,7 +852,7 @@ public class RerunOrchestratorTests
         var failedTests = new TestFilterCollection();
         failedTests.Add(new TestFilter(string.Empty, new List<string> { "FullyQualifiedName=Tests.TestA" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(failedTests);
@@ -915,7 +879,7 @@ public class RerunOrchestratorTests
         var failedTests = new TestFilterCollection();
         failedTests.Add(new TestFilter(string.Empty, new List<string> { "FullyQualifiedName=Tests.TestA" }));
         ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests, ErrorCode.Success);
-        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>())
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
             .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
         testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
             .Returns(failedTests, new TestFilterCollection());
