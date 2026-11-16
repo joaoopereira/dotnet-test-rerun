@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="5.1.1"></a>
+## [5.1.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.1.1) (2026-11-16)
+
+### Features
+
+* **azure-devops:** align the task inputs with the VSTest@3 task ([9306e8c](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/9306e8c2c3e2da0a5635f048e4d99225941b8168))
+
+### Bug Fixes
+
+* **azure-devops:** add the extension icon the Marketplace requires ([b728824](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/b728824b668c741160b26ea2d34e90e9b95e4f85))
+* **filters:** pass literal quotes in the filter when testing an assembly ([53bfa7f](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/53bfa7fb86a97d575926d55f429fab4631b7c006))
+
 <a name="5.1.0"></a>
 ## [5.1.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.1.0) (2026-11-16)
 
