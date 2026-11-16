@@ -280,3 +280,6 @@ docs/Gemfile.lock
 docs/vendor/
 docs/.bundle/
 .env
+# Azure DevOps task
+azure-devops/**/node_modules/
+*.vsix

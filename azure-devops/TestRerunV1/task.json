@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "ab342ba2-7bea-4793-aad6-c27c878c452a",
+  "name": "TestRerun",
+  "friendlyName": "dotnet-test-rerun",
+  "description": "Run dotnet test and rerun the failed tests with dotnet-test-rerun.",
+  "helpMarkDown": "[Documentation](https://joaoopereira.github.io/dotnet-test-rerun/ci)",
+  "category": "Test",
+  "author": "joaoopereira",
+  "version": { "Major": 1, "Minor": 0, "Patch": 0 },
+  "minimumAgentVersion": "3.232.1",
+  "instanceNameFormat": "test-rerun $(path)",
+  "inputs": [
+    { "name": "path", "type": "string", "label": "Path", "defaultValue": "", "required": false,
+      "helpMarkDown": "Solution, project or folder to test. Empty runs dotnet test in the working directory." },
+    { "name": "arguments", "type": "string", "label": "Arguments", "defaultValue": "", "required": false,
+      "helpMarkDown": "Other test-rerun options, for example `--configuration Release --rerunMaxAttempts 3`. Don't pass `--results-directory` here. See [usage](https://joaoopereira.github.io/dotnet-test-rerun/usage)." },
+    { "name": "version", "type": "string", "label": "Tool version", "defaultValue": "", "required": false,
+      "helpMarkDown": "dotnet-test-rerun version to install. Empty installs the latest release on every run." },
+    { "name": "resultsDirectory", "type": "string", "label": "Results directory", "defaultValue": "$(Agent.TempDirectory)/TestResults", "required": false,
+      "helpMarkDown": "Folder for the TRX files of every run." },
+    { "name": "workingDirectory", "type": "filePath", "label": "Working directory", "defaultValue": "", "required": false,
+      "helpMarkDown": "Folder to run from. Defaults to the sources folder." },
+    { "name": "publishTestResults", "type": "boolean", "label": "Publish test results", "defaultValue": "true", "required": false,
+      "helpMarkDown": "Publish the TRX files to the Tests tab, even when tests fail." },
+    { "name": "testRunTitle", "type": "string", "label": "Test run title", "defaultValue": "", "required": false,
+      "visibleRule": "publishTestResults = true", "helpMarkDown": "Title of the published test run." }
+  ],
+  "outputVariables": [
+    { "name": "resultsDirectory", "description": "Folder that holds the TRX files of every run." }
+  ],
+  "execution": {
+    "Node20_1": { "target": "index.js" }
+  }
+}

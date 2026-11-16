@@ -144,3 +144,37 @@ jobs:
           major="${TAG%%.*}"
           git tag -f "$major" "$TAG"
           git push -f origin "refs/tags/$major"
+
+  azure-devops:
+    name: 📦 Publish the Azure DevOps extension
+    runs-on: ubuntu-latest
+    needs: nuget
+    # Off until the publisher and its token are set: repository variable AZURE_DEVOPS_PUBLISHER, secret AZURE_DEVOPS_TOKEN.
+    if: github.event_name == 'release' && !github.event.release.prerelease && vars.AZURE_DEVOPS_PUBLISHER != ''
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+
+      - name: Install task dependencies
+        working-directory: azure-devops/TestRerunV1
+        run: npm ci --omit=dev
+
+      # Agents cache tasks by version, so every publish needs a higher task version; the run number always grows.
+      - name: Set versions
+        working-directory: azure-devops
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          jq --argjson patch "${{ github.run_number }}" '.version.Patch = $patch' TestRerunV1/task.json > task.tmp && mv task.tmp TestRerunV1/task.json
+          jq --arg v "${TAG#v}" '.version = $v' vss-extension.json > ext.tmp && mv ext.tmp vss-extension.json
+
+      - name: Publish
+        working-directory: azure-devops
+        env:
+          PUBLISHER: ${{ vars.AZURE_DEVOPS_PUBLISHER }}
+          TOKEN: ${{ secrets.AZURE_DEVOPS_TOKEN }}
+        run: npx -y tfx-cli@0.24.2 extension publish --manifest-globs vss-extension.json --publisher "$PUBLISHER" --token "$TOKEN" --no-prompt
