@@ -78,7 +78,7 @@ TestResults/
 - In CI, publish the reports with a recursive pattern, such as `TestResults/**/*.trx`. See [CI integration](ci).
 
 {: .note }
-> **Upgrading from 4.x:** reports used to be written directly to the results directory. Change CI steps that read TRX or JUnit files to a recursive pattern such as `TestResults/**/*.trx`.
+> **Upgrading from 4.x:** reports used to be written directly to the results directory. Change CI steps that read TRX or JUnit files to a recursive pattern such as `TestResults/**/*.trx`. See [Upgrading from 4.x](upgrading).
 
 ## Exit codes
 
