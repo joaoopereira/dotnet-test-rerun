@@ -102,7 +102,7 @@ jobs:
 
 ### With the task
 
-Install the [dotnet-test-rerun extension](https://marketplace.visualstudio.com/items?itemName=joaoopereira.dotnet-test-rerun) in your organization. The `TestRerun@1` task installs the tool, runs it, and publishes the TRX files of every run to the **Tests** tab, even when tests fail.
+Install the [dotnet-test-rerun extension](https://marketplace.visualstudio.com/items?itemName=joaoopereira.dotnet-test-rerun) in your organization. The `TestRerun@1` task runs on any agent OS, and its inputs follow the **Visual Studio Test** task (VSTest@3): replace `VSTest@3` with `TestRerun@1` and most inputs carry over. It installs the tool, runs each test file, reruns the failed tests, and publishes the TRX files of every run to the **Tests** tab as one test run, even when tests fail.
 
 ```yaml
 steps:
@@ -116,21 +116,37 @@ steps:
 
   - task: TestRerun@1
     inputs:
-      path: MySolution.sln
-      arguments: --no-build --configuration Release --rerunMaxAttempts 3
+      testAssemblyVer2: |
+        **/bin/Release/**/*Tests.dll
+        !**/obj/**
+      rerunMaxAttempts: 3
+      testRunTitle: Unit tests
 ```
 
-| Input | Default | Description |
+| Input | Default | Maps to |
 |---|---|---|
-| `path` | — | Solution, project or folder to test. |
-| `arguments` | — | Any other [option](usage), quoted as in a shell. Don't pass `--results-directory` here. |
+| `testAssemblyVer2` | `**/bin/**/*test.dll`, `**/bin/**/*tests.dll`, `!**/obj/**` | Test assemblies, projects or solutions, one pattern per line. Each match runs separately. |
+| `searchFolder` | `$(System.DefaultWorkingDirectory)` | Where to search, and where tests run. |
+| `resultsFolder` | `$(Agent.TempDirectory)/TestResults` | TRX files, one subfolder per test file. Also set as the `resultsDirectory` output variable. |
+| `testFiltercriteria` | — | `--filter` |
+| `runSettingsFile` | — | `--settings` |
+| `overrideTestrunParameters` | — | `-name value` pairs, passed as `TestRunParameters` |
+| `codeCoverageEnabled` | `false` | `--collect "Code Coverage"` |
+| `diagnosticsEnabled` | `false` | `--blame` |
+| `otherConsoleOptions` | — | Any other [option](usage), quoted as in a shell |
+| `rerunFailedTests` | `true` | Off sets `--rerunMaxAttempts 0` |
+| `rerunType` | `basedOnTestFailurePercentage` | Which limit below applies |
+| `rerunFailedThreshold` | `30` | `--rerunFailedThreshold` |
+| `rerunFailedTestCasesMaxLimit` | `5` | `--rerunMaxFailedTests` |
+| `rerunMaxAttempts` | `3` | `--rerunMaxAttempts` |
+| `testRunTitle`, `platform`, `configuration` | — | Shown on the published test run |
+| `customLoggerConfig` | — | An extra `--logger` |
+| `publishRunAttachments` | `true` | Upload the run's attachments |
+| `donotPublishTestResults` | `false` | Skip publishing to the **Tests** tab |
+| `failOnMinTestsNotRun`, `minimumExpectedTests` | `false`, `1` | Fail when fewer distinct tests ran |
 | `version` | latest | Tool version. A pinned version is cached on the agent. |
-| `resultsDirectory` | `$(Agent.TempDirectory)/TestResults` | Folder for the TRX files. |
-| `workingDirectory` | `$(System.DefaultWorkingDirectory)` | Folder to run from. |
-| `publishTestResults` | `true` | Publish the TRX files. |
-| `testRunTitle` | — | Title of the published test run. |
 
-The task also sets the `resultsDirectory` output variable.
+Not available, because they need `vstest.console`: Test Plan and test run selection, test impact analysis, distributing tests across agents, `runInParallel`, `runTestsInIsolation`, custom adapter paths and the Visual Studio version settings.
 
 ### With a script
 

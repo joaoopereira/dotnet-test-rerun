@@ -36,19 +36,29 @@ jobs:
         working-directory: azure-devops/TestRerunV1
         run: npm ci --omit=dev
 
-      - name: Run the task against a fixture that passes on the second run
+      - name: Build a fixture that passes on the second run
+        run: dotnet build test/dotnet-test-rerun.IntegrationTests/Fixtures/NUnitTestPassOnSecondRunExample
+
+      # Outside an agent, inputs left out get no default, so the task.json defaults are repeated here.
+      - name: Run the task on the built test assembly
         working-directory: azure-devops/TestRerunV1
         env:
           AGENT_TOOLSDIRECTORY: ${{ runner.tool_cache }}
           AGENT_TEMPDIRECTORY: ${{ runner.temp }}
-          SYSTEM_DEFAULTWORKINGDIRECTORY: ${{ github.workspace }}/test/dotnet-test-rerun.IntegrationTests/Fixtures
-          INPUT_PATH: NUnitTestPassOnSecondRunExample
-          INPUT_ARGUMENTS: --rerunMaxAttempts 2
-          INPUT_PUBLISHTESTRESULTS: "true"
+          INPUT_SEARCHFOLDER: ${{ github.workspace }}/test/dotnet-test-rerun.IntegrationTests/Fixtures
+          INPUT_TESTASSEMBLYVER2: "**/bin/**/NUnitTestPassOnSecondRunExample.dll"
+          INPUT_RERUNFAILEDTESTS: "true"
+          INPUT_RERUNTYPE: basedOnTestFailurePercentage
+          INPUT_RERUNFAILEDTHRESHOLD: "-1"
+          INPUT_RERUNMAXATTEMPTS: "2"
+          INPUT_PUBLISHRUNATTACHMENTS: "true"
+          INPUT_DONOTPUBLISHTESTRESULTS: "false"
+          INPUT_FAILONMINTESTSNOTRUN: "true"
+          INPUT_MINIMUMEXPECTEDTESTS: "2"
         run: |
           node index.js | tee task.log
           grep -q 'task.complete result=Succeeded' task.log
-          grep -q 'results.publish type=VSTest' task.log
+          grep -q 'results.publish type=VSTest;mergeResults=true' task.log
 
       - name: Package the extension
         working-directory: azure-devops
