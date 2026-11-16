@@ -70,17 +70,15 @@ More detail: [How it works](https://joaoopereira.github.io/dotnet-test-rerun/how
 
 ```yaml
 # GitHub Actions
-- run: dotnet tool install --global dotnet-test-rerun
 - run: dotnet build --configuration Release
-- run: test-rerun MySolution.sln --no-build --configuration Release --results-directory TestResults
-- uses: actions/upload-artifact@v4
-  if: always()
+- uses: joaoopereira/dotnet-test-rerun@v5
   with:
-    name: test-results
-    path: TestResults/**/*.trx
+    path: MySolution.sln
+    arguments: --no-build --configuration Release
+    upload-results: true
 ```
 
-Azure DevOps and GitLab CI examples: [CI integration](https://joaoopereira.github.io/dotnet-test-rerun/ci).
+Action inputs, a script-based setup, and the Azure DevOps and GitLab CI examples: [CI integration](https://joaoopereira.github.io/dotnet-test-rerun/ci).
 
 ## Docker
 

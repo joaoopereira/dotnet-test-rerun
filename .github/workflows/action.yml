@@ -1,0 +1,50 @@
+name: Action
+
+# Runs the GitHub Action in action.yml against fixture projects on Linux and Windows.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["action.yml", ".github/workflows/action.yml"]
+
+jobs:
+  action:
+    name: 🧪 Action (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Passes on the second run
+        id: pass
+        uses: ./
+        with:
+          path: test/dotnet-test-rerun.IntegrationTests/Fixtures/NUnitTestPassOnSecondRunExample
+          arguments: --rerunMaxAttempts 2 --logger "console;verbosity=minimal"
+          upload-results: true
+          artifact-name: test-results-${{ matrix.os }}
+
+      - name: Check the TRX files of both runs exist
+        shell: bash
+        run: test "$(ls "${{ steps.pass.outputs.results-directory }}"/*.trx | wc -l)" -eq 2
+
+      - name: Fails in all retries
+        id: fail
+        continue-on-error: true
+        uses: ./
+        with:
+          path: test/dotnet-test-rerun.IntegrationTests/Fixtures/XUnitExampleFailInAllRetries
+          arguments: --rerunMaxAttempts 1
+          results-directory: failing-results
+
+      - name: Check the failing run failed the step
+        shell: bash
+        run: test "${{ steps.fail.outcome }}" = failure
