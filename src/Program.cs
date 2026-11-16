@@ -1,6 +1,4 @@
-using System.CommandLine;
 using System.IO.Abstractions;
-using dotnet.test.rerun;
 using dotnet.test.rerun.Analyzers;
 using dotnet.test.rerun.Cli;
 using dotnet.test.rerun.DotNetRunner;
@@ -21,33 +19,7 @@ var serviceProvider = new ServiceCollection()
     .AddSingleton<IFileSystem, FileSystem>()
     .BuildServiceProvider();
 
-var log = serviceProvider.GetRequiredService<ILogger>();
-var command = serviceProvider.GetRequiredService<RerunRootCommand>();
-int exitCode;
-
-try
-{
-    var parseResult = command.Parse(args);
-    // Let exceptions reach the handlers below instead of System.CommandLine's default handler,
-    // so RerunException is reported as a plain message and cancellation gets its own exit code.
-    exitCode = await parseResult.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false });
-}
-catch (OperationCanceledException)
-{
-    log.Warning("Test run cancelled.");
-    exitCode = 130;
-}
-catch (RerunException exception)
-{
-    log.Error(exception.Message);
-    log.Debug(exception.StackTrace ?? string.Empty);
-    exitCode = 1;
-}
-catch (Exception exception)
-{
-    log.Exception(exception);
-    exitCode = 1;
-}
+var exitCode = await serviceProvider.GetRequiredService<RerunRootCommand>().RunAsync(args);
 
 Environment.ExitCode = exitCode;
 return exitCode;

@@ -119,6 +119,84 @@ public class RerunRootCommandTests
     public void ToExitCode_MapsOutcome(RerunOutcome outcome, int exitCode)
         => RerunRootCommand.ToExitCode(outcome).Should().Be(exitCode);
 
+    [Theory]
+    [InlineData(ErrorCode.Success, 0)]
+    [InlineData(ErrorCode.FailedTests, 1)]
+    public async Task RunAsync_ReturnsTheExitCodeOfTheOutcome(ErrorCode outcome, int expectedExitCode)
+    {
+        // Arrange
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        dotNetTestRunner.Test(Arg.Any<RerunOptions>(), Arg.Any<RunRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new TestRunResult(outcome, (int)outcome));
+        var command = CreateCommand(Substitute.For<ILogger>(), dotNetTestRunner);
+
+        // Act
+        var exitCode = await command.RunAsync(new[] { "path", "--rerunMaxAttempts", "1" });
+
+        // Assert
+        exitCode.Should().Be(expectedExitCode);
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenCancelled_WarnsAndReturns130()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var command = CreateCommand(logger, ThrowingTestRunner(new OperationCanceledException()));
+
+        // Act
+        var exitCode = await command.RunAsync(new[] { "path" });
+
+        // Assert
+        exitCode.Should().Be(130);
+        logger.Received(1).Warning("Test run cancelled.");
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenRerunExceptionIsThrown_LogsOnlyTheMessageAndReturns1()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var command = CreateCommand(logger, ThrowingTestRunner(new RerunException("dotnet test exited with code 2")));
+
+        // Act
+        var exitCode = await command.RunAsync(new[] { "path" });
+
+        // Assert
+        exitCode.Should().Be(1);
+        logger.Received(1).Error("dotnet test exited with code 2");
+        logger.DidNotReceive().Exception(Arg.Any<Exception>());
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenUnexpectedExceptionIsThrown_LogsTheExceptionAndReturns1()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var exception = new InvalidOperationException("unexpected");
+        var command = CreateCommand(logger, ThrowingTestRunner(exception));
+
+        // Act
+        var exitCode = await command.RunAsync(new[] { "path" });
+
+        // Assert
+        exitCode.Should().Be(1);
+        logger.Received(1).Exception(exception);
+    }
+
+    private static RerunRootCommand CreateCommand(ILogger logger, IDotNetTestRunner dotNetTestRunner)
+        => new(logger, new RerunCliDefinition(),
+            new RerunOrchestrator(logger, dotNetTestRunner, Substitute.For<IDotNetCoverageRunner>(),
+                new FileSystem(), Substitute.For<ITestResultsAnalyzer>()));
+
+    private static IDotNetTestRunner ThrowingTestRunner(Exception exception)
+    {
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        dotNetTestRunner.Test(Arg.Any<RerunOptions>(), Arg.Any<RunRequest>(), Arg.Any<CancellationToken>())
+            .Returns<TestRunResult>(_ => throw exception);
+        return dotNetTestRunner;
+    }
+
     private static IDotNetTestRunner CreateTestRunner()
     {
         var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
