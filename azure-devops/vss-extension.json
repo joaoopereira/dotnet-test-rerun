@@ -4,6 +4,7 @@
   "name": "dotnet-test-rerun",
   "version": "1.0.0",
   "publisher": "joaoopereira",
+  "icons": { "default": "icon.png" },
   "description": "Run dotnet test and rerun the failed tests with dotnet-test-rerun.",
   "public": true,
   "categories": ["Azure Pipelines"],
@@ -16,7 +17,7 @@
     "issues": { "uri": "https://github.com/joaoopereira/dotnet-test-rerun/issues" }
   },
   "repository": { "type": "git", "uri": "https://github.com/joaoopereira/dotnet-test-rerun" },
-  "files": [{ "path": "TestRerunV1" }],
+  "files": [{ "path": "TestRerunV1" }, { "path": "icon.png", "addressable": true }],
   "contributions": [
     {
       "id": "test-rerun-task",
