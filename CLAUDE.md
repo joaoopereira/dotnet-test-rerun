@@ -16,7 +16,7 @@ sed -i 's/"10.0.302"/"10.0.100"/' global.json && git update-index --skip-worktre
 
 - `.NET 8` runtime is needed because the integration fixtures target `net8.0`.
 - Never commit the `global.json` change. Before `git checkout` to a branch with a different `global.json`, run `git update-index --no-skip-worktree global.json && git checkout global.json`.
-- There is no .NET 9 runtime in the feed. The integration test `DotnetTestRerun_FailingXUnit_WithMultipleFrameworks_Fails` always fails locally for that reason (26/27 is the expected local result). CI runs it.
+- The multi-framework fixture targets `net8.0;net10.0`, so the whole integration suite passes locally. Coverlet writes no coverage report when any test fails.
 - The clone is shallow (50 commits). Run `git fetch --unshallow origin` before comparing branches, otherwise ahead/behind counts are wrong.
 
 ## Fast commands

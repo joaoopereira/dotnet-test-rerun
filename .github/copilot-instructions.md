@@ -17,7 +17,7 @@ dotnet test test/dotnet-test-rerun.UnitTests/dotnet-test-rerun.UnitTests.csproj 
 dotnet test test/dotnet-test-rerun.IntegrationTests/dotnet-test-rerun.IntegrationTests.csproj  # several minutes
 ```
 
-- The integration tests run the real tool against the projects in `test/dotnet-test-rerun.IntegrationTests/Fixtures/`. Some fixtures target `net8.0` and `net9.0`, so those runtimes must be installed.
+- The integration tests run the real tool against the projects in `test/dotnet-test-rerun.IntegrationTests/Fixtures/`. Some fixtures target `net8.0` and `net10.0`, so those runtimes must be installed.
 - CI (`.github/workflows/ci.yml`) runs all tests with coverage:
   `dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=coverage/lcov.info --configuration Release`
 - The build should have no warnings.
