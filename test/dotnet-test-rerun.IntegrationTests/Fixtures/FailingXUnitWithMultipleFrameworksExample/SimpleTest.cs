@@ -4,7 +4,7 @@ public class SimpleTest
     [Fact]
     public void SimpleStringCompare()
     { 
-        #if NET9_0
+        #if NET10_0
             Assert.Equal("value", "value2");
         #else
             Assert.Equal("value", "value");
