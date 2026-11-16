@@ -32,7 +32,10 @@ public class DotNetTestRunner : IDotNetTestRunner
     /// <exception cref="RerunException">dotnet test failed for a reason other than failed tests</exception>
     public async Task<TestRunResult> Test(RerunOptions options, RunRequest request, CancellationToken cancellationToken = default)
     {
-        var arguments = DotNetTestArguments.Build(options, request);
+        var liveResults = options.LogTestResults
+            ? new LiveTestResultsReader(Log, FileSystem, FileSystem.Path.Combine(FileSystem.Path.GetTempPath(), "dotnet-test-rerun", Guid.NewGuid().ToString("N")))
+            : null;
+        var arguments = DotNetTestArguments.Build(options, request, liveResults?.Directory);
         var processStartInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
@@ -46,9 +49,40 @@ public class DotNetTestRunner : IDotNetTestRunner
         Log.Debug($"forking {commandLine}");
 
         var trxFilesBeforeRun = GetTrxFiles(request.ResultsDirectory);
-        var result = await ProcessRunner.RunAsync(processStartInfo, cancellationToken);
+        var result = liveResults is null
+            ? await ProcessRunner.RunAsync(processStartInfo, cancellationToken)
+            : await RunWithLiveResults(processStartInfo, liveResults, cancellationToken);
         var outcome = Classify(result, HaveProducedTrxFiles(request.ResultsDirectory, trxFilesBeforeRun), commandLine);
-        return new TestRunResult(outcome, result.ExitCode);
+        return new TestRunResult(outcome, result.ExitCode, liveResults?.Count ?? 0);
+    }
+
+    private async Task<ProcessResult> RunWithLiveResults(ProcessStartInfo processStartInfo, LiveTestResultsReader liveResults, CancellationToken cancellationToken)
+    {
+        using var stopWatching = new CancellationTokenSource();
+        var watching = liveResults.WatchAsync(stopWatching.Token);
+        try
+        {
+            return await ProcessRunner.RunAsync(processStartInfo, cancellationToken);
+        }
+        finally
+        {
+            await stopWatching.CancelAsync();
+            await watching;
+            DeleteDirectory(liveResults.Directory);
+        }
+    }
+
+    private void DeleteDirectory(string directory)
+    {
+        try
+        {
+            if (FileSystem.Directory.Exists(directory))
+                FileSystem.Directory.Delete(directory, recursive: true);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Log.Debug($"Could not delete {directory}: {e.Message}");
+        }
     }
 
     /// <summary>

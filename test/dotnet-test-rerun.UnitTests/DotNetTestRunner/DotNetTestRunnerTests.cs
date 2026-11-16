@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using dotnet_test_rerun.Common.Utilities;
 using dotnet.test.rerun;
 using dotnet.test.rerun.Configuration;
@@ -53,6 +54,36 @@ public class DotNetTestRunnerTests
 
         // Assert
         await act.Should().ThrowAsync<RerunException>().WithMessage($"command: dotnet test --logger trx --results-directory resultsDirectory exited with code 1. \n\nError message: {errorMessage}");
+    }
+
+    [Fact]
+    public async Task Test_WithLogTestResults_PrintsLiveResultsAndDeletesTheirFolder()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var fileSystem = new MockFileSystem();
+        var processRunner = Substitute.For<IProcessRunner>();
+        var dotNetTestRunner = new dotnet.test.rerun.DotNetRunner.DotNetTestRunner(logger, processRunner, fileSystem);
+        string? liveDirectory = null;
+        processRunner.RunAsync(Arg.Any<ProcessStartInfo>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                // The live logger writes to the folder given in its Directory parameter
+                var arguments = call.Arg<ProcessStartInfo>().ArgumentList;
+                var liveLogger = arguments.Single(argument => argument.StartsWith("dotnet-test-rerun-live;Directory="));
+                liveDirectory = liveLogger["dotnet-test-rerun-live;Directory=".Length..];
+                arguments.Should().Contain("--test-adapter-path");
+                fileSystem.AddFile(fileSystem.Path.Combine(liveDirectory, "run.jsonl"), new MockFileData("{\"Name\":\"A.Test\",\"Passed\":true}\n"));
+                return new ProcessResult(0, string.Empty, string.Empty);
+            });
+
+        // Act
+        var result = await dotNetTestRunner.Test(new RerunOptions { LogTestResults = true }, new RunRequest(null, null, "results"));
+
+        // Assert
+        result.Should().Be(new TestRunResult(ErrorCode.Success, 0, 1));
+        logger.Received(1).TestResult("A.Test", true, null, null);
+        fileSystem.Directory.Exists(liveDirectory).Should().BeFalse();
     }
 
     [Fact]

@@ -33,6 +33,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <!-- Separate project, shipped next to the tool and passed to dotnet test for live test results -->
+    <Compile Remove="TestLogger/**" />
+    <None Remove="TestLogger/**" />
+    <ProjectReference Include="TestLogger/dotnet-test-rerun.TestLogger.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="dotnet-test-rerun.UnitTests" />
   </ItemGroup>
   <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0 And $(DockerBuild) != 'true'">

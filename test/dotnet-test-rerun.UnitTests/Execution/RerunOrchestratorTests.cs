@@ -66,6 +66,25 @@ public class RerunOrchestratorTests
     }
 
     [Fact]
+    public async Task Run_TestsOnce_WithLiveTestResults_ShouldNotLogTestResultsAgainFromTrx()
+    {
+        // Arrange
+        var config = InitialConfigurationSetup("--logTestResults");
+        var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
+        dotNetTestRunner.Test(Arg.Any<RerunOptions>(), Arg.Any<RunRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new TestRunResult(ErrorCode.Success, 0, LiveTestResults: 3));
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(new Logger(), dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), new FileSystem(), testResultsAnalyzer);
+
+        // Act
+        await command.RunAsync(config);
+
+        // Assert
+        testResultsAnalyzer.DidNotReceive().LogTestResults(Arg.Any<IFileInfo[]>());
+    }
+
+    [Fact]
     public async Task Run_TestsOnce_NoFailures_WithoutLogTestResults_ShouldNotLogTestResults()
     {
         // Arrange

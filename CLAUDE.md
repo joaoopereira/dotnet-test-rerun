@@ -38,6 +38,7 @@ The Husky pre-commit hook runs the unit tests on every `git commit` (~30s). The 
 | TRX parsing and filter building | `src/Analyzers/TestResultsAnalyzer.cs` |
 | Exit-code and failure detection from `dotnet test` output | `src/DotNetRunner/DotNetTestRunner.cs` |
 | Console output (Spectre markup, escaped) | `src/Logging/Logger.cs` |
+| Live `--logTestResults` | `src/TestLogger/` (VSTest logger, own project, excluded from the main project's globs) + `src/DotNetRunner/LiveTestResultsReader.cs` |
 | Fixture projects for integration tests | `test/dotnet-test-rerun.IntegrationTests/Fixtures/` |
 
 ## Filter gotchas (frequent bug source)

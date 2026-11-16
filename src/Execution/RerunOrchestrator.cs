@@ -39,7 +39,7 @@ public class RerunOrchestrator
         IDirectoryInfo resultsDirectory = FileSystem.DirectoryInfo.New(options.ResultsDirectory);
 
         var result = await DotNetTestRunner.Test(options, new RunRequest(options.Filter, options.Framework, resultsDirectory.FullName), cancellationToken);
-        LogTestResults(options, resultsDirectory, startOfDotnetRun, reportFiles);
+        LogTestResults(options, resultsDirectory, startOfDotnetRun, reportFiles, result.LiveTestResults);
         var errorCode = result.Outcome;
         var stoppedEarly = (RerunOutcome?)null;
         var attempt = 1;
@@ -92,7 +92,7 @@ public class RerunOrchestrator
                 Log.Warning($"Found {testsToRerun.TotalFailedTests} failed test(s) to rerun");
                 startOfDotnetRun = DateTime.Now;
 
-                var attemptResults = new List<ErrorCode>();
+                var attemptResults = new List<TestRunResult>();
                 foreach (var tests in testsToRerun.Filters)
                 {
                     var batches = FilterBatches.Split(tests.Value.Tests);
@@ -107,11 +107,11 @@ public class RerunOrchestrator
                             resultsDirectory.FullName);
 
                         Log.Warning($"Rerun filter: {request.Filter}");
-                        attemptResults.Add((await DotNetTestRunner.Test(options, request, cancellationToken)).Outcome);
+                        attemptResults.Add(await DotNetTestRunner.Test(options, request, cancellationToken));
                     }
                 }
-                errorCode = AggregateErrorCodes(attemptResults);
-                LogTestResults(options, resultsDirectory, startOfDotnetRun, reportFiles);
+                errorCode = AggregateErrorCodes(attemptResults.Select(attemptResult => attemptResult.Outcome).ToList());
+                LogTestResults(options, resultsDirectory, startOfDotnetRun, reportFiles, attemptResults.Sum(attemptResult => attemptResult.LiveTestResults));
                 attempt++;
             }
         }
@@ -165,9 +165,12 @@ public class RerunOrchestrator
             Log.Information(FailedTestsCommand.Build(options, filter.Filter));
     }
 
-    private void LogTestResults(RerunOptions options, IDirectoryInfo resultsDirectory, DateTime startSearchTime, HashSet<string> reportFiles)
+    /// <summary>
+    /// Prints the test results from the TRX files, unless they were already printed live during the run.
+    /// </summary>
+    private void LogTestResults(RerunOptions options, IDirectoryInfo resultsDirectory, DateTime startSearchTime, HashSet<string> reportFiles, int liveTestResults)
     {
-        if (options.LogTestResults is false)
+        if (options.LogTestResults is false || liveTestResults > 0)
             return;
 
         var trxFiles = TestResultsAnalyzer.GetTrxFiles(resultsDirectory, startSearchTime);
