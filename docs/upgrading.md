@@ -7,7 +7,7 @@ nav_order: 8
 # Upgrading from 4.x
 {: .no_toc }
 
-Version 5.0 has two breaking changes: reports are written to one folder per run, and the tool needs the .NET 8 runtime or later. Most setups only need to change the pattern that publishes test reports in CI.
+Version 5.0 has two breaking changes: reports are written to one folder per run, and the tool needs the .NET 8 or .NET 10 runtime. Most setups only need to change the pattern that publishes test reports in CI.
 
 <details open markdown="block">
   <summary>Contents</summary>
@@ -18,10 +18,11 @@ Version 5.0 has two breaking changes: reports are written to one folder per run,
 
 ## Checklist
 
-1. Install the .NET 8 runtime or later on the machine that runs `test-rerun`.
-2. In CI, publish TRX, JUnit and coverage files with a recursive pattern, such as `TestResults/**/*.trx`.
-3. If you added extra quotes or backslashes to arguments so they survived the tool, remove them.
-4. Check that `--loglevel` is one of `Debug`, `Verbose`, `Information`, `Warning` or `Error`.
+1. Make sure the machine that runs `test-rerun` has the .NET 8 or .NET 10 runtime.
+2. If you use the `-net9` or `-dotnet9` Docker images, switch to `-net8` or `-net10`.
+3. In CI, publish TRX, JUnit and coverage files with a recursive pattern, such as `TestResults/**/*.trx`.
+4. If you added extra quotes or backslashes to arguments so they survived the tool, remove them.
+5. Check that `--loglevel` is one of `Debug`, `Verbose`, `Information`, `Warning` or `Error`.
 
 ## Breaking changes
 
@@ -40,9 +41,11 @@ Change CI steps that read reports to a recursive pattern:
 - `--deleteReports` deletes the TRX files in the `attempt-N` folders.
 - The merged coverage file from `--mergeCoverageFormat` is still written to the results directory itself, not to an `attempt-N` folder.
 
-### The tool needs .NET 8 or later
+### The tool needs .NET 8 or .NET 10
 
-The tool now targets `net8.0`, `net9.0` and `net10.0`. It no longer installs on a machine that only has the .NET 6 runtime. Projects under test can still target `net6.0` or older, as long as their SDK and runtime are installed.
+The tool now targets `net8.0` and `net10.0`. .NET 6 and .NET 9 are out of support, so it no longer runs on a machine whose only runtime is .NET 6 or .NET 9. Install the .NET 8 or .NET 10 runtime next to it. Projects under test can still target `net6.0`, `net9.0` or older frameworks, as long as their SDK and runtime are installed.
+
+The `<version>-net9` and `<version>-dotnet9` Docker images are no longer published. Use `<version>-net8` or `<version>-net10`. See [Docker](docker).
 
 ## Behaviour changes
 
