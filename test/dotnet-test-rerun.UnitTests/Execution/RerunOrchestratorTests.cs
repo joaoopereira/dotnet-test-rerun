@@ -891,6 +891,55 @@ public class RerunOrchestratorTests
         logger.DidNotReceive().Information("To run the failed tests:");
     }
 
+    [Fact]
+    public async Task Run_TestsFailWithoutTrxFiles_WithGenerateTestCommand_DoesNotLogDotnetTestCommand()
+    {
+        // Arrange
+        var logger = Substitute.For<ILogger>();
+        var config = InitialConfigurationSetup("--generateTestCommand", filter: string.Empty);
+        var dotNetTestRunner = CreateTestRunner();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(logger, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), new FileSystem(), testResultsAnalyzer);
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(Array.Empty<IFileInfo>());
+
+        // Act
+        var outcome = await command.RunAsync(config);
+
+        // Assert
+        outcome.Should().Be(RerunOutcome.NoTestResults);
+        testResultsAnalyzer.DidNotReceive().GetFailedTestsFilter(Arg.Any<IFileInfo[]>());
+        logger.DidNotReceive().Information("To run the failed tests:");
+    }
+
+    [Fact]
+    public async Task Run_TestsFailWithoutFailedTestsInTrx_WithGenerateTestCommand_DoesNotLogDotnetTestCommand()
+    {
+        // Arrange: dotnet test failed, but the TRX names no failed test (e.g. the testhost could not start)
+        var logger = Substitute.For<ILogger>();
+        var config = InitialConfigurationSetup("--generateTestCommand", filter: string.Empty);
+        var dotNetTestRunner = CreateTestRunner();
+        var fileSystem = new FileSystem();
+        var testResultsAnalyzer = Substitute.For<ITestResultsAnalyzer>();
+        var command = new RerunOrchestrator(logger, dotNetTestRunner,
+            Substitute.For<IDotNetCoverageRunner>(), fileSystem, testResultsAnalyzer);
+        ReturnsOutcomes(dotNetTestRunner, ErrorCode.FailedTests);
+        testResultsAnalyzer.GetTrxFiles(Arg.Any<IDirectoryInfo>(), Arg.Any<DateTime>())
+            .Returns(new[] { fileSystem.FileInfo.New("First.trx") });
+        testResultsAnalyzer.GetFailedTestsFilter(Arg.Any<IFileInfo[]>())
+            .Returns(new TestFilterCollection());
+
+        // Act
+        var outcome = await command.RunAsync(config);
+
+        // Assert
+        outcome.Should().Be(RerunOutcome.Failed);
+        await dotNetTestRunner.Received(1).Test(config, Arg.Any<RunRequest>(), Arg.Any<CancellationToken>());
+        logger.DidNotReceive().Information("To run the failed tests:");
+    }
+
     private static IDotNetTestRunner CreateTestRunner()
     {
         var dotNetTestRunner = Substitute.For<IDotNetTestRunner>();
