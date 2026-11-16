@@ -4,7 +4,8 @@ using dotnet.test.rerun.Execution;
 
 namespace dotnet.test.rerun.DotNetRunner;
 
-public sealed record TestRunResult(ErrorCode Outcome, int ExitCode);
+/// <param name="LiveTestResults">Number of test results printed during the run by --logTestResults.</param>
+public sealed record TestRunResult(ErrorCode Outcome, int ExitCode, int LiveTestResults = 0);
 
 public interface IDotNetTestRunner
 {

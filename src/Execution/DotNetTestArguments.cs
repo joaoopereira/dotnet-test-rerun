@@ -1,4 +1,5 @@
 using dotnet.test.rerun.Configuration;
+using dotnet.test.rerun.TestLogger;
 
 namespace dotnet.test.rerun.Execution;
 
@@ -15,7 +16,8 @@ public static class DotNetTestArguments
     /// </summary>
     private const string PassedTestsLogger = "console;verbosity=detailed";
 
-    public static IReadOnlyList<string> Build(RerunOptions options, RunRequest request)
+    /// <param name="liveResultsDirectory">When set, adds the live test logger, which writes each result to this folder as the test finishes.</param>
+    public static IReadOnlyList<string> Build(RerunOptions options, RunRequest request, string? liveResultsDirectory = null)
     {
         var args = new List<string> { "test" };
         AddIfNotBlank(args, options.Path);
@@ -28,6 +30,12 @@ public static class DotNetTestArguments
             AddOption(args, "--logger", TrxLogger);
         if (options.LogPassedTests && !options.LogTestResults)
             AddOption(args, "--logger", PassedTestsLogger);
+        if (liveResultsDirectory is not null)
+        {
+            AddOption(args, "--logger", $"{LiveTestResult.LoggerFriendlyName};{LiveTestResult.DirectoryParameter}={liveResultsDirectory}");
+            // The logger assembly ships next to the tool
+            AddOption(args, "--test-adapter-path", Path.GetDirectoryName(typeof(LiveTestResult).Assembly.Location));
+        }
         AddFlag(args, "--no-build", options.NoBuild);
         AddFlag(args, "--no-restore", options.NoRestore);
         AddFlag(args, "--blame", options.Blame);

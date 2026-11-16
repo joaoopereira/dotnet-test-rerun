@@ -83,6 +83,21 @@ public class DotNetTestArgumentsTests
     }
 
     [Fact]
+    public void Build_WithLiveResultsDirectory_AddsTheLiveLoggerBeforeInlineRunSettings()
+    {
+        //Act
+        var args = DotNetTestArguments.Build(Parse("path --logTestResults --inlineRunSettings RunConfiguration.MaxCpuCount=1"),
+            new RunRequest(null, null, string.Empty), "live-dir");
+
+        //Assert
+        var adapterPath = Path.GetDirectoryName(typeof(dotnet.test.rerun.TestLogger.LiveTestResult).Assembly.Location);
+        args.Should().Equal("test", "path", "--logger", "trx",
+            "--logger", "dotnet-test-rerun-live;Directory=live-dir", "--test-adapter-path", adapterPath,
+            "--", "RunConfiguration.MaxCpuCount=1");
+        File.Exists(Path.Combine(adapterPath!, "dotnet-test-rerun.TestLogger.dll")).Should().BeTrue();
+    }
+
+    [Fact]
     public void Build_WithLogPassedTestsAndLogTestResults_ShouldNotAppendConsoleLogger()
     {
         //Act

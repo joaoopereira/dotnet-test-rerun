@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.Integrati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.Common", "test\dotnet-test-rerun.Common\dotnet-test-rerun.Common.csproj", "{B4B424C9-75C5-44B8-A135-25BB620B87C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-test-rerun.TestLogger", "src\TestLogger\dotnet-test-rerun.TestLogger.csproj", "{B4FBE0C7-FA39-42F5-B416-23DC6A57034A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{B4B424C9-75C5-44B8-A135-25BB620B87C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B4B424C9-75C5-44B8-A135-25BB620B87C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4B424C9-75C5-44B8-A135-25BB620B87C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4FBE0C7-FA39-42F5-B416-23DC6A57034A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4FBE0C7-FA39-42F5-B416-23DC6A57034A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4FBE0C7-FA39-42F5-B416-23DC6A57034A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4FBE0C7-FA39-42F5-B416-23DC6A57034A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

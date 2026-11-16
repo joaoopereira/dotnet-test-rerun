@@ -36,6 +36,7 @@ src/
 ├── Execution/        # Rerun loop (RerunOrchestrator), argument lists, filter batching and composition
 ├── Extensions/
 ├── Logging/          # Console output with Spectre.Console
+├── TestLogger/       # Separate project: VSTest logger shipped with the tool, streams results for --logTestResults
 ├── Program.cs        # DI setup, top-level exception handling, exit codes
 └── RerunException.cs # Error reported to the user without a stack trace
 test/

@@ -226,6 +226,27 @@ public class DotNetTestRerunTests
     }
 
     [Fact]
+    public async Task DotnetTestRerun_FailingXUnit_WithLogTestResults_PrintsEachResultOnceWithTheLiveLogger()
+    {
+        // Arrange
+        var testDir = TestUtilities.GetTmpDirectory();
+        TestUtilities.CopyFixture(string.Empty, new DirectoryInfo(testDir));
+        Environment.ExitCode = 0;
+
+        // Act
+        var output = await RunDotNetTestRerunAndCollectOutputMessage("XUnitTestPassOnSecondRunExample", "--logTestResults", dir: testDir);
+
+        // Assert
+        // vstest fails the run when it cannot load a logger, so a passing run means the live logger was used
+        output.Should().Contain("--logger \"dotnet-test-rerun-live;Directory=", Exactly.Twice());
+        // Printed once per run: live, without the TRX-based output on top
+        output.Should().Contain("✓ XUnitTestPassOnSecondRunExample.SimpleTest.TestIncreaseState", Exactly.Once());
+        output.Should().Contain("✗ XUnitTestPassOnSecondRunExample.SimpleTest.TestDecreaseState", Exactly.Once());
+        output.Should().Contain("✓ XUnitTestPassOnSecondRunExample.SimpleTest.TestDecreaseState", Exactly.Once());
+        Environment.ExitCode.Should().Be(0);
+    }
+
+    [Fact]
     public async Task DotnetTestRerun_FailingXUnit_WithNonEnglishOutput_PassOnSecond()
     {
         // Arrange

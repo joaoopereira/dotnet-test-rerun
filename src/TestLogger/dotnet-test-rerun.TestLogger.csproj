@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Loaded by vstest.console, which runs on the SDK's runtime (.NET 8 or later) -->
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- VSTest only discovers loggers in the test adapter path whose file name ends in .TestLogger.dll -->
+    <AssemblyName>dotnet-test-rerun.TestLogger</AssemblyName>
+    <RootNamespace>dotnet.test.rerun.TestLogger</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- vstest.console provides it at runtime, so it is not shipped with the tool -->
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

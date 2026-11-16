@@ -60,7 +60,7 @@ More detail: [How it works](https://joaoopereira.github.io/dotnet-test-rerun/how
 | `--delay`, `-d` | `0` | Seconds to wait before each rerun |
 | `--results-directory`, `-r` | `.` | Where results go |
 | `--mergeCoverageFormat` | — | Merge the coverage of all runs (`Coverage`, `Cobertura`, `Xml`); needs `dotnet-coverage` |
-| `--logTestResults` | `false` | Print the result of each test after every run |
+| `--logTestResults` | `false` | Print the result of each test as soon as it finishes |
 | `--generateTestCommand` | `false` | At the end, print a `dotnet test` command that runs only the tests still failing |
 | `--deleteReports` | `false` | Delete the TRX files when finished |
 
