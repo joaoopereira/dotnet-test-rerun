@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="5.1.0"></a>
+## [5.1.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.1.0) (2026-11-16)
+
+### Features
+
+* **action:** add a GitHub Action that installs and runs test-rerun ([8c9a365](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/8c9a3654f39249b97f87f96c92327a575c9ac658))
+* **azure-devops:** add a TestRerun task and its Marketplace extension ([396a112](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/396a11265973355ceb6f6af4a14872afec079f29))
+* **logging:** print --logTestResults results live as each test finishes ([4cad1a5](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/4cad1a58ef186b64ad41a6b7884246a62d6ca1a8))
+
 <a name="5.0.0"></a>
 ## [5.0.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.0.0) (2026-11-16)
 
