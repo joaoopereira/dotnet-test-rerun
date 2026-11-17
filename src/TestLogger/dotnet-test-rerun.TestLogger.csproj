@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Loaded by vstest.console, which runs on the SDK's runtime (.NET 8 or later) -->
-    <TargetFramework>net8.0</TargetFramework>
+    <!-- Loaded by vstest.console, which runs on the SDK's runtime; net6.0 is for .NET 6 SDKs -->
+    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     <!-- VSTest only discovers loggers in the test adapter path whose file name ends in .TestLogger.dll -->
     <AssemblyName>dotnet-test-rerun.TestLogger</AssemblyName>
     <RootNamespace>dotnet.test.rerun.TestLogger</RootNamespace>

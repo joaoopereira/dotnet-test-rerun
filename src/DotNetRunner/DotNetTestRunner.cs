@@ -66,7 +66,7 @@ public class DotNetTestRunner : IDotNetTestRunner
         }
         finally
         {
-            await stopWatching.CancelAsync();
+            stopWatching.Cancel();
             await watching;
             DeleteDirectory(liveResults.Directory);
         }

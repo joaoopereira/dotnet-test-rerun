@@ -58,7 +58,7 @@ public sealed class LiveTestResultsReader
         if (!FileSystem.Directory.Exists(Directory))
             return;
 
-        foreach (var file in FileSystem.Directory.GetFiles(Directory, "*" + LiveTestResult.FileExtension).Order())
+        foreach (var file in FileSystem.Directory.GetFiles(Directory, "*" + LiveTestResult.FileExtension).OrderBy(file => file))
         {
             try
             {
@@ -81,7 +81,13 @@ public sealed class LiveTestResultsReader
 
         stream.Seek(offset, SeekOrigin.Begin);
         var bytes = new byte[stream.Length - offset];
-        stream.ReadExactly(bytes);
+        // Stream.ReadExactly needs .NET 7
+        var read = 0;
+        int count;
+        while (read < bytes.Length && (count = stream.Read(bytes, read, bytes.Length - read)) > 0)
+            read += count;
+        if (read < bytes.Length)
+            throw new EndOfStreamException();
         var end = Array.LastIndexOf(bytes, (byte)'\n');
         if (end < 0)
             return;
