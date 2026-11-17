@@ -5,7 +5,7 @@
 dotnet-test-rerun is a .NET global tool (`test-rerun`) that wraps `dotnet test`. It reads the TRX results of failed tests, builds a `--filter` for them and reruns them up to `--rerunMaxAttempts` times. It is distributed on NuGet and as Docker images.
 
 - **Language**: C#
-- **Target frameworks**: `net8.0`, `net10.0` (`src/dotnet-test-rerun.csproj`)
+- **Target frameworks**: `net6.0`, `net8.0`, `net10.0` (`src/dotnet-test-rerun.csproj`). Code must compile for `net6.0`: no .NET 7+ APIs such as `CancelAsync`, `Order()` or `ReadExactly`.
 - **SDK**: .NET 10, pinned in `global.json`
 - **User documentation**: `README.md` and the `docs/` folder (GitHub Pages, see `docs/README.md`)
 
