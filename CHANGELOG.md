@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="5.2.0"></a>
+## [5.2.0](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.2.0) (2026-11-17)
+
+### Features
+
+* target net6.0 again ([92d2305](https://www.github.com/joaoopereira/dotnet-test-rerun/commit/92d2305fe4684c0d43b514853649786ae0fa552f))
+
 <a name="5.1.1"></a>
 ## [5.1.1](https://www.github.com/joaoopereira/dotnet-test-rerun/releases/tag/v5.1.1) (2026-11-16)
 
